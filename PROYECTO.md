@@ -11,7 +11,7 @@
 
 El sistema utilizara una interfaz de mapa, con limites geográficos de países y ubicación exacta de estadios mediante archivos GeoJSON y coordenadas espaciales, permitiendo filtrar por país, confederación (UEFA, CONMEBOL) o competición activa.
 
-Todos los datos de tiempo real, como partidos, eventos y jugadores serán obtenidos mediante integraciones con APIs externas, las cuales serán gestionadas por el sistema mediante uso de cache para evitar limite de peticiones.
+Todos los datos de tiempo real, como partidos, eventos y jugadores serán obtenidos mediante integraciones con APIs externas, las cuales serán gestionadas por el sistema mediante uso de valores de frequencias de llamadas para evitar limite de peticiones.
 
 Usando todos los datos recopilados, el sistema generara varias estadísticas sobre países, competencias, jugadores y mas, las cuales podrán ser accedidas mediante sus respectivos perfiles.
 
@@ -26,7 +26,7 @@ Por ultimo, el sistema no contara con soporte para el registro y/o uso de usuari
 **OBJETIVOS PRINCIPALES**
 
 1. **Ofrecer una experiencia única y completa que permita a sus usuarios tanto encontrar partidos en vivo como descubrir nuevas ligas y equipos.**
-2. **Implementar una gestión eficiente de los recursos del sistema y de la API, mediante el uso de cache y otros mecanismos.**
+2. **Implementar una gestión eficiente de los recursos del sistema y de la API.**
 3. **Construir un modelo de backend limpio y modular para facilitar tanto el arreglo de bugs como la implementación de nuevas funcionalidades.**
 4. **Garantizar la fiabilidad y respuesta contra errores del sistema, tanto en el backend como en el frontend.**
 
@@ -64,31 +64,31 @@ Por ultimo, el sistema no contara con soporte para el registro y/o uso de usuari
 | RNF05 | Mantenibilidad | El sistema estará diseñado con una arquitectura de 3 capas.
 | RNF06 | Mantenibilidad | El sistema estará programado en Python 3.8 o superior.
 | RNF07 | Mantenibilidad | El sistema utilizara GIT para el control de versión.
-| RNF08 | Confiabilidad  | En caso de no poder acceder a datos de la API, el sistema usara el cache (en caso de ser aplicable)
-| RNF09 | Confiabilidad  | El frontend utilizara pantallas de errores en casos de fallos para informar al usuario
-| RNF10 | Confiabilidad  | En caso de un fallo en una llamada a la API, se intentará dos veces más antes de retornar un error
-| RNF11 | Escalabilidad  | El sistema utilizara un sistema de cache para datos con gran volumen de solicitudes para evitar excesivas llamadas a la API
-| RNF12 | Rendimiento    | El sistema debe funcionar en un equipo hogareño estándar
-| RNF13 | Rendimiento    | El mapa del globo no tardara más de 10 segundos en cargar
-| RNF14 | Rendimiento    | Las llamadas a API no deben tardar más de 5 segundos en devolver un resultado
-| RNF15 | Reusabilidad   | Toda coordenada geográfica debe ser representada por el mismo objeto
-| RNF16 | Reusabilidad   | Todo error común debe ser representado por el mismo objeto
-| RNF17 | Flexibilidad   | La gestión de las llamadas a API y sus respuestas deben ser manejadas por una interfaz
-| RNF18 | Flexibilidad   | Varios parámetros del sistema, como tiempo de expiración de cache y frecuencia de llamadas a API, deben ser configurables con variables de entorno
-| RNF19 | Flexibilidad   | El diseño del backend debe ser modular para permitir la incorporación de nueva funcionalidad sin modificar el resto
+| RNF08 | Confiabilidad  | El frontend utilizara pantallas de errores en casos de fallos para informar al usuario
+| RNF09 | Confiabilidad  | En caso de un fallo en una llamada a la API, se intentará dos veces más antes de retornar un error
+| RNF10 | Rendimiento    | El sistema debe funcionar en un equipo hogareño estándar
+| RNF11 | Rendimiento    | El mapa del globo no tardara más de 10 segundos en cargar
+| RNF12 | Rendimiento    | Las llamadas a API no deben tardar más de 5 segundos en devolver un resultado
+| RNF13 | Reusabilidad   | Toda coordenada geográfica debe ser representada por el mismo objeto
+| RNF14 | Reusabilidad   | Todo error común debe ser representado por el mismo objeto
+| RNF15 | Flexibilidad   | La gestión de las llamadas a API y sus respuestas deben ser manejadas por una interfaz
+| RNF16 | Flexibilidad   | Varios parámetros del sistema, como la frecuencia de llamadas a API, deben ser configurables con variables de entorno
+| RNF17 | Flexibilidad   | El diseño del backend debe ser modular para permitir la incorporación de nueva funcionalidad sin modificar el resto
 
 ## Stack Tecnológico [WIP]
 
-### Capa de datos [WIP]
-- **[A DEFINIR]:** Motor de base de datos
-- **[A DEFINIR]:** Libreria ORM de Python
+### Capa de datos
+- **SQLite:** Motor de base de datos predeterminado de Django
+- **Django ORM:** Libreria ORM predeterminada de Django
 
 ### Capa de Negocio
 
-- **Python:** Motor de código  de todo el backend, su uso es obligatorio.
-- **Flask (https://flask.palletsprojects.com/):** Framework web, es el más utilizado de Python y uno de los más sencillos.
-- **Diskcache:** Librería para gestionar el uso de cache, seleccionada debido a su bajo costo de implementación.
-- **API-Football (https://www.api-football.com/):** Fuente de datos y estadísticas de partidos y jugadores, fue elegida debido a la gran cantidad de información que ofrece junto con la generosa cantidad de llamadas en su plan gratis.
+- **Python:** Motor de código de todo el backend, su uso es obligatorio.
+- **Django (https://www.djangoproject.com/):** Framework web, elegido por ser robusto y tener varios modulos utiles (ej. panel de admin) ya integrados.
+
+- **APIs:**
+  - **Footballdata.io (https://footballdata.io/):** Fuente de datos de partidos en tiempo real.
+  - **OpenStreetMap (https://www.openstreetmap.org):** Fuente de datos de ubicacion (latitud y longitud) de estadios de equipos.
 
 ### Capa de Presentación [WIP]
 
