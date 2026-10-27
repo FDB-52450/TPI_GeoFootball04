@@ -1,0 +1,14 @@
+{
+    "45": {
+        "league_name": "UEFA Champions League",
+        "type": "MIXTO"
+    },
+    "46": {
+        "league_name": "UEFA Europa League",
+        "type": "MIXTO"
+    },
+    "50": {
+        "league_name": "World Cup",
+        "type": "MIXTO"
+    }
+}

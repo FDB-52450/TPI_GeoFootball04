@@ -1,0 +1,466 @@
+{
+  "success": true,
+  "data": {
+    "team_id": 137,
+    "team_name": "West Ham United FC",
+    "team_name_clean": "West Ham United",
+    "seo_slug": "west-ham-united-fc",
+    "full_name": "West Ham United FC",
+    "country": "England",
+    "team_logo": "https://footballdata.io/img/team/west-ham-united-fc.png",
+    "stadium": {
+      "name": "",
+      "address": ""
+    },
+    "founded": "1895",
+    "form": {
+      "ppg_home": 1.67,
+      "ppg_away": 1.33,
+      "ppg_overall": 2
+    },
+    "league_seasons": [
+      {
+        "team_league_season_id": 137,
+        "league": {
+          "league_id": 15,
+          "name": "England Premier League",
+          "country": "England",
+          "competition_name": "Premier League",
+          "image": "https://footballdata.io/img/league/england-premier-league.png"
+        },
+        "season": {
+          "season_id": 189,
+          "year": 20252026,
+          "label": "2025/2026",
+          "format": "Domestic League"
+        },
+        "standing": {
+          "table_position": 18,
+          "performance_rank": 18,
+          "risk": 54
+        }
+      }
+    ],
+    "recent_matches": [
+      {
+        "match_id": 193193,
+        "match_date": "2026-05-24 15:00:00",
+        "date_unix": 1779634800,
+        "status": "complete",
+        "league": {
+          "league_id": 15,
+          "name": "England Premier League",
+          "country": "England",
+          "competition_name": "Premier League"
+        },
+        "season": {
+          "season_id": 189,
+          "year": 20252026
+        },
+        "home_team": {
+          "team_id": 137,
+          "team_name": "West Ham United",
+          "team_logo": "https://footballdata.io/img/team/west-ham-united-fc.png"
+        },
+        "away_team": {
+          "team_id": 193,
+          "team_name": "Leeds United",
+          "team_logo": "https://footballdata.io/img/team/leeds-united-fc.png"
+        },
+        "score": {
+          "home": 3,
+          "away": 0,
+          "total_goals": 3
+        },
+        "xg": {
+          "home": 1.98,
+          "away": 1.43,
+          "total": 3.4
+        },
+        "probabilities": {
+          "home_win": 51.73,
+          "draw": 24.33,
+          "away_win": 23.94
+        }
+      },
+      {
+        "match_id": 193154,
+        "match_date": "2026-05-17 16:30:00",
+        "date_unix": 1779035400,
+        "status": "complete",
+        "league": {
+          "league_id": 15,
+          "name": "England Premier League",
+          "country": "England",
+          "competition_name": "Premier League"
+        },
+        "season": {
+          "season_id": 189,
+          "year": 20252026
+        },
+        "home_team": {
+          "team_id": 141,
+          "team_name": "Newcastle United",
+          "team_logo": "https://footballdata.io/img/team/newcastle-united-fc.png"
+        },
+        "away_team": {
+          "team_id": 137,
+          "team_name": "West Ham United",
+          "team_logo": "https://footballdata.io/img/team/west-ham-united-fc.png"
+        },
+        "score": {
+          "home": 3,
+          "away": 1,
+          "total_goals": 4
+        },
+        "xg": {
+          "home": 1.81,
+          "away": 1.91,
+          "total": 3.72
+        },
+        "probabilities": {
+          "home_win": 43.81,
+          "draw": 24.79,
+          "away_win": 31.4
+        }
+      },
+      {
+        "match_id": 193183,
+        "match_date": "2026-05-10 15:30:00",
+        "date_unix": 1778427000,
+        "status": "complete",
+        "league": {
+          "league_id": 15,
+          "name": "England Premier League",
+          "country": "England",
+          "competition_name": "Premier League"
+        },
+        "season": {
+          "season_id": 189,
+          "year": 20252026
+        },
+        "home_team": {
+          "team_id": 137,
+          "team_name": "West Ham United",
+          "team_logo": "https://footballdata.io/img/team/west-ham-united-fc.png"
+        },
+        "away_team": {
+          "team_id": 57,
+          "team_name": "Arsenal",
+          "team_logo": "https://footballdata.io/img/team/arsenal-fc.png"
+        },
+        "score": {
+          "home": 0,
+          "away": 1,
+          "total_goals": 1
+        },
+        "xg": {
+          "home": 1.02,
+          "away": 1.58,
+          "total": 2.6
+        },
+        "probabilities": {
+          "home_win": 15.12,
+          "draw": 23.92,
+          "away_win": 60.96
+        }
+      },
+      {
+        "match_id": 193074,
+        "match_date": "2026-05-02 14:00:00",
+        "date_unix": 1777730400,
+        "status": "complete",
+        "league": {
+          "league_id": 15,
+          "name": "England Premier League",
+          "country": "England",
+          "competition_name": "Premier League"
+        },
+        "season": {
+          "season_id": 189,
+          "year": 20252026
+        },
+        "home_team": {
+          "team_id": 189,
+          "team_name": "Brentford",
+          "team_logo": "https://footballdata.io/img/team/brentford-fc.png"
+        },
+        "away_team": {
+          "team_id": 137,
+          "team_name": "West Ham United",
+          "team_logo": "https://footballdata.io/img/team/west-ham-united-fc.png"
+        },
+        "score": {
+          "home": 3,
+          "away": 0,
+          "total_goals": 3
+        },
+        "xg": {
+          "home": 1.64,
+          "away": 1.37,
+          "total": 3.01
+        },
+        "probabilities": {
+          "home_win": 51.3,
+          "draw": 23.73,
+          "away_win": 24.97
+        }
+      },
+      {
+        "match_id": 193097,
+        "match_date": "2026-04-25 14:00:00",
+        "date_unix": 1777125600,
+        "status": "complete",
+        "league": {
+          "league_id": 15,
+          "name": "England Premier League",
+          "country": "England",
+          "competition_name": "Premier League"
+        },
+        "season": {
+          "season_id": 189,
+          "year": 20252026
+        },
+        "home_team": {
+          "team_id": 137,
+          "team_name": "West Ham United",
+          "team_logo": "https://footballdata.io/img/team/west-ham-united-fc.png"
+        },
+        "away_team": {
+          "team_id": 128,
+          "team_name": "Everton",
+          "team_logo": "https://footballdata.io/img/team/everton-fc.png"
+        },
+        "score": {
+          "home": 2,
+          "away": 1,
+          "total_goals": 3
+        },
+        "xg": {
+          "home": 1.2,
+          "away": 1.29,
+          "total": 2.49
+        },
+        "probabilities": {
+          "home_win": 39.23,
+          "draw": 28.89,
+          "away_win": 31.88
+        }
+      },
+      {
+        "match_id": 193048,
+        "match_date": "2026-04-20 19:00:00",
+        "date_unix": 1776711600,
+        "status": "complete",
+        "league": {
+          "league_id": 15,
+          "name": "England Premier League",
+          "country": "England",
+          "competition_name": "Premier League"
+        },
+        "season": {
+          "season_id": 189,
+          "year": 20252026
+        },
+        "home_team": {
+          "team_id": 127,
+          "team_name": "Crystal Palace",
+          "team_logo": "https://footballdata.io/img/team/crystal-palace-fc.png"
+        },
+        "away_team": {
+          "team_id": 137,
+          "team_name": "West Ham United",
+          "team_logo": "https://footballdata.io/img/team/west-ham-united-fc.png"
+        },
+        "score": {
+          "home": 0,
+          "away": 0,
+          "total_goals": 0
+        },
+        "xg": {
+          "home": 1.04,
+          "away": 1.24,
+          "total": 2.28
+        },
+        "probabilities": {
+          "home_win": 38.96,
+          "draw": 27.74,
+          "away_win": 33.29
+        }
+      },
+      {
+        "match_id": 192968,
+        "match_date": "2026-04-10 19:00:00",
+        "date_unix": 1775847600,
+        "status": "complete",
+        "league": {
+          "league_id": 15,
+          "name": "England Premier League",
+          "country": "England",
+          "competition_name": "Premier League"
+        },
+        "season": {
+          "season_id": 189,
+          "year": 20252026
+        },
+        "home_team": {
+          "team_id": 137,
+          "team_name": "West Ham United",
+          "team_logo": "https://footballdata.io/img/team/west-ham-united-fc.png"
+        },
+        "away_team": {
+          "team_id": 194,
+          "team_name": "Wolverhampton Wanderers",
+          "team_logo": "https://footballdata.io/img/team/wolverhampton-wanderers-fc.png"
+        },
+        "score": {
+          "home": 4,
+          "away": 0,
+          "total_goals": 4
+        },
+        "xg": {
+          "home": 1.9,
+          "away": 1.42,
+          "total": 3.32
+        },
+        "probabilities": {
+          "home_win": 55.88,
+          "draw": 22.95,
+          "away_win": 21.17
+        }
+      },
+      {
+        "match_id": 193090,
+        "match_date": "2026-03-22 14:15:00",
+        "date_unix": 1774188900,
+        "status": "complete",
+        "league": {
+          "league_id": 15,
+          "name": "England Premier League",
+          "country": "England",
+          "competition_name": "Premier League"
+        },
+        "season": {
+          "season_id": 189,
+          "year": 20252026
+        },
+        "home_team": {
+          "team_id": 142,
+          "team_name": "Aston Villa",
+          "team_logo": "https://footballdata.io/img/team/aston-villa-fc.png"
+        },
+        "away_team": {
+          "team_id": 137,
+          "team_name": "West Ham United",
+          "team_logo": "https://footballdata.io/img/team/west-ham-united-fc.png"
+        },
+        "score": {
+          "home": 2,
+          "away": 0,
+          "total_goals": 2
+        },
+        "xg": {
+          "home": 2.3,
+          "away": 0.94,
+          "total": 3.24
+        },
+        "probabilities": {
+          "home_win": 52.62,
+          "draw": 26.82,
+          "away_win": 20.56
+        }
+      },
+      {
+        "match_id": 193172,
+        "match_date": "2026-03-14 20:00:00",
+        "date_unix": 1773518400,
+        "status": "complete",
+        "league": {
+          "league_id": 15,
+          "name": "England Premier League",
+          "country": "England",
+          "competition_name": "Premier League"
+        },
+        "season": {
+          "season_id": 189,
+          "year": 20252026
+        },
+        "home_team": {
+          "team_id": 137,
+          "team_name": "West Ham United",
+          "team_logo": "https://footballdata.io/img/team/west-ham-united-fc.png"
+        },
+        "away_team": {
+          "team_id": 87,
+          "team_name": "Manchester City",
+          "team_logo": "https://footballdata.io/img/team/manchester-city-fc.png"
+        },
+        "score": {
+          "home": 1,
+          "away": 1,
+          "total_goals": 2
+        },
+        "xg": {
+          "home": 0.27,
+          "away": 2.56,
+          "total": 2.82
+        },
+        "probabilities": {
+          "home_win": 19.29,
+          "draw": 22.27,
+          "away_win": 58.44
+        }
+      },
+      {
+        "match_id": 193085,
+        "match_date": "2026-03-04 19:30:00",
+        "date_unix": 1772652600,
+        "status": "complete",
+        "league": {
+          "league_id": 15,
+          "name": "England Premier League",
+          "country": "England",
+          "competition_name": "Premier League"
+        },
+        "season": {
+          "season_id": 189,
+          "year": 20252026
+        },
+        "home_team": {
+          "team_id": 146,
+          "team_name": "Fulham",
+          "team_logo": "https://footballdata.io/img/team/fulham-fc.png"
+        },
+        "away_team": {
+          "team_id": 137,
+          "team_name": "West Ham United",
+          "team_logo": "https://footballdata.io/img/team/west-ham-united-fc.png"
+        },
+        "score": {
+          "home": 0,
+          "away": 1,
+          "total_goals": 1
+        },
+        "xg": {
+          "home": 1.53,
+          "away": 1.02,
+          "total": 2.55
+        },
+        "probabilities": {
+          "home_win": 42.93,
+          "draw": 25.51,
+          "away_win": 31.55
+        }
+      }
+    ],
+    "upcoming_matches": []
+  },
+  "meta": {
+    "plan": "free",
+    "requests_used": 25,
+    "requests_limit": 2000,
+    "requests_remaining": 1975,
+    "coverage_note": "Coverage varies by league and season.",
+    "league_limit": 5
+  }
+}

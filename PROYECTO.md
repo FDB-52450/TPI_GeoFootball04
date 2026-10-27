@@ -88,6 +88,7 @@ Por ultimo, el sistema no contara con soporte para el registro y/o uso de usuari
 
 - **APIs:**
   - **Footballdata.io (https://footballdata.io/):** Fuente de datos de partidos en tiempo real.
+  - **API-Football.com (https://www.api-football.com/):** Fuente de datos detallados de equipos.
   - **OpenStreetMap (https://www.openstreetmap.org):** Fuente de datos de ubicacion (latitud y longitud) de estadios de equipos.
 
 ### Capa de Presentación [WIP]

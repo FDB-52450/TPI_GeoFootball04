@@ -4,31 +4,32 @@
 - [ ] Agregar documentacion de sistema, variables de entornos y otras cosas (/docs)
 - [x] Variables de entorno (.env, settings.py, .gitignore)
 - [x] Dependencias del sistema (requirements.txt)
+- [ ] (BORRAR) AJUSTAR MULTIPLICIDAD ENTRE ESTADIO Y EQUIPO (0..*, EJ. WEMBLEY)
 
 ## Catalogo (app)
 ### Entidades
 - [ ] Confederacion
-  - [ ] Modelo con api_id
+  - [x] Modelo con api_id
   - [ ] Endpoint de lectura (urls → view → service → respuesta)
   - [ ] Tests
 - [ ] Pais
-  - [ ] Modelo con api_id (incluye latitud y longitud)
+  - [x] Modelo con api_id (incluye latitud y longitud)
   - [ ] Endpoint de lectura (urls → view → service → respuesta)
   - [ ] Tests
 - [ ] Competicion
-  - [ ] Modelo con api_id
+  - [x] Modelo con api_id
   - [ ] Endpoint de lectura (urls → view → service → respuesta)
   - [ ] Tests
 - [ ] Temporada
-  - [ ] Modelo con api_id
+  - [x] Modelo con api_id
   - [ ] Endpoint de lectura (urls → view → service → respuesta)
   - [ ] Tests
 - [ ] Equipo
-  - [ ] Modelo con api_id
+  - [x] Modelo con api_id
   - [ ] Endpoint de lectura (urls → view → service → respuesta)
   - [ ] Tests
 - [ ] Estadio
-  - [ ] Modelo con api_id (incluye latitud y longitud)
+  - [x] Modelo con api_id (incluye latitud y longitud)
   - [ ] Endpoint de lectura (urls → view → service → respuesta)
   - [ ] Tests
 
@@ -40,31 +41,38 @@
 
 ## Ingesta de datos (app)
 ### Flujo de escritura por entidad
-- [ ] Confederacion
-  - [ ] Mapper + Sincronización
-  - [ ] Tests del pipeline con fixture
-- [ ] Pais
-  - [ ] Mapper + Sincronización
-  - [ ] Tests del pipeline con fixture
-- [ ] Competicion
-  - [ ] Mapper + Sincronización
-  - [ ] Tests del pipeline con fixture
-- [ ] Temporada
-  - [ ] Mapper + Sincronización
-  - [ ] Tests del pipeline con fixture
+- [x] Confederacion
+  - [x] Mapper + Sincronización
+  - [x] Tests del pipeline con fixture
+- [x] Pais
+  - [x] Mapper + Sincronización
+  - [x] Tests del pipeline con fixture
+- [x] Competicion
+  - [x] Mapper + Sincronización
+  - [x] Tests del pipeline con fixture
+- [x] Temporada
+  - [x] Mapper + Sincronización
+  - [x] Tests del pipeline con fixture
 - [ ] Equipo
-  - [ ] Mapper + Sincronización
+  - [x] Mapper + Sincronización
   - [ ] Tests del pipeline con fixture
 - [ ] Estadio
-  - [ ] Mapper + Sincronización
+  - [x] Mapper + Sincronización
   - [ ] Tests del pipeline con fixture
 
 ### App
-- [ ] Cliente HTTP (con manejo de errores)
-  - [ ] Tests (manejo de errores)
-- [ ] Punto de entrada de sincronización (comando y/o task periódica, en orden de dependencia)
-- [ ] Registrar apps.ingest en INSTALLED_APPS
-- [ ] Fixtures de endpoints (mock data)
+- [ ] Cliente HTTP (para cada proveedor)
+  - [x] Base + metodos para llamar endpoints
+  - [x] Manejo de errores basicos
+  - [ ] Manejo de erroes avanzado
+  - [ ] Tests
+- [ ] Tasks de sincronizacion
+- [ ] Comandos para ejecutar sincronizacion
+  - [x] Catalogo
+  - [ ] Equipos
+  - [ ] Partidos
+- [x] Registrar apps.ingest en INSTALLED_APPS
+- [x] Fixtures de endpoints (mock data)
 - [ ] Logger de ingesta
 
 

@@ -34,6 +34,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = get_env_variable('DJANGO_SECRET_KEY')
 
+FOOTBALLDATAIO_API_BASE_URL = get_env_variable("FOOTBALLDATAIO_API_BASE_URL")
+FOOTBALLDATAIO_API_KEY = get_env_variable('FOOTBALLDATAIO_API_KEY')
+
+APIFOOTBALL_API_BASE_URL = get_env_variable("APIFOOTBALL_API_BASE_URL")
+APIFOOTBALL_API_KEY = get_env_variable('APIFOOTBALL_API_KEY')
+
+OPENSTREETMAP_API_KEY = get_env_variable('OPENSTREETMAP')
+
+USE_MOCK_DATA = get_env_variable('USE_MOCK_DATA')
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -50,7 +60,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'apps.catalogo.apps.CatalogoConfig'
+    'apps.catalogo.apps.CatalogoConfig',
+    'apps.ingesta.apps.IngestaConfig'
 ]
 
 MIDDLEWARE = [

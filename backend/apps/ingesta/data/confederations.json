@@ -1,0 +1,73 @@
+{
+    "AFC": {
+        "name": "Asian Football Confederation",
+        "region": "Asia",
+        "logo_URL": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/59/Asian_Football_Confederation_emblem.svg/330px-Asian_Football_Confederation_emblem.svg.png",
+        "members": [
+            "AFG", "AUS", "BHR", "BAN", "BHU", "BRU", "CAM", "CHN",
+            "TPE", "GUM", "HKG", "IND", "IDN", "IRN", "IRQ", "JPN",
+            "JOR", "PRK", "KOR", "KUW", "KGZ", "LAO", "LBN", "MAC",
+            "MAS", "MDV", "MNG", "MYA", "NEP", "OMA", "PAK", "PLE",
+            "PHI", "QAT", "KSA", "SIN", "SRI", "SYR", "TJK", "THA",
+            "TLS", "TKM", "UAE", "UZB", "VIE", "YEM"
+        ]
+    },
+    "CAF": {
+        "name": "Confédération Africaine de Football",
+        "region": "Africa",
+        "logo_URL": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3f/Caf_llogo.svg/330px-Caf_llogo.svg.png",
+        "members": [
+            "ALG", "ANG", "BEN", "BOT", "BFA", "BDI", "CPV", "CMR",
+            "CTA", "CHA", "COM", "CGO", "COD", "CIV", "DJI", "EGY",
+            "EQG", "ERI", "SWZ", "ETH", "GAB", "GAM", "GHA", "GUI",
+            "GNB", "KEN", "LES", "LBR", "LBY", "MAD", "MWI", "MLI",
+            "MTN", "MRI", "MAR", "MOZ", "NAM", "NIG", "NGA", "RWA",
+            "STP", "SEN", "SEY", "SLE", "SOM", "RSA", "SSD", "SDN",
+            "TAN", "TOG", "TUN", "UGA", "ZAM", "ZIM"
+        ]
+    },
+    "CONCACAF": {
+        "name": "Confederation of North, Central America and Caribbean Association Football",
+        "region": "North America, Central America and the Caribbean",
+        "logo_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/87/Concacaf_logo.svg/330px-Concacaf_logo.svg.png",
+        "members": [
+            "AIA", "ATG", "ARU", "BAH", "BRB", "BLZ", "BER", "VGB",
+            "CAN", "CAY", "CRC", "CUB", "CUW", "DMA", "DOM", "SLV",
+            "GRN", "GUA", "GUY", "HAI", "HON", "JAM", "MEX", "MSR",
+            "NCA", "PAN", "PUR", "SKN", "LCA", "VIN", "SUR", "TRI",
+            "TCA", "USA", "VIR"
+        ]
+    },
+    "CONMEBOL": {
+        "name": "Confederación Sudamericana de Fútbol",
+        "region": "South America",
+        "logo_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9c/Official_Image_of_CONMEBOL.svg/330px-Official_Image_of_CONMEBOL.svg.png",
+        "members": [
+            "ARG", "BOL", "BRA", "CHI", "COL", "ECU", "PAR", "PER",
+            "URU", "VEN"
+        ]
+    },
+    "OFC": {
+        "name": "Oceania Football Confederation",
+        "region": "Oceania",
+        "logo_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/93/Oceania_Football_Confederation_logo.svg/330px-Oceania_Football_Confederation_logo.svg.png",
+        "members": [
+            "ASA", "COK", "FIJ", "NCL", "NZL", "PNG", "SAM", "SOL",
+            "TAH", "TGA", "VAN"
+        ]
+    },
+    "UEFA": {
+        "name": "Union of European Football Associations",
+        "region": "Europe",
+        "logo_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ef/Uefa_logo.svg/330px-Uefa_logo.svg.png",
+        "members": [
+            "ALB", "AND", "ARM", "AUT", "AZE", "BLR", "BEL", "BIH",
+            "BUL", "CRO", "CYP", "CZE", "DEN", "ENG", "EST", "FRO",
+            "FIN", "FRA", "GEO", "GER", "GIB", "GRE", "HUN", "ISL",
+            "ISR", "ITA", "KAZ", "KVX", "LVA", "LIE", "LTU", "LUX",
+            "MLT", "MDA", "MNE", "NED", "MKD", "NIR", "NOR", "POL",
+            "POR", "IRL", "ROU", "RUS", "SMR", "SCO", "SRB", "SVK",
+            "SVN", "ESP", "SWE", "SUI", "TUR", "UKR", "WAL"
+        ]
+    }
+}
