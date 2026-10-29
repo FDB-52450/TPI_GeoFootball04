@@ -34,15 +34,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = get_env_variable('DJANGO_SECRET_KEY')
 
+# API related variables
 FOOTBALLDATAIO_API_BASE_URL = get_env_variable("FOOTBALLDATAIO_API_BASE_URL")
 FOOTBALLDATAIO_API_KEY = get_env_variable('FOOTBALLDATAIO_API_KEY')
 
 APIFOOTBALL_API_BASE_URL = get_env_variable("APIFOOTBALL_API_BASE_URL")
 APIFOOTBALL_API_KEY = get_env_variable('APIFOOTBALL_API_KEY')
 
-OPENSTREETMAP_API_KEY = get_env_variable('OPENSTREETMAP')
+OPENSTREETMAP_API_BASE_URL = get_env_variable('OPENSTREETMAP_API_BASE_URL')
 
-USE_MOCK_DATA = get_env_variable('USE_MOCK_DATA')
+USE_MOCK_DATA = get_env_variable('USE_MOCK_DATA').lower() == 'true'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
