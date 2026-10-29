@@ -213,7 +213,18 @@ def sync_team_data_and_venues(team_ids: list[str] = None):
         data = apiProvider.get_team_data(team.nombre, team.pais.nombre)
 
         if data == []:
-            continue
+            simple_name = team.nombre.replace("AFC", "").replace("FC", "").split(" ")[0].strip()
+            data = apiProvider.get_team_data(simple_name, team.pais.nombre)
+
+            if data == []:
+                if len(team.nombre.split(" ")) >= 3:
+                    less_simple_name = " ".join(team.nombre.split()[:2])
+                    data = apiProvider.get_team_data(less_simple_name, team.pais.nombre)
+
+                    if data == []:
+                        continue
+                else:
+                    continue
 
         # Esto no es ideal ya que podria guardar datos de otro equipo, pero la probabilidad
         # de que dos equipos de un mismo pais tengan el mismo nombre y esten registrados en
