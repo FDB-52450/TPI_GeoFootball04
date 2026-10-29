@@ -3,10 +3,6 @@ from django.db import transaction
 
 import time
 
-#from .providers.footballdata_io import mapper, client, mock as ioMapper, ioClient, ioMock
-#from .providers.apifootball import mapper, client, mock as apiMapper, apiClient, apiMock
-#from .providers.openstreetmap import mapper, client, mock as mapMapper, mapClient, mapMock
-
 from .providers.footballdata_io import (mapper as ioMapper, client as ioClient, mock as ioMock)
 from .providers.apifootball import (mapper as apiMapper, client as apiClient, mock as apiMock)
 from .providers.openstreetmap import (mapper as mapMapper, client as mapClient, mock as mapMock)
@@ -40,7 +36,7 @@ DUPLICATE_COUNTRIES = {
 def get_provider(type_provider: str):
     source = settings.USE_MOCK_DATA
 
-    if not(source):
+    if not source:
         if type_provider == 'api-football':
             return apiClient.ApiFootballApiClient()
         elif type_provider == 'footballdataio':
@@ -142,15 +138,15 @@ def sync_leagues():
             )
 
 
-def sync_seasons():
+def sync_seasons(comp_ids: list[str] = None):
     provider = get_provider('footballdataio')
 
     competitions = Competicion.objects.all()
 
-    for comp in competitions:
-        if comp.api_id != "15":
-            continue
+    if comp_ids is not None:
+        competitions = competitions.filter(api_id__in = comp_ids)
 
+    for comp in competitions:
         data = provider.get_seasons(comp.api_id)
         mapped_data = ioMapper.map_seasons(data)
 
@@ -162,20 +158,20 @@ def sync_seasons():
                 )
 
 
-def sync_teams():
+def sync_teams(comp_ids: list[str] = None, season_ids: list[str] = None):
     ioProvider = get_provider('footballdataio')
     competitions = Competicion.objects.all()
 
-    for comp in competitions:
-        if comp.api_id != "15":
-            continue
+    if comp_ids is not None:
+        competitions = competitions.filter(api_id__in = comp_ids)
 
+    for comp in competitions:
         seasons = Temporada.objects.filter(competicion = comp)
 
-        for season in seasons:
-            if season.api_id != "103535":
-                continue
+        if season_ids is not None:
+            seasons = seasons.filter(api_id__in = season_ids)
 
+        for season in seasons:
             data = ioProvider.get_teams(comp.api_id, season.api_id)
             mapped_data = ioMapper.map_teams(data)
 
@@ -185,6 +181,9 @@ def sync_teams():
 
                     if comp.pais is not None:
                         pais = comp.pais
+                    elif 'National Team' in datos['nombre']:
+                        clean_country_name = data['nombre'].replace('National Team', '').strip()
+                        pais = Pais.objects.get(nombre = clean_country_name)
                     else:
                         try:
                             team = Equipo.objects.get(api_id = datos['api_id'])
@@ -201,20 +200,31 @@ def sync_teams():
                     team.temporadas.add(season)
 
 
-def sync_team_data_and_venues():
+def sync_team_data_and_venues(team_ids: list[str] = None):
     # TODO: Determinar la resilencia de este metodo en especifico
     apiProvider = get_provider('api-football')
     mapProvider = get_provider('openstreetmap')
     teams = Equipo.objects.select_related('pais').all()
 
+    if team_ids is not None:
+        teams = teams.filter(api_id__in = team_ids)
+
     for team in teams:
         data = apiProvider.get_team_data(team.nombre, team.pais.nombre)
 
-        team_data = apiMapper.map_team_data(data)
-        venue_data = apiMapper.map_venue(data)
+        if data == []:
+            continue
 
-        venue_data = mapProvider.get_venue_location(venue_data['nombre'], team.pais.nombre)
-        mapped_venues_locations = mapMapper.map_location(venue_data)
+        # Esto no es ideal ya que podria guardar datos de otro equipo, pero la probabilidad
+        # de que dos equipos de un mismo pais tengan el mismo nombre y esten registrados en
+        # el sistema (API) es muy, muy baja.
+        first_team_data = data[0]
+
+        team_data = apiMapper.map_team_data(first_team_data)
+        venue_data = apiMapper.map_venue(first_team_data)
+
+        venue_location_data = mapProvider.get_venue_location(venue_data['nombre'], team.pais.nombre)
+        mapped_venues_locations = mapMapper.map_location(venue_location_data)
 
         stadium_location = next(
             (location for location in mapped_venues_locations if location["tipo"] == "stadium"),
@@ -239,7 +249,7 @@ def sync_team_data_and_venues():
         with transaction.atomic():
             venue, _ = Estadio.objects.update_or_create(
                 api_id = venue_data["api_id"],
-                defaults={_defaults(complete_data)},
+                defaults = complete_data,
             )
 
             Equipo.objects.update_or_create(
@@ -248,7 +258,7 @@ def sync_team_data_and_venues():
             )
 
         # La api de OpenStreetMap tiene un limite de 1 llamada/segundo
-        time.sleep(1)
+        time.sleep(2)
 
 
 
