@@ -32,11 +32,11 @@ class FootballDataIoApiClient:
         return self._get("leagues")
 
     def get_seasons(self, competicion_id):
-        return self._get("seasons", params = {"league": competicion_id})
+        return self._get(f"leagues/{competicion_id}/seasons", params = {"current": False, "limit": 100})
 
     def get_teams(self, competicion_id, temporada_id):
         # This endpoint is prefered over other simpler endpoints due to actually having all data needed.
-        return self._get(f"seasons/{temporada_id}/teams", params = {"league": competicion_id, "limit": 100})
+        return self._get(f"seasons/{temporada_id}/matches", params = {"league_id": competicion_id, "limit": 100})
 
     def get_team_data(self, team_id):
         return self._get(f"teams/{team_id}")

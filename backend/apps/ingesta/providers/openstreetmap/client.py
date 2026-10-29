@@ -9,6 +9,7 @@ class OpenStreetMapApiClient:
         self.base_url = settings.OPENSTREETMAP_API_BASE_URL.rstrip("/")
         self.timeout = timeout
         self.session = session or requests.Session()
+        self.session.headers.update({"User-Agent": "GeoFootball/1.0"})
 
     def _get(self, path, params = None):
         url = f"{self.base_url}/{path.lstrip('/')}"
@@ -24,4 +25,4 @@ class OpenStreetMapApiClient:
         return response.json()
     
     def get_venue_location(self, venue_name, venue_country = ""):
-        return self._get("teams", params = {"q": f"{venue_name} {venue_country}"})
+        return self._get("search", params = {"q": f"{venue_name} {venue_country}", "format": "jsonv2"})

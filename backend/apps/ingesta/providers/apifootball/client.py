@@ -9,7 +9,7 @@ class ApiFootballApiClient:
         self.base_url = settings.APIFOOTBALL_API_BASE_URL.rstrip("/")
         self.timeout = timeout
         self.session = session or requests.Session()
-        self.session.headers.update({"Authorization": f"Bearer {settings.PIFOOTBALL_API_KEY}"})
+        self.session.headers.update({"x-apisports-key": settings.APIFOOTBALL_API_KEY})
 
     def _get(self, path, params = None):
         url = f"{self.base_url}/{path.lstrip('/')}"

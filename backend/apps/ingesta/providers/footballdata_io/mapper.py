@@ -1,4 +1,5 @@
 from django.utils.dateparse import parse_datetime
+from html import unescape
 
 def map_countries(data: dict) -> list[dict]:
     return [
@@ -58,7 +59,7 @@ def map_teams(data: dict) -> list[dict]:
                 str(team["team_id"]),
                 {
                     "api_id": str(team["team_id"]),
-                    "nombre": team["team_name"],
+                    "nombre": unescape(team["team_name"]).strip(),
                     "escudo_url": team["team_logo"],
                 },
             )
