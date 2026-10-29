@@ -257,8 +257,5 @@ def sync_team_data_and_venues(team_ids: list[str] = None):
                 defaults={**_defaults(team_data), 'estadio': venue}
             )
 
-        # La api de OpenStreetMap tiene un limite de 1 llamada/segundo
-        time.sleep(2)
-
 
 
