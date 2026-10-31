@@ -4,7 +4,6 @@
 - [ ] Agregar documentacion de sistema, variables de entornos y otras cosas (/docs)
 - [x] Variables de entorno (.env, settings.py, .gitignore)
 - [x] Dependencias del sistema (requirements.txt)
-- [ ] (BORRAR) AJUSTAR MULTIPLICIDAD ENTRE ESTADIO Y EQUIPO (0..*, EJ. WEMBLEY)
 
 ## Catalogo (app)
 ### Entidades
@@ -53,12 +52,12 @@
 - [x] Temporada
   - [x] Mapper + Sincronización
   - [x] Tests del pipeline con fixture
-- [ ] Equipo
+- [x] Equipo
   - [x] Mapper + Sincronización
-  - [ ] Tests del pipeline con fixture
-- [ ] Estadio
+  - [x] Tests del pipeline con fixture
+- [x] Estadio
   - [x] Mapper + Sincronización
-  - [ ] Tests del pipeline con fixture
+  - [x] Tests del pipeline con fixture
 
 ### App
 - [ ] Cliente HTTP (para cada proveedor)
