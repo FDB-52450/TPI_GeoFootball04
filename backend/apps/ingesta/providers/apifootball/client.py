@@ -9,7 +9,7 @@ class ApiError(Exception):
 class ApiFootballApiClient:
     _rate_limit_lock = threading.Lock()
     _last_request_at = 0.0
-    _min_request_interval = 6.0
+    _min_request_interval = 6.1
 
     def __init__(self, session=None, timeout=10):
         self.base_url = settings.APIFOOTBALL_API_BASE_URL.rstrip("/")
