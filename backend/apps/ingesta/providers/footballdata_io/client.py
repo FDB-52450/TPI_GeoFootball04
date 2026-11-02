@@ -22,7 +22,7 @@ class FootballDataIoApiClient:
         if response.status_code != 200:
             raise ApiError(f"{response.status_code} en {url}: {response.text[:200]}")
         
-        return response.json()['data']
+        return response.json()['data'], response.json()['meta']
 
     
     def get_countries(self):
@@ -34,9 +34,8 @@ class FootballDataIoApiClient:
     def get_seasons(self, competicion_id):
         return self._get(f"leagues/{competicion_id}/seasons", params = {"current": False, "limit": 100})
 
-    def get_teams(self, competicion_id, temporada_id):
-        # This endpoint is prefered over other simpler endpoints due to actually having all data needed.
-        return self._get(f"seasons/{temporada_id}/matches", params = {"league_id": competicion_id, "limit": 100})
+    def get_matches(self, competicion_id, temporada_id, page = 1):
+        return self._get(f"seasons/{temporada_id}/matches", params = {"league_id": competicion_id, "limit": 100, "page": page})
 
     def get_team_data(self, team_id):
         return self._get(f"teams/{team_id}")

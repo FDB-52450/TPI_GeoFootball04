@@ -13,8 +13,8 @@ class MockProvider:
     def get_seasons(self, comp_id):
         return self._read_json("seasons.json")
 
-    def get_teams(self, comp_id, season_id):
-        return self._read_json("season_teams.json")
+    def get_matches(self, comp_id, season_id, page = None):
+        return self._read_json("season_matches.json")
 
     def get_team_data(self, team_id):
         return self._read_json("team_data.json")
@@ -26,4 +26,4 @@ class MockProvider:
         with path.open(encoding="utf-8") as file:
             response = json.load(file)
 
-        return response['data']
+        return response['data'], response['meta']
