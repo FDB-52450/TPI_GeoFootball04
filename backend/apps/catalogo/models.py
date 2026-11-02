@@ -88,9 +88,11 @@ class Temporada(models.Model):
 
     @property
     def etiqueta(self) -> str:
-        if self.inicio == self.fin:
-            return str(self.inicio)
-        return f"{self.inicio}/{self.fin}"
+        if self.fecha_inicio.year == self.fecha_fin.year:
+            return str(self.fecha_inicio.year)
+        else:
+            return f"{self.fecha_inicio.year}/{self.fecha_fin.year}"
+        
 
     def __str__(self):
         return f"{self.competicion} {self.etiqueta}"
@@ -105,6 +107,7 @@ class Equipo(models.Model):
 
     temporadas = models.ManyToManyField(
         "catalogo.Temporada",
+        through="EquipoTemporada",
         related_name="equipos",
         blank=True,
     )
@@ -127,6 +130,28 @@ class Equipo(models.Model):
 
     def __str__(self):
         return self.nombre
+
+
+class EquipoTemporada(models.Model):
+    equipo = models.ForeignKey(
+        Equipo,
+        on_delete=models.CASCADE,
+        related_name="participaciones",
+    )
+
+    temporada = models.ForeignKey(
+        Temporada,
+        on_delete=models.CASCADE,
+        related_name="participaciones",
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["equipo", "temporada"],
+                name="unica_participacion_equipo_temporada",
+            )
+        ]
 
 
 class Estadio(models.Model):
