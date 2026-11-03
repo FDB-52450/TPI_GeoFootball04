@@ -114,14 +114,14 @@ class Evento(models.Model):
         GOL = "Goal", "GOL"
         TARJETA_AMARILLA = "Yellow", "Tarjeta Amarilla"
         TARJETA_ROJA = "Red", "Tarjeta Roja"
-        # Ajustar a los valores reales que devuelve la API
+        SUBSTITUCION = 'Substitution', "Substitucion"
 
-    api_id = models.CharField(max_length=50, unique=True)
     partido = models.ForeignKey(
         Partido,
         on_delete=models.CASCADE,
         related_name="eventos",
     )
+
     # Nullable: algunos eventos pueden no tener jugador asociado
     jugador = models.ForeignKey(
         Jugador,
@@ -130,7 +130,16 @@ class Evento(models.Model):
         blank=True,
         related_name="eventos",
     )
-    tipo = models.CharField(max_length=10, choices=Tipo.choices)
+
+    jugador_sale = models.ForeignKey(
+        Jugador,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="eventos_como_saliente",
+    )
+
+    tipo = models.CharField(max_length=20, choices=Tipo.choices)
     minuto = models.PositiveSmallIntegerField()
 
     class Meta:
