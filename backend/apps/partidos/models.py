@@ -96,6 +96,12 @@ class Partido(models.Model):
     goles_local = models.PositiveSmallIntegerField(null=True, blank=True)
     goles_vis = models.PositiveSmallIntegerField(null=True, blank=True)
 
+    # Campos opcionales en caso de no poder asignar estadio para un partido
+    sede_nombre = models.CharField(max_length=120, blank=True)
+    sede_direccion = models.CharField(max_length=255, blank=True)
+    sede_latitud = models.FloatField(null=True, blank=True)
+    sede_longitud = models.FloatField(null=True, blank=True)
+
     # Se actualiza en cada save(), incluido el de update_or_create
     ultima_actualizacion = models.DateTimeField(auto_now=True)
 
