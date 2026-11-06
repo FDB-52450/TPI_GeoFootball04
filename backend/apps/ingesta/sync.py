@@ -9,8 +9,8 @@ from .providers.openstreetmap import (mapper as mapMapper, client as mapClient, 
 
 from .providers.local import get_confederations, map_confederations, get_league_types
 
-from ..catalogo.models import Confederacion, Pais, Competicion, Temporada, Equipo, Estadio
-from ..partidos.models import Partido, Evento, Convocatoria, Jugador 
+from ..catalogo.models import Confederacion, Pais, Competicion, Temporada, Equipo, Estadio, EquipoTemporada
+from ..partidos.models import Partido, Evento, Convocatoria, Jugador, Plantilla
 
 # TODO: Reemplazar esto por un metodo mas robusto
 
@@ -58,7 +58,7 @@ def _defaults(datos: dict) -> dict:
     return {k: v for k, v in datos.items() if k != "api_id"}
 
 
-
+# region Sincronismo de Catalogo
 def sync_confederations():
     data = get_confederations()
     mapped_data = map_confederations(data)
@@ -212,7 +212,6 @@ def sync_teams(comp_ids: list[str] = None, season_ids: list[str] = None):
 def sync_team_data_and_venues(team_ids: list[str] = None):
     # TODO: Determinar la resilencia de este metodo en especifico
     apiProvider = get_provider('api-football')
-    mapProvider = get_provider('openstreetmap')
     teams = Equipo.objects.select_related('pais').all()
 
     if team_ids is not None:
@@ -242,41 +241,324 @@ def sync_team_data_and_venues(team_ids: list[str] = None):
         first_team_data = data[0]
 
         team_data = apiMapper.map_team_data(first_team_data)
-        venue_data = apiMapper.map_venue(first_team_data)
-
-        venue_location_data = mapProvider.get_venue_location(venue_data['nombre'], team.pais.nombre)
-        mapped_venues_locations = mapMapper.map_location(venue_location_data)
-
-        stadium_location = next(
-            (location for location in mapped_venues_locations if location["tipo"] == "stadium"),
-            None,
-        )
-
-        complete_data = {
-            "nombre": venue_data["nombre"], "ciudad": venue_data["ciudad"],
-            "capacidad": venue_data["capacidad"], "foto_url": venue_data["foto_url"],
-            "latitud": (
-                float(stadium_location["lat"])
-                if stadium_location is not None
-                else None
-            ),
-            "longitud": (
-                float(stadium_location["lon"])
-                if stadium_location is not None
-                else None
-            ),
-        }
+        venue = sync_venue(None, data)
 
         with transaction.atomic():
-            venue, _ = Estadio.objects.update_or_create(
-                api_id = venue_data["api_id"],
-                defaults = complete_data,
-            )
-
             Equipo.objects.update_or_create(
                 api_id = team.api_id,
                 defaults={**_defaults(team_data), 'estadio': venue}
             )
 
+def sync_venue(venue_name: str = None, raw_data: dict = None):
+    apiProvider = get_provider('api-football')
+    mapProvider = get_provider('openstreetmap')
 
+    if raw_data is None:
+        data = apiProvider.get_venue(venue_name)
+    else:
+        data = raw_data
+
+    if len(data) == 0:
+        return None
+
+    first_team_data = data[0]
+    venue_data = apiMapper.map_venue(first_team_data)
+
+    venue_location_data = mapProvider.get_venue_location(venue_data['nombre'])
+
+    if len(venue_location_data) == 0:
+        return None
+
+    mapped_venues_locations = mapMapper.map_location(venue_location_data)
+    stadium_location = mapped_venues_locations[0]
+
+    complete_data = {
+        "nombre": venue_data["nombre"], "ciudad": venue_data["ciudad"],
+        "capacidad": venue_data["capacidad"], "foto_url": venue_data["foto_url"],
+        "latitud": (
+            float(stadium_location["lat"])
+            if stadium_location is not None
+            else None
+        ),
+        "longitud": (
+            float(stadium_location["lon"])
+            if stadium_location is not None
+            else None
+        ),
+    }
+
+    with transaction.atomic():
+        venue, _ = Estadio.objects.update_or_create(
+            api_id = venue_data["api_id"],
+            defaults = complete_data,
+        )
+
+    return venue
+# endregion
+
+# region Sincronismo de Partidos
+def sync_matches(comp_ids: list[str] = None, season_ids: list[str] = None):
+    provider = get_provider('footballdataio')
+    competitions = Competicion.objects.all()
+
+    if comp_ids is not None:
+        competitions = competitions.filter(api_id__in = comp_ids)
+
+    for comp in competitions:
+        seasons = Temporada.objects.filter(competicion = comp)
+
+        if season_ids is not None:
+            seasons = seasons.filter(api_id__in = season_ids)
+
+        for season in seasons:
+            page = 1
+            total_pages = 1
+
+            while page <= total_pages:
+                data, meta = provider.get_matches(comp.api_id, season.api_id, page)
+                mapped_matches = ioMapper.map_matches(data)
+
+                total_pages = meta["pagination"]["total_pages"]
+
+                with transaction.atomic():
+                    for match_data in mapped_matches:
+                        _save_match_data(match_data)
+
+                page += 1
+
+
+def refresh_current_matches():
+    provider = get_provider('footballdataio')
+
+    data, meta = provider.get_today_matches()
+    mapped_matches = ioMapper.map_matches(data)
+
+    with transaction.atomic():
+        for match_data in mapped_matches:
+            _save_match_data(match_data)
+
+
+def _save_match_data(match_data):
+    mapProvider = get_provider('openstreetmap')
+
+    season = Temporada.objects.filter(api_id = match_data['temporada_id']).first()
+    home_team = Equipo.objects.filter(api_id = match_data['equipo_local_id']).first()
+    away_team = Equipo.objects.filter(api_id = match_data['equipo_vis_id']).first()
+
+    comp_type = season.competicion.tipo
+
+    if comp_type == Competicion.Tipo.LIGA:
+        venue = home_team.estadio
+    else:
+        try:
+            venue = Estadio.objects.get(nombre = match_data['sede_nombre'])
+        except Estadio.DoesNotExist:
+            venue = sync_venue(match_data['sede_nombre'], None)
+
+            if venue is None:
+                locations = mapProvider.get_venue_location(match_data['sede_nombre'])
+
+                # TODO: Determinar que hacer en caso de que no haya informacion de la ubicacion de un partido.
+
+                if len(locations) > 0:
+                    location = locations[0]
+
+                    match_data['sede_latitud'] = float(location["lat"]) if location is not None else None
+                    match_data['sede_longitud'] = float(location["lon"]) if location is not None else None
+
+    del match_data['temporada_id']
+    del match_data['equipo_local_id']
+    del match_data['equipo_vis_id']
+    del match_data['estadio_nombre']
+
+    defaults = {**_defaults(match_data), 'temporada': season,
+                'equipo_local': home_team, 'equipo_visitante': away_team,
+                'estadio': venue}
+
+    if venue and venue.latitud is not None and venue.longitud is not None:
+        defaults.update({
+            "sede_nombre": "",
+            "sede_direccion": "",
+            "sede_latitud": None,
+            "sede_longitud": None,
+        })
+
+    Partido.objects.update_or_create(
+        api_id = match_data['api_id'],
+        defaults = defaults
+    )
+
+
+def sync_match_detail(match_ids: list[str] = None, comp_ids: list[str] = None, season_ids: list[str] = None):
+    if not any([match_ids, comp_ids, season_ids]):
+        raise ValueError("Indica al menos match_ids, comp_ids o season_ids")
+    
+    provider = get_provider('footballdataio')
+    partidos = Partido.objects.select_related("temporada__competicion")
+
+    if match_ids:
+        matches = partidos.filter(api_id__in=match_ids)
+    if comp_ids:
+        matches = partidos.filter(temporada__competicion__api_id__in=comp_ids)
+    if season_ids:
+        matches = partidos.filter(temporada__api_id__in=season_ids)
+
+    for match in matches:
+        match_data, meta = provider.get_match_detail(match.api_id)
+
+        if match.estado == Partido.Estado.FINALIZADO:
+            minuto_actual = None
+        else:
+            minuto_actual = ioMapper.map_match_detail(match_data)
+
+        with transaction.atomic():
+            partido, _ = Partido.objects.update_or_create(
+                api_id = match_data['match_id'],
+                defaults = {'minuto_actual': minuto_actual, 'nivel_datos': 'COMPLETO'}
+            )
+            
+            sync_players_and_callups(match_data, partido)
+            sync_events(match_data, partido)
+
+
+def sync_players_and_callups(raw_data, partido):
+    mapped_players = ioMapper.map_players(raw_data)
+    mapped_callups = ioMapper.map_callups(raw_data)
+
+    team_ids = {callup["equipo_id"] for callup in mapped_callups}
+    teams_by_id = Equipo.objects.in_bulk(team_ids, field_name="api_id")
+    players_by_id = {}
+
+    with transaction.atomic():
+        for player_data in mapped_players:
+            player, _ = Jugador.objects.update_or_create(
+                api_id=player_data["api_id"],
+                defaults={
+                    "nombre": player_data["nombre"],
+                    "apodo": player_data["apodo"],
+                    "foto_url": player_data["foto_url"],
+                },
+            )
+            players_by_id[str(player.api_id)] = player
+
+        for callup_data in mapped_callups:
+            player = players_by_id.get(str(callup_data["jugador_id"]))
+            team = teams_by_id.get(callup_data["equipo_id"])
+
+            if team is None:
+                raise Equipo.DoesNotExist(
+                    f"Team {callup_data['equipo_id']} not found for "
+                    f"match {partido.api_id}"
+                )
+
+            if player is None:
+                raise Jugador.DoesNotExist(
+                    f"Player {callup_data['jugador_id']} not found for "
+                    f"match {partido.api_id}"
+                )
+
+            Convocatoria.objects.update_or_create(
+                partido=partido,
+                jugador=player,
+                defaults={
+                    "equipo": team,
+                    "titular": callup_data["titular"],
+                    "dorsal": callup_data["dorsal"],
+                    "posicion": callup_data["posicion"],
+                    "min_entrada": callup_data["min_entrada"],
+                    "min_salida": callup_data["min_salida"],
+                },
+            )
+
+            sync_plantilla(player, team, partido.temporada)
+
+
+def sync_plantilla(jugador, equipo, temporada):
+    equipo_temporada, _ = EquipoTemporada.objects.get_or_create(
+        equipo=equipo,
+        temporada=temporada,
+    )
+
+    Plantilla.objects.get_or_create(
+        jugador=jugador,
+        equipo_temporada=equipo_temporada,
+    )
+
+def sync_events(raw_data, partido):
+    mapped_events = ioMapper.map_events(raw_data)
+
+    for mapped_event in mapped_events:
+        jugador = Jugador.objects.filter(api_id = mapped_event['jugador_id']).first()
+        jugador_sale = None
+
+        if 'jugador_sale_id' in mapped_event:
+            jugador_sale = Jugador.objects.filter(api_id = mapped_event['jugador_sale_id']).first()
+        
+        Evento.objects.create(
+            partido = partido,
+            jugador = jugador,
+            jugador_sale = jugador_sale,
+            tipo = mapped_event["tipo"],
+            minuto = mapped_event["minuto"],
+        )
+
+
+def sync_player_detail(player_ids: list[str] = None):
+    provider = get_provider('footballdataio')
+    players = Jugador.objects.all()
+
+    competiciones_soportadas = set(Competicion.objects.values_list("api_id", flat=True))
+
+    if player_ids is not None:
+        players = players.filter(api_id__in = player_ids)
+
+    input([pl.nombre for pl in players])
+
+    for player in players:
+        data, meta = provider.get_player_detail(player.api_id)
+        mapped_data = ioMapper.map_player_detail(data)
+
+        pais = Pais.objects.filter(nombre = mapped_data['nacionalidad']).first()
+
+        with transaction.atomic():
+            jugador, _ = Jugador.objects.update_or_create(
+                api_id = mapped_data['api_id'],
+                defaults = {
+                    "pais": pais,
+                    "fecha_nacimiento": mapped_data['fecha_nacimiento'], 
+                    "altura": mapped_data['altura'], 
+                    "peso": mapped_data['peso'],
+                    "nivel_datos": Jugador.NivelDatos.COMPLETO
+                }
+            )
+
+            for comp_data in mapped_data['competiciones']:
+                if comp_data['api_id'] not in competiciones_soportadas:
+                    continue
+
+                for season in comp_data['temporadas']:
+                    temporada = Temporada.objects.get(api_id = season['api_id'])
+
+                    try:
+                        equipo = Equipo.objects.get(api_id = season['equipo']['api_id'])
+                    except Equipo.DoesNotExist:
+                        equipo_data = season['equipo']
+
+                        equipo = Equipo.objects.create(
+                            api_id = equipo_data['api_id'],
+                            nombre = equipo_data['nombre'],
+                            escudo_url = equipo_data['escudo_url']
+                        )
+
+                    equipoTemporada, _ = EquipoTemporada.objects.get_or_create(
+                        temporada = temporada,
+                        equipo = equipo
+                    )
+
+                    Plantilla.objects.update_or_create(
+                        equipo_temporada = equipoTemporada,
+                        jugador = jugador
+                    )
+
+#endregion
 

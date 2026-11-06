@@ -7,6 +7,9 @@ class MockProvider:
     def get_team_data(self, team_name, country_name):
         return self._read_json("team_data.json")
 
+    def get_venue(self, venue_name):
+        return self._read_json("venue_data.json")
+
     @staticmethod
     def _read_json(filename):
         path = MOCK_DATA_DIR / filename

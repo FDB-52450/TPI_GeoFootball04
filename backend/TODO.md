@@ -58,18 +58,27 @@
 - [x] Estadio
   - [x] Mapper + Sincronización
   - [x] Tests del pipeline con fixture
+- [x] Partido
+  - [x] Mapper + Sincronización
+  - [x] Tests del pipeline con fixture
+- [x] Convocatoria (+ Planilla)
+  - [x] Mapper + Sincronización
+  - [x] Tests del pipeline con fixture
+- [x] Jugador
+  - [x] Mapper + Sincronización
+  - [x] Tests del pipeline con fixture
+
 
 ### App
 - [ ] Cliente HTTP (para cada proveedor)
   - [x] Base + metodos para llamar endpoints
   - [x] Manejo de errores basicos
-  - [ ] Manejo de erroes avanzado
+  - [ ] Manejo de errores avanzado
   - [ ] Tests
 - [ ] Tasks de sincronizacion
-- [ ] Comandos para ejecutar sincronizacion
+- [x] Comandos para ejecutar sincronizacion
   - [x] Catalogo
-  - [ ] Equipos
-  - [ ] Partidos
+  - [x] Partidos
 - [x] Registrar apps.ingest en INSTALLED_APPS
 - [x] Fixtures de endpoints (mock data)
 - [ ] Logger de ingesta
@@ -84,3 +93,5 @@
 ## Ideas (no comprometidas)
 - Cachear tabla de resultados de una temporada de una liga
 - Guardar ranking FIFA de un país
+- Agregar estadisticas de temporada de jugador (en entidad Planilla)
+- Soportar historial de equipos de jugador completo (con ligas sin soporte)

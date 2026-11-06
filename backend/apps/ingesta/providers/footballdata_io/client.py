@@ -39,3 +39,12 @@ class FootballDataIoApiClient:
 
     def get_team_data(self, team_id):
         return self._get(f"teams/{team_id}")
+
+    def get_today_matches(self):
+        return self._get("fixtures/today", params = {'limit': 100})
+
+    def get_match_detail(self, match_id):
+        return self._get(f"matches/{match_id}")
+    
+    def get_player_detail(self, player_id):
+        return self._get(f"players/{player_id}")

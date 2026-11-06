@@ -1,0 +1,1165 @@
+{
+  "success": true,
+  "data": {
+    "match_id": 740745818,
+    "match_date": "2026-10-24 11:30:00",
+    "date_unix": 1792841400,
+    "status": "complete",
+    "status_localized": "Finished",
+    "minute": null,
+    "round_id": 124461,
+    "game_week": 8,
+    "league": {
+      "league_id": 15,
+      "league_name": "Premier League",
+      "country": "England",
+      "league_image": "https://footballdata.io/img/league/england-premier-league.png"
+    },
+    "season": {
+      "season_id": 103535,
+      "year": 20262027
+    },
+    "home_team": {
+      "team_id": 142,
+      "team_name": "Aston Villa FC",
+      "seo_slug": "aston-villa-fc",
+      "full_name": "Aston Villa FC",
+      "team_logo": "https://footballdata.io/img/team/england-aston-villa-fc.png",
+      "country": "England"
+    },
+    "away_team": {
+      "team_id": 87,
+      "team_name": "Manchester City FC",
+      "seo_slug": "manchester-city-fc",
+      "full_name": "Manchester City FC",
+      "team_logo": "https://footballdata.io/img/team/england-manchester-city-fc.png",
+      "country": "England"
+    },
+    "score": {
+      "home": 2,
+      "away": 1,
+      "total": 3,
+      "halftime_home": 1,
+      "halftime_away": 0,
+      "halftime_total": 1,
+      "second_half_home": 1,
+      "second_half_away": 1,
+      "second_half_total": 2
+    },
+    "stats": {
+      "corners": {
+        "home": 4,
+        "away": 7,
+        "total": 11
+      },
+      "offsides": {
+        "home": 1,
+        "away": 2
+      },
+      "cards": {
+        "home_yellow": 4,
+        "away_yellow": 4,
+        "home_red": 0,
+        "away_red": 0,
+        "home_total": 4,
+        "away_total": 4
+      },
+      "shots": {
+        "home_total": 8,
+        "away_total": 15,
+        "home_on_target": 2,
+        "away_on_target": 7,
+        "home_off_target": 6,
+        "away_off_target": 8
+      },
+      "fouls": {
+        "home": 21,
+        "away": 17
+      },
+      "possession": {
+        "home": 37,
+        "away": 63
+      },
+      "attacks": {
+        "home": 48,
+        "away": 135,
+        "home_dangerous": 22,
+        "away_dangerous": 89
+      }
+    },
+    "odds": {
+      "match_winner": {
+        "home": 4.7,
+        "draw": 4.4,
+        "away": 1.53
+      },
+      "total_goals": {
+        "over_0_5": 1.01,
+        "over_1_5": 1.11,
+        "over_2_5": 1.4,
+        "over_3_5": 2.1,
+        "over_4_5": 3.62,
+        "under_0_5": 11.6,
+        "under_1_5": 6,
+        "under_2_5": 2.8,
+        "under_3_5": 1.75,
+        "under_4_5": 1.29
+      },
+      "both_teams_to_score": {
+        "yes": 1.5,
+        "no": 2.6
+      },
+      "double_chance": {
+        "home_or_draw": 1.15,
+        "home_or_away": 0,
+        "draw_or_away": 1.2
+      },
+      "draw_no_bet": {
+        "home": 0,
+        "away": 0
+      },
+      "corners": {
+        "over_7_5": 1.22,
+        "over_8_5": 1.5,
+        "over_9_5": 1.85,
+        "over_10_5": 2.4,
+        "over_11_5": 3.3,
+        "under_7_5": 3.3,
+        "under_8_5": 2.4,
+        "under_9_5": 1.85,
+        "under_10_5": 1.5,
+        "under_11_5": 1.29
+      }
+    },
+    "probabilities": {
+      "match_result": {
+        "home": 19.45,
+        "draw": 20.78,
+        "away": 59.76
+      },
+      "total_goals": {
+        "over_0_5": 100,
+        "over_1_5": 67,
+        "over_2_5": 67,
+        "over_3_5": 33,
+        "over_4_5": 17
+      },
+      "both_teams_to_score": 50,
+      "clean_sheet": {
+        "home": null,
+        "away": null
+      },
+      "team_to_score": {
+        "home": null,
+        "away": null
+      },
+      "corners": {
+        "over_7_5": 9.66,
+        "over_8_5": 34,
+        "over_9_5": 34,
+        "over_10_5": 34
+      }
+    },
+    "lineups": {
+      "home": [
+        {
+          "player_id": 3072,
+          "player_name": "Zion Suzuki",
+          "first_name": "Zion",
+          "last_name": "Suzuki",
+          "known_name": "Zion Suzuki",
+          "short_name": "zion-suzuki",
+          "position_name": "Goalkeeper",
+          "player_image": "https://footballdata.io/img/player/japan-zion-suzuki.png",
+          "shirt_number": 1,
+          "events": []
+        },
+        {
+          "player_id": 8871,
+          "player_name": "Matthew Stuart Cash",
+          "first_name": "Matthew Stuart",
+          "last_name": "Cash",
+          "known_name": "Matty Cash",
+          "short_name": "matty-cash",
+          "position_name": "Defender",
+          "player_image": "https://footballdata.io/img/player/poland-matty-cash.png",
+          "shirt_number": 2,
+          "events": [
+            {
+              "type": "Yellow",
+              "minute": "55"
+            }
+          ]
+        },
+        {
+          "player_id": 8773,
+          "player_name": "Victor Jörgen Nilsson Lindelöf",
+          "first_name": "Victor Jörgen",
+          "last_name": "Nilsson Lindelöf",
+          "known_name": "Victor Lindelöf",
+          "short_name": "victor-lindelof",
+          "position_name": "Defender",
+          "player_image": "https://footballdata.io/img/player/sweden-victor-lindelof.png",
+          "shirt_number": 3,
+          "events": []
+        },
+        {
+          "player_id": 9174,
+          "player_name": "John McGinn",
+          "first_name": "John",
+          "last_name": "McGinn",
+          "known_name": "John McGinn",
+          "short_name": "john-mcginn",
+          "position_name": "Midfielder",
+          "player_image": "https://footballdata.io/img/player/scotland-john-mcginn.png",
+          "shirt_number": 7,
+          "events": []
+        },
+        {
+          "player_id": 248,
+          "player_name": "Boubacar Bernard Kamara",
+          "first_name": "Boubacar Bernard",
+          "last_name": "Kamara",
+          "known_name": "Boubacar Kamara",
+          "short_name": "boubacar-kamara",
+          "position_name": "Midfielder",
+          "player_image": "https://footballdata.io/img/player/france-boubacar-kamara.png",
+          "shirt_number": 8,
+          "events": []
+        },
+        {
+          "player_id": 6542,
+          "player_name": "Nicolas Jackson",
+          "first_name": "Nicolas",
+          "last_name": "Jackson",
+          "known_name": "Nicolas Jackson",
+          "short_name": "nicolas-jackson",
+          "position_name": "Forward",
+          "player_image": "https://footballdata.io/img/player/senegal-nicolas-jackson.png",
+          "shirt_number": 11,
+          "events": [
+            {
+              "type": "Goal",
+              "minute": "6"
+            },
+            {
+              "type": "Goal",
+              "minute": "60"
+            }
+          ]
+        },
+        {
+          "player_id": 36233,
+          "player_name": "Pau Francisco Torres",
+          "first_name": "Pau",
+          "last_name": "Francisco Torres",
+          "known_name": "Pau Torres",
+          "short_name": "pau-torres",
+          "position_name": "Defender",
+          "player_image": "https://footballdata.io/img/player/spain-pau-torres.png",
+          "shirt_number": 14,
+          "events": []
+        },
+        {
+          "player_id": 36685,
+          "player_name": "Ian Maatsen",
+          "first_name": "Ian",
+          "last_name": "Maatsen",
+          "known_name": "Ian Maatsen",
+          "short_name": "ian-maatsen",
+          "position_name": "Defender",
+          "player_image": "https://footballdata.io/img/player/netherlands-ian-maatsen.png",
+          "shirt_number": 22,
+          "events": []
+        },
+        {
+          "player_id": 8164,
+          "player_name": "João Victor Gomes da Silva",
+          "first_name": "João Victor",
+          "last_name": "Gomes da Silva",
+          "known_name": "João Gomes",
+          "short_name": "joao-gomes",
+          "position_name": "Midfielder",
+          "player_image": "https://footballdata.io/img/player/brazil-joao-gomes.png",
+          "shirt_number": 35,
+          "events": []
+        },
+        {
+          "player_id": 10408,
+          "player_name": "Johan Manzambi",
+          "first_name": "Johan",
+          "last_name": "Manzambi",
+          "known_name": "Johan Manzambi",
+          "short_name": "johan-manzambi",
+          "position_name": "Midfielder",
+          "player_image": "https://footballdata.io/img/player/default.png",
+          "shirt_number": 44,
+          "events": [
+            {
+              "type": "Yellow",
+              "minute": "54"
+            }
+          ]
+        },
+        {
+          "player_id": 19196,
+          "player_name": "Alysson Edward Franco da Rocha dos Santos",
+          "first_name": "Alysson Edward Franco",
+          "last_name": "da Rocha dos Santos",
+          "known_name": "Alysson Edward Franco da Rocha dos Santos",
+          "short_name": "alysson-edward-franco-da-rocha-dos-santos",
+          "position_name": "Forward",
+          "player_image": "https://footballdata.io/img/player/default.png",
+          "shirt_number": 47,
+          "events": []
+        }
+      ],
+      "away": [
+        {
+          "player_id": 8994,
+          "player_name": "Gianluigi Donnarumma",
+          "first_name": "Gianluigi",
+          "last_name": "Donnarumma",
+          "known_name": "Gianluigi Donnarumma",
+          "short_name": "gianluigi-donnarumma",
+          "position_name": "Goalkeeper",
+          "player_image": "https://footballdata.io/img/player/italy-gianluigi-donnarumma.png",
+          "shirt_number": 1,
+          "events": []
+        },
+        {
+          "player_id": 9164,
+          "player_name": "Rúben dos Santos Gato Alves Dias",
+          "first_name": "Rúben",
+          "last_name": "dos Santos Gato Alves Dias",
+          "known_name": "Rúben Dias",
+          "short_name": "ruben-dias",
+          "position_name": "Defender",
+          "player_image": "https://footballdata.io/img/player/portugal-ruben-dias.png",
+          "shirt_number": 3,
+          "events": []
+        },
+        {
+          "player_id": 9451,
+          "player_name": "Elliot Anderson",
+          "first_name": "Elliot",
+          "last_name": "Anderson",
+          "known_name": "Elliot Anderson",
+          "short_name": "elliot-anderson",
+          "position_name": "Midfielder",
+          "player_image": "https://footballdata.io/img/player/scotland-elliot-anderson.png",
+          "shirt_number": 5,
+          "events": [
+            {
+              "type": "Yellow",
+              "minute": "74"
+            }
+          ]
+        },
+        {
+          "player_id": 9518,
+          "player_name": "Addji Keaninkin Marc-Israel Guu00e9hi",
+          "first_name": "Addji Keaninkin Marc-Israel",
+          "last_name": "Guu00e9hi",
+          "known_name": "Marc Guehi",
+          "short_name": "marc-guehi",
+          "position_name": "Defender",
+          "player_image": "https://footballdata.io/img/player/england-marc-guehi.png",
+          "shirt_number": 6,
+          "events": [
+            {
+              "type": "Yellow",
+              "minute": "32"
+            }
+          ]
+        },
+        {
+          "player_id": 6143,
+          "player_name": "Iliman Ndiaye",
+          "first_name": "Iliman",
+          "last_name": "Ndiaye",
+          "known_name": "Iliman Ndiaye",
+          "short_name": "iliman-ndiaye",
+          "position_name": "Forward",
+          "player_image": "https://footballdata.io/img/player/france-iliman-ndiaye.png",
+          "shirt_number": 7,
+          "events": []
+        },
+        {
+          "player_id": 8940,
+          "player_name": "Erling Braut Haaland",
+          "first_name": "Erling",
+          "last_name": "Braut Haaland",
+          "known_name": "Erling Haaland",
+          "short_name": "erling-haaland",
+          "position_name": "Forward",
+          "player_image": "https://footballdata.io/img/player/norway-erling-haaland.png",
+          "shirt_number": 9,
+          "events": [
+            {
+              "type": "Goal",
+              "minute": "52"
+            }
+          ]
+        },
+        {
+          "player_id": 925,
+          "player_name": "Mathis Ryan Cherki",
+          "first_name": "Mathis Ryan",
+          "last_name": "Cherki",
+          "known_name": "Ryan Cherki",
+          "short_name": "ryan-cherki",
+          "position_name": "Midfielder",
+          "player_image": "https://footballdata.io/img/player/france-ryan-cherki.png",
+          "shirt_number": 10,
+          "events": [
+            {
+              "type": "Yellow",
+              "minute": "38"
+            }
+          ]
+        },
+        {
+          "player_id": 9829,
+          "player_name": "Jérémy Baffour Doku",
+          "first_name": "Jérémy Baffour",
+          "last_name": "Doku",
+          "known_name": "Jeremy Doku",
+          "short_name": "jeremy-doku",
+          "position_name": "Forward",
+          "player_image": "https://footballdata.io/img/player/belgium-jeremy-doku.png",
+          "shirt_number": 11,
+          "events": []
+        },
+        {
+          "player_id": 8088,
+          "player_name": "Enzo Jeremías Fernández",
+          "first_name": "Enzo Jeremías",
+          "last_name": "Fernández",
+          "known_name": "Enzo Fernández",
+          "short_name": "enzo-fernandez",
+          "position_name": "Midfielder",
+          "player_image": "https://footballdata.io/img/player/argentina-enzo-fernandez.png",
+          "shirt_number": 17,
+          "events": []
+        },
+        {
+          "player_id": 9947,
+          "player_name": "Joško Gvardiol",
+          "first_name": "Joško",
+          "last_name": "Gvardiol",
+          "known_name": "Joško Gvardiol",
+          "short_name": "josko-gvardiol",
+          "position_name": "Defender",
+          "player_image": "https://footballdata.io/img/player/croatia-josko-gvardiol.png",
+          "shirt_number": 24,
+          "events": []
+        },
+        {
+          "player_id": 3591,
+          "player_name": "Abdukodir Khusanov",
+          "first_name": "Abdukodir",
+          "last_name": "Khusanov",
+          "known_name": "Abdukodir Khusanov",
+          "short_name": "abdukodir-khusanov",
+          "position_name": "Defender",
+          "player_image": "https://footballdata.io/img/player/uzbekistan-abdukodir-khusanov.png",
+          "shirt_number": 45,
+          "events": []
+        }
+      ]
+    },
+    "bench": {
+      "home": [
+        {
+          "player_id": 35917,
+          "player_name": "Tyrone Deon Mings",
+          "first_name": "Tyrone Deon",
+          "last_name": "Mings",
+          "known_name": "Tyrone Mings",
+          "short_name": "tyrone-mings",
+          "position_name": "Defender",
+          "player_image": "https://footballdata.io/img/player/england-tyrone-mings.png",
+          "shirt_number": 5,
+          "replaced_player": {
+            "player_id": null,
+            "player_name": null
+          },
+          "substitution_minute": null,
+          "events": []
+        },
+        {
+          "player_id": 35911,
+          "player_name": "Ross Barkley",
+          "first_name": "Ross",
+          "last_name": "Barkley",
+          "known_name": "Ross Barkley",
+          "short_name": "ross-barkley",
+          "position_name": "Midfielder",
+          "player_image": "https://footballdata.io/img/player/england-ross-barkley.png",
+          "shirt_number": 6,
+          "replaced_player": {
+            "player_id": 9174,
+            "player_name": "John McGinn"
+          },
+          "substitution_minute": "66'",
+          "events": []
+        },
+        {
+          "player_id": 35989,
+          "player_name": "Emiliano Buendía Stati",
+          "first_name": "Emiliano",
+          "last_name": "Buendía Stati",
+          "known_name": "Emi Buendía",
+          "short_name": "emi-buendia",
+          "position_name": "Midfielder",
+          "player_image": "https://footballdata.io/img/player/argentina-emi-buendia.png",
+          "shirt_number": 10,
+          "replaced_player": {
+            "player_id": 10408,
+            "player_name": "Johan Manzambi"
+          },
+          "substitution_minute": "66'",
+          "events": [
+            {
+              "type": "Yellow",
+              "minute": "90+5"
+            }
+          ]
+        },
+        {
+          "player_id": 29707,
+          "player_name": "Ibrahim Mbaye",
+          "first_name": "Ibrahim",
+          "last_name": "Mbaye",
+          "known_name": "Ibrahim Mbaye",
+          "short_name": "ibrahim-mbaye",
+          "position_name": "Forward",
+          "player_image": "https://footballdata.io/img/player/france-ibrahim-mbaye.png",
+          "shirt_number": 19,
+          "replaced_player": {
+            "player_id": 19196,
+            "player_name": "Alysson Edward Franco da Rocha dos Santos"
+          },
+          "substitution_minute": "59'",
+          "events": []
+        },
+        {
+          "player_id": 37060,
+          "player_name": "Lamare Trenton Chansey Bogarde",
+          "first_name": "Lamare Trenton",
+          "last_name": "Chansey Bogarde",
+          "known_name": "Lamare Bogarde",
+          "short_name": "lamare-bogarde",
+          "position_name": "Midfielder",
+          "player_image": "https://footballdata.io/img/player/netherlands-lamare-bogarde.png",
+          "shirt_number": 26,
+          "replaced_player": {
+            "player_id": null,
+            "player_name": null
+          },
+          "substitution_minute": null,
+          "events": []
+        },
+        {
+          "player_id": 8675,
+          "player_name": "Leon Goretzka",
+          "first_name": "Leon",
+          "last_name": "Goretzka",
+          "known_name": "Leon Goretzka",
+          "short_name": "leon-goretzka",
+          "position_name": "Midfielder",
+          "player_image": "https://footballdata.io/img/player/germany-leon-goretzka.png",
+          "shirt_number": 27,
+          "replaced_player": {
+            "player_id": 8164,
+            "player_name": "João Victor Gomes da Silva"
+          },
+          "substitution_minute": "82'",
+          "events": []
+        },
+        {
+          "player_id": 31157,
+          "player_name": "Brian Djomeni Madjo",
+          "first_name": "Brian",
+          "last_name": "Djomeni Madjo",
+          "known_name": "Brian Djomeni Madjo",
+          "short_name": "brian-djomeni-madjo",
+          "position_name": "Midfielder",
+          "player_image": "https://footballdata.io/img/player/default.png",
+          "shirt_number": 39,
+          "replaced_player": {
+            "player_id": 6542,
+            "player_name": "Nicolas Jackson"
+          },
+          "substitution_minute": "82'",
+          "events": [
+            {
+              "type": "Yellow",
+              "minute": "83"
+            }
+          ]
+        },
+        {
+          "player_id": 36045,
+          "player_name": "Marco Bizot",
+          "first_name": "Marco",
+          "last_name": "Bizot",
+          "known_name": "Marco Bizot",
+          "short_name": "marco-bizot",
+          "position_name": "Goalkeeper",
+          "player_image": "https://footballdata.io/img/player/netherlands-marco-bizot.png",
+          "shirt_number": 40,
+          "replaced_player": {
+            "player_id": null,
+            "player_name": null
+          },
+          "substitution_minute": null,
+          "events": []
+        },
+        {
+          "player_id": 37276,
+          "player_name": "George Hemmings",
+          "first_name": "George",
+          "last_name": "Hemmings",
+          "known_name": "George Hemmings",
+          "short_name": "george-hemmings",
+          "position_name": "Midfielder",
+          "player_image": "https://footballdata.io/img/player/england-george-hemmings.png",
+          "shirt_number": 53,
+          "replaced_player": {
+            "player_id": null,
+            "player_name": null
+          },
+          "substitution_minute": null,
+          "events": []
+        }
+      ],
+      "away": [
+        {
+          "player_id": 8786,
+          "player_name": "Mateo Kovačić",
+          "first_name": "Mateo",
+          "last_name": "Kovačić",
+          "known_name": "Mateo Kovačić",
+          "short_name": "mateo-kovacic",
+          "position_name": "Midfielder",
+          "player_image": "https://footballdata.io/img/player/croatia-mateo-kovacic.png",
+          "shirt_number": 8,
+          "replaced_player": {
+            "player_id": null,
+            "player_name": null
+          },
+          "substitution_minute": null,
+          "events": []
+        },
+        {
+          "player_id": 5954,
+          "player_name": "Rayan Aït Nouri",
+          "first_name": "Rayan",
+          "last_name": "Aït Nouri",
+          "known_name": "Rayan Aït Nouri",
+          "short_name": "rayan-ait-nouri",
+          "position_name": "Defender",
+          "player_image": "https://footballdata.io/img/player/france-rayan-ait-nouri.png",
+          "shirt_number": 21,
+          "replaced_player": {
+            "player_id": null,
+            "player_name": null
+          },
+          "substitution_minute": null,
+          "events": []
+        },
+        {
+          "player_id": 33449,
+          "player_name": "Vitor de Oliveira Nunes dos Reis",
+          "first_name": "Vitor",
+          "last_name": "de Oliveira Nunes dos Reis",
+          "known_name": "Vitor de Oliveira Nunes dos Reis",
+          "short_name": "vitor-de-oliveira-nunes-dos-reis",
+          "position_name": "Defender",
+          "player_image": "https://footballdata.io/img/player/brazil-vitor-de-oliveira-nunes-dos-reis.png",
+          "shirt_number": 22,
+          "replaced_player": {
+            "player_id": null,
+            "player_name": null
+          },
+          "substitution_minute": null,
+          "events": []
+        },
+        {
+          "player_id": 7858,
+          "player_name": "Gerónimo Rulli",
+          "first_name": "Gerónimo",
+          "last_name": "Rulli",
+          "known_name": "Gerónimo Rulli",
+          "short_name": "geronimo-rulli",
+          "position_name": "Goalkeeper",
+          "player_image": "https://footballdata.io/img/player/argentina-geronimo-rulli.png",
+          "shirt_number": 28,
+          "replaced_player": {
+            "player_id": null,
+            "player_name": null
+          },
+          "substitution_minute": null,
+          "events": []
+        },
+        {
+          "player_id": 31087,
+          "player_name": "Ayyoub Bouaddi",
+          "first_name": "Ayyoub",
+          "last_name": "Bouaddi",
+          "known_name": "Ayyoub Bouaddi",
+          "short_name": "ayyoub-bouaddi",
+          "position_name": "Midfielder",
+          "player_image": "https://footballdata.io/img/player/france-ayyoub-bouaddi.png",
+          "shirt_number": 32,
+          "replaced_player": {
+            "player_id": null,
+            "player_name": null
+          },
+          "substitution_minute": null,
+          "events": []
+        },
+        {
+          "player_id": 10260,
+          "player_name": "Nico O'Reilly",
+          "first_name": "Nico",
+          "last_name": "O'Reilly",
+          "known_name": "Nico O'Reilly",
+          "short_name": "nico-oreilly",
+          "position_name": "Defender",
+          "player_image": "https://footballdata.io/img/player/england-nico-oreilly.png",
+          "shirt_number": 33,
+          "replaced_player": {
+            "player_id": null,
+            "player_name": null
+          },
+          "substitution_minute": null,
+          "events": []
+        },
+        {
+          "player_id": 8797,
+          "player_name": "Philip Walter Foden",
+          "first_name": "Philip Walter",
+          "last_name": "Foden",
+          "known_name": "Phil Foden",
+          "short_name": "phil-foden",
+          "position_name": "Midfielder",
+          "player_image": "https://footballdata.io/img/player/england-phil-foden.png",
+          "shirt_number": 47,
+          "replaced_player": {
+            "player_id": 925,
+            "player_name": "Mathis Ryan Cherki"
+          },
+          "substitution_minute": "46'",
+          "events": []
+        },
+        {
+          "player_id": 40056,
+          "player_name": "Ryan McAidoo",
+          "first_name": "Ryan",
+          "last_name": "McAidoo",
+          "known_name": "Ryan McAidoo",
+          "short_name": "ryan-mcaidoo",
+          "position_name": "Forward",
+          "player_image": "https://footballdata.io/img/player/england-ryan-mcaidoo.png",
+          "shirt_number": 56,
+          "replaced_player": {
+            "player_id": 6143,
+            "player_name": "Iliman Ndiaye"
+          },
+          "substitution_minute": "69'",
+          "events": [
+            {
+              "type": "Yellow",
+              "minute": "76"
+            }
+          ]
+        },
+        {
+          "player_id": 29201,
+          "player_name": "Rico Henry Lewis",
+          "first_name": "Rico Henry",
+          "last_name": "Lewis",
+          "known_name": "Rico Lewis",
+          "short_name": "rico-lewis",
+          "position_name": "Defender",
+          "player_image": "https://footballdata.io/img/player/england-rico-lewis.png",
+          "shirt_number": 82,
+          "replaced_player": {
+            "player_id": 9518,
+            "player_name": "Addji Keaninkin Marc-Israel Guu00e9hi"
+          },
+          "substitution_minute": "46'",
+          "events": []
+        }
+      ]
+    },
+    "head_to_head": {
+      "teams": {
+        "first_team_id": 142,
+        "second_team_id": 87
+      },
+      "summary": {
+        "first_team_wins": 8,
+        "second_team_wins": 24,
+        "draws": 4,
+        "total_matches": 36,
+        "first_team_win_percentage": 22,
+        "second_team_win_percentage": 67
+      },
+      "location_breakdown": {
+        "first_team_home_wins": 6,
+        "first_team_away_wins": 2,
+        "second_team_home_wins": 16,
+        "second_team_away_wins": 8
+      },
+      "betting_trends": {
+        "over_0_5_goals_count": 35,
+        "over_1_5_goals_count": 29,
+        "over_2_5_goals_count": 23,
+        "over_3_5_goals_count": 15,
+        "over_4_5_goals_count": 9,
+        "over_5_5_goals_count": 3,
+        "both_teams_to_score_count": 19,
+        "first_team_clean_sheet_count": 4,
+        "second_team_clean_sheet_count": 14,
+        "over_0_5_goals_percentage": 97,
+        "over_1_5_goals_percentage": 81,
+        "over_2_5_goals_percentage": 64,
+        "over_3_5_goals_percentage": 42,
+        "over_4_5_goals_percentage": 25,
+        "over_5_5_goals_percentage": 8,
+        "both_teams_to_score_percentage": 53,
+        "first_team_clean_sheet_percentage": 11,
+        "second_team_clean_sheet_percentage": 39,
+        "average_goals": 3.19,
+        "total_goals": 115
+      },
+      "previous_matches": [
+        {
+          "match_id": 193068,
+          "match_date_unix": 1779634800,
+          "first_team_id": 87,
+          "second_team_id": 142,
+          "first_team_goals": 1,
+          "second_team_goals": 2
+        },
+        {
+          "match_id": 192893,
+          "match_date_unix": 1761487200,
+          "first_team_id": 142,
+          "second_team_id": 87,
+          "first_team_goals": 1,
+          "second_team_goals": 0
+        },
+        {
+          "match_id": 162888,
+          "match_date_unix": 1745348400,
+          "first_team_id": 87,
+          "second_team_id": 142,
+          "first_team_goals": 2,
+          "second_team_goals": 1
+        },
+        {
+          "match_id": 162759,
+          "match_date_unix": 1734784200,
+          "first_team_id": 142,
+          "second_team_id": 87,
+          "first_team_goals": 2,
+          "second_team_goals": 1
+        },
+        {
+          "match_id": 144170,
+          "match_date_unix": 1712171700,
+          "first_team_id": 87,
+          "second_team_id": 142,
+          "first_team_goals": 4,
+          "second_team_goals": 1
+        },
+        {
+          "match_id": 144033,
+          "match_date_unix": 1701893700,
+          "first_team_id": 142,
+          "second_team_id": 87,
+          "first_team_goals": 1,
+          "second_team_goals": 0
+        },
+        {
+          "match_id": 126643,
+          "match_date_unix": 1676219400,
+          "first_team_id": 87,
+          "second_team_id": 142,
+          "first_team_goals": 3,
+          "second_team_goals": 1
+        },
+        {
+          "match_id": 126504,
+          "match_date_unix": 1662222600,
+          "first_team_id": 142,
+          "second_team_id": 87,
+          "first_team_goals": 1,
+          "second_team_goals": 1
+        },
+        {
+          "match_id": 110309,
+          "match_date_unix": 1653231600,
+          "first_team_id": 87,
+          "second_team_id": 142,
+          "first_team_goals": 3,
+          "second_team_goals": 2
+        },
+        {
+          "match_id": 110141,
+          "match_date_unix": 1638389700,
+          "first_team_id": 142,
+          "second_team_id": 87,
+          "first_team_goals": 1,
+          "second_team_goals": 2
+        },
+        {
+          "match_id": 91307,
+          "match_date_unix": 1619032500,
+          "first_team_id": 142,
+          "second_team_id": 87,
+          "first_team_goals": 1,
+          "second_team_goals": 2
+        },
+        {
+          "match_id": 91098,
+          "match_date_unix": 1611165600,
+          "first_team_id": 87,
+          "second_team_id": 142,
+          "first_team_goals": 2,
+          "second_team_goals": 0
+        },
+        {
+          "match_id": 121306,
+          "match_date_unix": 1583080200,
+          "first_team_id": 142,
+          "second_team_id": 87,
+          "first_team_goals": 1,
+          "second_team_goals": 2
+        },
+        {
+          "match_id": 63779,
+          "match_date_unix": 1578846600,
+          "first_team_id": 142,
+          "second_team_id": 87,
+          "first_team_goals": 1,
+          "second_team_goals": 6
+        },
+        {
+          "match_id": 63705,
+          "match_date_unix": 1572089400,
+          "first_team_id": 87,
+          "second_team_id": 142,
+          "first_team_goals": 3,
+          "second_team_goals": 0
+        },
+        {
+          "match_id": 2110,
+          "match_date_unix": 1457190000,
+          "first_team_id": 87,
+          "second_team_id": 142,
+          "first_team_goals": 4,
+          "second_team_goals": 0
+        },
+        {
+          "match_id": 44441,
+          "match_date_unix": 1454166000,
+          "first_team_id": 142,
+          "second_team_id": 87,
+          "first_team_goals": 0,
+          "second_team_goals": 4
+        },
+        {
+          "match_id": 2016,
+          "match_date_unix": 1446989400,
+          "first_team_id": 142,
+          "second_team_id": 87,
+          "first_team_goals": 0,
+          "second_team_goals": 0
+        },
+        {
+          "match_id": 2372,
+          "match_date_unix": 1429979400,
+          "first_team_id": 87,
+          "second_team_id": 142,
+          "first_team_goals": 3,
+          "second_team_goals": 2
+        },
+        {
+          "match_id": 2208,
+          "match_date_unix": 1412440200,
+          "first_team_id": 142,
+          "second_team_id": 87,
+          "first_team_goals": 0,
+          "second_team_goals": 2
+        },
+        {
+          "match_id": 2608,
+          "match_date_unix": 1399488300,
+          "first_team_id": 87,
+          "second_team_id": 142,
+          "first_team_goals": 4,
+          "second_team_goals": 0
+        },
+        {
+          "match_id": 2428,
+          "match_date_unix": 1380376800,
+          "first_team_id": 142,
+          "second_team_id": 87,
+          "first_team_goals": 3,
+          "second_team_goals": 2
+        },
+        {
+          "match_id": 22404,
+          "match_date_unix": 1362427200,
+          "first_team_id": 142,
+          "second_team_id": 87,
+          "first_team_goals": 0,
+          "second_team_goals": 1
+        },
+        {
+          "match_id": 22319,
+          "match_date_unix": 1353164400,
+          "first_team_id": 87,
+          "second_team_id": 142,
+          "first_team_goals": 5,
+          "second_team_goals": 0
+        },
+        {
+          "match_id": 80058,
+          "match_date_unix": 1348598700,
+          "first_team_id": 87,
+          "second_team_id": 142,
+          "first_team_goals": 2,
+          "second_team_goals": 4
+        },
+        {
+          "match_id": 71541,
+          "match_date_unix": 1329062400,
+          "first_team_id": 142,
+          "second_team_id": 87,
+          "first_team_goals": 0,
+          "second_team_goals": 1
+        },
+        {
+          "match_id": 71449,
+          "match_date_unix": 1318687200,
+          "first_team_id": 87,
+          "second_team_id": 142,
+          "first_team_goals": 4,
+          "second_team_goals": 1
+        },
+        {
+          "match_id": 78233,
+          "match_date_unix": 1299095100,
+          "first_team_id": 87,
+          "second_team_id": 142,
+          "first_team_goals": 3,
+          "second_team_goals": 0
+        },
+        {
+          "match_id": 71722,
+          "match_date_unix": 1295717400,
+          "first_team_id": 142,
+          "second_team_id": 87,
+          "first_team_goals": 1,
+          "second_team_goals": 0
+        },
+        {
+          "match_id": 71694,
+          "match_date_unix": 1293548400,
+          "first_team_id": 87,
+          "second_team_id": 142,
+          "first_team_goals": 4,
+          "second_team_goals": 0
+        },
+        {
+          "match_id": 72067,
+          "match_date_unix": 1272722400,
+          "first_team_id": 87,
+          "second_team_id": 142,
+          "first_team_goals": 3,
+          "second_team_goals": 1
+        },
+        {
+          "match_id": 71836,
+          "match_date_unix": 1254769200,
+          "first_team_id": 142,
+          "second_team_id": 87,
+          "first_team_goals": 1,
+          "second_team_goals": 1
+        },
+        {
+          "match_id": 72267,
+          "match_date_unix": 1236195900,
+          "first_team_id": 87,
+          "second_team_id": 142,
+          "first_team_goals": 2,
+          "second_team_goals": 0
+        },
+        {
+          "match_id": 72091,
+          "match_date_unix": 1218981600,
+          "first_team_id": 142,
+          "second_team_id": 87,
+          "first_team_goals": 4,
+          "second_team_goals": 2
+        },
+        {
+          "match_id": 72510,
+          "match_date_unix": 1198335600,
+          "first_team_id": 142,
+          "second_team_id": 87,
+          "first_team_goals": 1,
+          "second_team_goals": 1
+        },
+        {
+          "match_id": 72390,
+          "match_date_unix": 1189954800,
+          "first_team_id": 87,
+          "second_team_id": 142,
+          "first_team_goals": 1,
+          "second_team_goals": 0
+        }
+      ]
+    },
+    "xg": {
+      "home": 0.8,
+      "away": 2.08,
+      "total": 2.89,
+      "prematch_home": 1.29,
+      "prematch_away": 1.53,
+      "prematch_total": 2.82
+    },
+    "form": {
+      "home_ppg": 1,
+      "away_ppg": 2.25,
+      "pre_match_home_ppg": 0.33,
+      "pre_match_away_ppg": 3
+    },
+    "venue": {
+      "name": "Villa Park",
+      "location": "Trinity Road, Birmingham B6 6HE",
+      "attendance": 36743
+    },
+    "last_updated": {
+      "source_last_updated": "2026-10-24 13:30:06",
+      "synced_at": "2026-10-29 23:45:33"
+    },
+    "winner_text": "Aston Villa FC won the match"
+  },
+  "meta": {
+    "plan": "free",
+    "requests_used": 74,
+    "requests_limit": 2000,
+    "requests_remaining": 1926,
+    "coverage_note": "Coverage varies by league and season.",
+    "league_limit": 5,
+    "language": "en"
+  }
+}

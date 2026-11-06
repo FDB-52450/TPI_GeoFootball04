@@ -41,3 +41,6 @@ class ApiFootballApiClient:
     
     def get_team_data(self, team_name, country_name):
         return self._get("teams", params = {"name": team_name, "country": country_name})
+
+    def get_venue(self, venue_name):
+        return self._get("venues", params = {"name": venue_name})

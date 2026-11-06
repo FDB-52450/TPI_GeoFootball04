@@ -9,7 +9,10 @@ def map_team_data(data: dict) -> dict:
 
 
 def map_venue(data: dict) -> dict:
-    venue_data = data['venue']
+    if 'venue' in data:
+        venue_data = data['venue']
+    else:
+        venue_data = data
 
     return {
         "api_id": str(venue_data["id"]),

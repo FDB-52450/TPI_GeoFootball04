@@ -19,6 +19,12 @@ class MockProvider:
     def get_team_data(self, team_id):
         return self._read_json("team_data.json")
 
+    def get_match_detail(self, match_id):
+        return self._read_json("match_data.json")
+
+    def get_player_detail(self, player_id):
+        return self._read_json("player_data.json")
+
     @staticmethod
     def _read_json(filename):
         path = MOCK_DATA_DIR / filename
