@@ -409,7 +409,7 @@ def sync_match_detail(match_ids: list[str] = None, comp_ids: list[str] = None, s
         if match.estado == Partido.Estado.FINALIZADO:
             minuto_actual = None
         else:
-            minuto_actual = ioMapper.map_match_detail(match_data)
+            minuto_actual = ioMapper.map_match_detail(match_data)["minuto"]
 
         with transaction.atomic():
             partido, _ = Partido.objects.update_or_create(
@@ -486,6 +486,7 @@ def sync_plantilla(jugador, equipo, temporada):
 
 def sync_events(raw_data, partido):
     mapped_events = ioMapper.map_events(raw_data)
+    Evento.objects.filter(partido=partido).delete()
 
     for mapped_event in mapped_events:
         jugador = Jugador.objects.filter(api_id = mapped_event['jugador_id']).first()
@@ -561,4 +562,3 @@ def sync_player_detail(player_ids: list[str] = None):
                     )
 
 #endregion
-
