@@ -9,32 +9,31 @@
 ### Entidades
 - [ ] Confederacion
   - [x] Modelo con api_id
-  - [ ] Endpoint de lectura (urls → view → service → respuesta)
+  - [x] Endpoint de lectura (urls → view → service → respuesta)
   - [ ] Tests
 - [ ] Pais
   - [x] Modelo con api_id (incluye latitud y longitud)
-  - [ ] Endpoint de lectura (urls → view → service → respuesta)
+  - [x] Endpoint de lectura (urls → view → service → respuesta)
   - [ ] Tests
 - [ ] Competicion
   - [x] Modelo con api_id
-  - [ ] Endpoint de lectura (urls → view → service → respuesta)
+  - [x] Endpoint de lectura (urls → view → service → respuesta)
   - [ ] Tests
 - [ ] Temporada
   - [x] Modelo con api_id
-  - [ ] Endpoint de lectura (urls → view → service → respuesta)
+  - [x] Endpoint de lectura (urls → view → service → respuesta)
   - [ ] Tests
 - [ ] Equipo
   - [x] Modelo con api_id
-  - [ ] Endpoint de lectura (urls → view → service → respuesta)
+  - [x] Endpoint de lectura (urls → view → service → respuesta)
   - [ ] Tests
 - [ ] Estadio
   - [x] Modelo con api_id (incluye latitud y longitud)
-  - [ ] Endpoint de lectura (urls → view → service → respuesta)
   - [ ] Tests
 
 ### App
 - [x] Registrar apps.catalogo en INSTALLED_APPS
-- [ ] Incluir apps.catalogo.urls en config/urls.py
+- [x] Incluir apps.catalogo.urls en config/urls.py
 - [ ] Registrar modelos en admin.py
 
 
@@ -84,14 +83,26 @@
 - [ ] Logger de ingesta
 
 
-## Equipos (app)
-[WIP]
-
 ## Partidos (app)
-[WIP]
+- [ ] Partidos
+  - [x] Modelo con api_id
+  - [x] Endpoint de lectura (urls → view → service → respuesta)
+  - [ ] Tests
+- [ ] Jugador
+  - [x] Modelo con api_id (incluye latitud y longitud)
+  - [ ] Endpoint de lectura (urls → view → service → respuesta)
+  - [ ] Tests
+
+### App
+- [x] Registrar apps.partidos en INSTALLED_APPS
+- [x] Incluir apps.partidos.urls en config/urls.py
+- [ ] Registrar modelos en admin.py
+
 
 ## Ideas (no comprometidas)
-- Cachear tabla de resultados de una temporada de una liga
-- Guardar ranking FIFA de un país
+- Cachear tabla de resultados de una temporada de una liga **[ESTADO: RECHAZADA]**
+  - Razón: El calculo es rapido, por lo que cachearlo no es necesario
+- Guardar ranking FIFA de un país **[ESTADO: RECHAZADA]**
+  - Razón: Requiere endpoint de pago en API
 - Agregar estadisticas de temporada de jugador (en entidad Planilla)
 - Soportar historial de equipos de jugador completo (con ligas sin soporte)
