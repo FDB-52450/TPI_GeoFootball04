@@ -369,7 +369,7 @@ def _save_match_data(match_data):
     del match_data['temporada_id']
     del match_data['equipo_local_id']
     del match_data['equipo_vis_id']
-    del match_data['estadio_nombre']
+    del match_data['sede_nombre']
 
     defaults = {**_defaults(match_data), 'temporada': season,
                 'equipo_local': home_team, 'equipo_visitante': away_team,
