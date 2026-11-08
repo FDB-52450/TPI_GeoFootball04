@@ -513,8 +513,6 @@ def sync_player_detail(player_ids: list[str] = None):
     if player_ids is not None:
         players = players.filter(api_id__in = player_ids)
 
-    input([pl.nombre for pl in players])
-
     for player in players:
         data, meta = provider.get_player_detail(player.api_id)
         mapped_data = ioMapper.map_player_detail(data)
