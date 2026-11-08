@@ -308,6 +308,7 @@ def _map_event_tipo(api_event):
         "red": Evento.Tipo.TARJETA_ROJA,
         "goal": Evento.Tipo.GOL,
         "substitution": Evento.Tipo.SUBSTITUCION,
+        "penalty": Evento.Tipo.PENAL
     }
 
     try:

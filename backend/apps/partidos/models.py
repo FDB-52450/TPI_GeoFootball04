@@ -121,6 +121,7 @@ class Evento(models.Model):
         TARJETA_AMARILLA = "Yellow", "Tarjeta Amarilla"
         TARJETA_ROJA = "Red", "Tarjeta Roja"
         SUBSTITUCION = 'Substitution', "Substitucion"
+        PENAL = "Penalty", "Penal"
 
     partido = models.ForeignKey(
         Partido,
