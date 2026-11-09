@@ -34,6 +34,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = get_env_variable('DJANGO_SECRET_KEY')
 
+FRONTEND_URL = get_env_variable('FRONTEND_URL')
+
 # API related variables
 FOOTBALLDATAIO_API_BASE_URL = get_env_variable("FOOTBALLDATAIO_API_BASE_URL")
 FOOTBALLDATAIO_API_KEY = get_env_variable('FOOTBALLDATAIO_API_KEY')
@@ -61,12 +63,15 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'corsheaders',
+
     'apps.catalogo.apps.CatalogoConfig',
     'apps.ingesta.apps.IngestaConfig',
     'apps.partidos.apps.PartidosConfig'
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -147,3 +152,9 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Allowed origins
+
+CORS_ALLOWED_ORIGINS = [
+    FRONTEND_URL
+]
