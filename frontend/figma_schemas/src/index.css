@@ -854,98 +854,7 @@ footer {
 .confed-layout {
   display: grid;
   padding: 42px 0 76px;
-  grid-template-columns: 245px minmax(0, 1fr);
-  gap: 38px;
-}
-
-.confed-sidebar {
-  align-self: start;
-  padding: 21px;
-  border: 1px solid #dcdad4;
-  background: #ecebe6;
-}
-
-.confed-sidebar > label {
-  color: #586167;
-  font-size: 8px;
-  font-weight: 800;
-  letter-spacing: 1.2px;
-}
-
-.confed-search {
-  display: flex;
-  height: 43px;
-  margin: 9px 0 21px;
-  padding: 0 11px;
-  align-items: center;
-  border: 1px solid #d4d2cc;
-  background: #fff;
-  gap: 8px;
-}
-
-.confed-search svg {
-  width: 17px;
-  flex: none;
-  color: #7b8284;
-}
-
-.confed-search input {
-  width: 100%;
-  min-width: 0;
-  outline: none;
-  color: #17232b;
-  font-size: 11px;
-}
-
-.confed-search input::placeholder {
-  color: #a1a4a2;
-}
-
-.confed-search button {
-  color: #8c9292;
-  font-size: 16px;
-}
-
-.search-summary {
-  display: flex;
-  padding: 13px 0;
-  align-items: center;
-  justify-content: space-between;
-  border-top: 1px solid #d5d3cd;
-  border-bottom: 1px solid #d5d3cd;
-}
-
-.search-summary span,
-.side-fact span {
-  color: #8a8e8c;
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: .9px;
-}
-
-.search-summary strong {
-  color: #ff5b35;
-  font-family: 'Manrope', sans-serif;
-  font-size: 19px;
-}
-
-.confed-sidebar > p {
-  margin: 14px 0 25px;
-  color: #858a88;
-  font-size: 10px;
-  line-height: 1.55;
-}
-
-.side-fact {
-  display: grid;
-  padding: 11px 0;
-  border-top: 1px solid #dad8d2;
-  gap: 3px;
-}
-
-.side-fact strong {
-  color: #2b363c;
-  font-size: 11px;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .confed-detail-header {
@@ -1084,10 +993,8 @@ footer {
 
 .competition-type {
   display: inline-block;
-  padding: 4px 7px;
-  background: #f0efeb;
   color: #667076;
-  font-size: 8px;
+  font-size: 6px;
   font-weight: 700;
   letter-spacing: .5px;
   text-transform: uppercase;
@@ -1299,10 +1206,6 @@ footer {
   .sidebar {
     grid-template-columns: 1fr 1fr;
   }
-  .confed-layout {
-    grid-template-columns: 210px minmax(0, 1fr);
-    gap: 24px;
-  }
   .associations-grid {
     grid-template-columns: 1fr;
   }
@@ -1393,9 +1296,6 @@ footer {
   .confed-layout {
     padding-top: 28px;
     grid-template-columns: 1fr;
-  }
-  .confed-sidebar {
-    position: static;
   }
   .confed-detail-header {
     padding: 20px;
@@ -1582,6 +1482,12 @@ footer {
   letter-spacing: 1px;
 }
 
+.country-flag-placeholder img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .country-profile {
   min-width: 0;
 }
@@ -1705,6 +1611,72 @@ footer {
   font-weight: 800;
 }
 
+.country-panel-message,
+.country-api-error {
+  margin-top: 15px;
+  color: #858a88;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.country-api-error {
+  color: #a45032;
+}
+
+.country-team-list,
+.country-competition-list {
+  display: grid;
+  max-height: 320px;
+  margin-top: 12px;
+  overflow: auto;
+  gap: 8px;
+}
+
+.country-team-item {
+  display: flex;
+  min-width: 0;
+  padding: 9px 11px;
+  align-items: center;
+  border: 1px solid #e6e2d9;
+  background: #f8f7f3;
+  gap: 11px;
+}
+
+.country-team-item > img,
+.country-team-abbreviation {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  place-items: center;
+  object-fit: contain;
+}
+
+.country-team-abbreviation {
+  border: 1px solid #d9d7d1;
+  background: #f0efeb;
+  color: #828985;
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.country-team-item > div {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.country-team-item strong {
+  overflow-wrap: anywhere;
+  color: #34434a;
+  font-size: 10px;
+}
+
+.country-team-item small {
+  color: #8d9390;
+  font-size: 9px;
+}
+
 .country-unavailable {
   display: flex;
   margin-top: 15px;
@@ -1771,6 +1743,13 @@ footer {
   border: 1px solid #e6e2d9;
   background: linear-gradient(110deg, #f8f7f3, #fff 86%);
   gap: 14px;
+}
+
+.country-competition-logo {
+  width: 47px;
+  height: 47px;
+  flex: none;
+  object-fit: contain;
 }
 
 .country-competition-emblem {
@@ -1933,8 +1912,7 @@ footer {
   gap: 10px;
 }
 
-.confed-hero-source > span,
-.confed-endpoint-note > span {
+.confed-hero-source > span {
   color: #84939a;
   font-size: 8px;
   font-weight: 800;
@@ -2004,34 +1982,6 @@ footer {
   padding-top: 28px;
 }
 
-.confed-sidebar .country-unavailable {
-  margin-top: 14px;
-}
-
-.confed-sidebar .side-fact {
-  gap: 7px;
-}
-
-.confed-endpoint-note {
-  display: grid;
-  margin: 11px 0 15px;
-  padding: 12px;
-  border: 1px solid #dcdad4;
-  background: #f5f4ef;
-  gap: 7px;
-}
-
-.confed-endpoint-note p {
-  color: #757e7e;
-  font-size: 9px;
-  line-height: 1.5;
-}
-
-.confed-endpoint-note p code {
-  color: #384b52;
-  font-weight: 700;
-}
-
 .confed-detail-header {
   gap: 19px;
 }
@@ -2077,8 +2027,27 @@ footer {
   line-height: 1.5;
 }
 
+.confed-data-status,
+.confed-api-error {
+  margin: 14px 0;
+  color: #858a88;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.confed-api-error {
+  color: #a45032;
+}
+
+.confed-country-flag {
+  width: 38px;
+  height: 25px;
+  border: 1px solid #d9d7d1;
+  object-fit: cover;
+}
+
 .confed-data-section .associations-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .confed-data-section .association-card {
@@ -2130,6 +2099,11 @@ footer {
   font-size: 7px;
   font-weight: 800;
   letter-spacing: .5px;
+}
+
+.competition-logo-placeholder[src] {
+  object-fit: contain;
+  padding: 3px;
 }
 
 .confed-data-section .competition-card > div {
@@ -2375,6 +2349,13 @@ footer {
   transform: translate(10px, 6px);
 }
 
+.competition-feature-image {
+  width: 69px;
+  height: 69px;
+  flex: none;
+  object-fit: contain;
+}
+
 .competition-feature-main > div {
   min-width: 0;
 }
@@ -2460,6 +2441,19 @@ footer {
   flex: none;
 }
 
+.competition-season-date-range,
+.competition-season-status,
+.competition-api-error {
+  margin: 7px 0 13px;
+  color: #858a88;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.competition-api-error {
+  color: #a45032;
+}
+
 .competition-teams-panel,
 .competition-standings-panel,
 .competition-fixtures-panel,
@@ -2489,49 +2483,54 @@ footer {
   flex: none;
 }
 
-.competition-team-list {
-  display: flex;
+.competition-team-grid {
   margin-top: 15px;
-  align-items: center;
-  flex-wrap: wrap;
-  border: 1px solid #e3e1da;
-  background: #f8f7f3;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
-.competition-team-chip {
-  display: flex;
-  min-height: 68px;
-  padding: 10px 13px;
-  align-items: center;
-  border-right: 1px solid #e3e1da;
-  gap: 9px;
+.competition-team-card {
+  min-height: 98px;
+  grid-template-columns: 21px 38px minmax(0, 1fr);
 }
 
-.competition-team-chip > span {
+.competition-team-card > div {
   display: grid;
-  width: 33px;
-  height: 33px;
-  flex: none;
-  place-items: center;
-  border: 1px solid #d7d5ce;
-  border-radius: 50%;
-  background: #fff;
-  color: #838b88;
-  font-size: 6px;
-  font-weight: 800;
+  min-width: 0;
+  gap: 4px;
 }
 
-.competition-team-chip strong {
-  max-width: 110px;
-  color: #465158;
-  font-size: 9px;
+.competition-team-card h4 {
+  overflow: hidden;
+  color: #263239;
+  font-size: 10px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.competition-team-more {
-  padding: 12px;
-  color: #838b88;
+.competition-team-card p {
+  margin: 0;
+  color: #929693;
   font-size: 8px;
-  line-height: 1.5;
+}
+
+.competition-team-crest {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+}
+
+.competition-team-crest-placeholder {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid #dcdad4;
+  border-radius: 50%;
+  background: #f6f5f1;
+  color: #878f8b;
+  font-size: 7px;
+  font-weight: 800;
 }
 
 .competition-standings-panel {
@@ -2610,6 +2609,13 @@ footer {
   font-weight: 800;
 }
 
+.standings-team > img {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  object-fit: contain;
+}
+
 .standings-team strong {
   color: #36434a;
   font-size: 9px;
@@ -2637,11 +2643,9 @@ footer {
 
 .competition-date-toolbar {
   display: flex;
-  margin: 17px 0 0;
-  padding-bottom: 12px;
+  margin: 7px 0 13px;
   align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid #e6e3dc;
+  justify-content: flex-start;
   gap: 12px;
 }
 
@@ -2667,9 +2671,10 @@ footer {
 }
 
 .competition-season-scope {
-  color: #8a918f;
-  font-size: 8px;
-  text-align: right;
+  color: #858a88;
+  font-size: 9px;
+  line-height: 1.5;
+  text-align: left;
 }
 
 .competition-fixture {
@@ -2717,6 +2722,13 @@ footer {
   color: #878f8b;
   font-size: 5px;
   font-weight: 800;
+}
+
+.fixture-team > img {
+  width: 29px;
+  height: 29px;
+  flex: none;
+  object-fit: contain;
 }
 
 .fixture-team strong {
@@ -2860,6 +2872,9 @@ footer {
 }
 
 @media (max-width: 850px) {
+  .competition-team-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .competition-feature {
     grid-template-columns: 1fr;
   }
@@ -2880,6 +2895,9 @@ footer {
 }
 
 @media (max-width: 620px) {
+  .competition-team-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
   .competitions-title-row {
     align-items: flex-start;
     flex-direction: column;
@@ -2904,13 +2922,6 @@ footer {
   .related-heading {
     align-items: flex-start;
     flex-direction: column;
-  }
-  .competition-team-chip {
-    width: 50%;
-    border-bottom: 1px solid #e3e1da;
-  }
-  .competition-team-more {
-    width: 100%;
   }
   .competition-fixtures-panel,
   .competition-standings-panel,
@@ -3020,8 +3031,7 @@ footer {
   .country-select-wrap select,
   .competition-select-field select,
   .competition-season-select select,
-  .related-filters select,
-  .confed-search input {
+  .related-filters select {
     font-size: 15px;
   }
 
@@ -3058,8 +3068,6 @@ footer {
 
   .confed-picker-wrap .confed-picker button strong,
   .confed-detail-header p,
-  .confed-endpoint-note p,
-  .confed-sidebar > label,
   .confed-data-description,
   .competitions-description {
     font-size: 15px;
@@ -3068,8 +3076,6 @@ footer {
   .confed-picker-wrap .confed-picker button small,
   .confed-picker-wrap .confed-picker button i,
   .confed-hero-source > span,
-  .confed-endpoint-note > span,
-  .side-fact span,
   .member-total span,
   .member-total small {
     font-size: 13px;
@@ -3081,7 +3087,7 @@ footer {
   }
 
   .confed-picker-placeholder,
-  .side-fact strong,
+
   .confed-detail-header > div > span,
   .country-data-description,
   .associations-heading > span,
@@ -3132,8 +3138,6 @@ footer {
 
   .competition-feature-meta span,
   .competition-feature-endpoints > div > span,
-  .competition-team-chip strong,
-  .competition-team-more,
   .competition-date-tabs button,
   .competition-standings-table th,
   .competition-standings-table td,

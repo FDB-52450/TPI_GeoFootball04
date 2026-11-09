@@ -1,32 +1,25 @@
+import { useEffect, useState } from "react"
+import {
+  fetchCompetitionDetails,
+  fetchCompetitions,
+  fetchCompetitionSeason,
+  type Competition,
+  type CompetitionDetails,
+  type CompetitionSeasonData,
+} from "./api/competitions"
+
 function EndpointTag({ children }: { children: string }) {
   return <code className="country-endpoint">{children}</code>
 }
 
-function UnavailableNotice({
-  title,
-  detail,
-}: {
-  title: string
-  detail: string
-}) {
-  return (
-    <div className="country-unavailable">
-      <span className="country-unavailable-icon" aria-hidden="true">
-        !
-      </span>
-      <div>
-        <strong>{title}</strong>
-        <p>{detail}</p>
-        <span className="country-endpoint country-endpoint-missing">
-          Sin endpoint / filtro disponible
-        </span>
-      </div>
-    </div>
-  )
-}
-
-function CompetitionEmblem() {
-  return (
+function CompetitionEmblem({ logoUrl }: { logoUrl?: string }) {
+  return logoUrl ? (
+    <img
+      alt=""
+      className="competition-feature-image"
+      src={logoUrl}
+    />
+  ) : (
     <span className="competition-feature-emblem" aria-hidden="true">
       <span />
       <span />
@@ -35,7 +28,165 @@ function CompetitionEmblem() {
   )
 }
 
+function formatMatchDate(value: string): { date: string; time: string } {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return { date: value, time: "" }
+
+  return {
+    date: date.toLocaleDateString(),
+    time: date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+  }
+}
+
+function formatSeasonDate(value: string): string {
+  const date = new Date(`${value}T00:00:00`)
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString()
+}
+
+function getCompetitionAffiliation(competition: CompetitionDetails): string {
+  if (competition.pais) return competition.pais.nombre
+  if (competition.confederacion) return competition.confederacion.nombre
+  return "Sin afiliación informada"
+}
+
 export default function CompetitionsPage() {
+  const [competitions, setCompetitions] = useState<Competition[]>([])
+  const [competitionId, setCompetitionId] = useState<number | null>(null)
+  const [competitionsLoading, setCompetitionsLoading] = useState(true)
+  const [competitionsError, setCompetitionsError] = useState<string | null>(null)
+  const [competitionDetails, setCompetitionDetails] =
+    useState<CompetitionDetails | null>(null)
+  const [detailsLoading, setDetailsLoading] = useState(false)
+  const [detailsError, setDetailsError] = useState<string | null>(null)
+  const [seasonId, setSeasonId] = useState<number | null>(null)
+  const [seasonData, setSeasonData] = useState<CompetitionSeasonData | null>(
+    null,
+  )
+  const [seasonLoading, setSeasonLoading] = useState(false)
+  const [seasonError, setSeasonError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadCompetitions() {
+      try {
+        const result = await fetchCompetitions()
+        if (!cancelled) {
+          setCompetitions(result)
+          setCompetitionId(result[0]?.id ?? null)
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setCompetitionsError(
+            error instanceof Error
+              ? error.message
+              : "No se pudieron cargar las competiciones.",
+          )
+        }
+      } finally {
+        if (!cancelled) setCompetitionsLoading(false)
+      }
+    }
+
+    void loadCompetitions()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    if (competitionId === null) {
+      setCompetitionDetails(null)
+      setDetailsError(null)
+      setDetailsLoading(false)
+      setSeasonId(null)
+      return
+    }
+
+    const selectedCompetitionId = competitionId
+    let cancelled = false
+    setCompetitionDetails(null)
+    setDetailsError(null)
+    setDetailsLoading(true)
+    setSeasonId(null)
+    setSeasonData(null)
+    setSeasonError(null)
+
+    async function loadCompetitionDetails() {
+      try {
+        const result = await fetchCompetitionDetails(selectedCompetitionId)
+        if (!cancelled) {
+          setCompetitionDetails(result)
+          setSeasonId(result.temporadas[0]?.id ?? null)
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setDetailsError(
+            error instanceof Error
+              ? error.message
+              : "No se pudo cargar el detalle de la competición.",
+          )
+        }
+      } finally {
+        if (!cancelled) setDetailsLoading(false)
+      }
+    }
+
+    void loadCompetitionDetails()
+    return () => {
+      cancelled = true
+    }
+  }, [competitionId])
+
+  useEffect(() => {
+    if (competitionId === null || seasonId === null) {
+      setSeasonData(null)
+      setSeasonError(null)
+      setSeasonLoading(false)
+      return
+    }
+
+    const selectedCompetitionId = competitionId
+    const selectedSeasonId = seasonId
+    let cancelled = false
+    setSeasonData(null)
+    setSeasonError(null)
+    setSeasonLoading(true)
+
+    async function loadSeason() {
+      try {
+        const result = await fetchCompetitionSeason(
+          selectedCompetitionId,
+          selectedSeasonId,
+        )
+        if (!cancelled) setSeasonData(result)
+      } catch (error) {
+        if (!cancelled) {
+          setSeasonError(
+            error instanceof Error
+              ? error.message
+              : "No se pudieron cargar los datos de la temporada.",
+          )
+        }
+      } finally {
+        if (!cancelled) setSeasonLoading(false)
+      }
+    }
+
+    void loadSeason()
+    return () => {
+      cancelled = true
+    }
+  }, [competitionId, seasonId])
+
+  const selectedCompetition =
+    competitions.find(({ id }) => id === competitionId) ?? null
+  const selectedDetails =
+    competitionDetails?.id === competitionId ? competitionDetails : null
+  const selectedSeason = selectedDetails?.temporadas.find(
+    ({ id }) => id === seasonId,
+  )
+
   return (
     <div className="competitions-page">
       <section className="competitions-hero">
@@ -47,9 +198,7 @@ export default function CompetitionsPage() {
             <div>
               <span className="section-label">TEMPORADAS Y CALENDARIOS</span>
               <h1>Competiciones</h1>
-              <p>
-                Consulta participantes y partidos de cada temporada.
-              </p>
+              <p>Consulta participantes y partidos de cada temporada.</p>
             </div>
             <div className="competitions-hero-source">
               <span>CATÁLOGO DE COMPETICIONES</span>
@@ -70,41 +219,68 @@ export default function CompetitionsPage() {
           </div>
           <label className="competition-select-field">
             <span>COMPETICIÓN</span>
-            <select defaultValue="">
+            <select
+              disabled={competitionsLoading || Boolean(competitionsError)}
+              onChange={(event) =>
+                setCompetitionId(
+                  event.target.value ? Number(event.target.value) : null,
+                )
+              }
+              value={competitionId ?? ""}
+            >
               <option value="" disabled>
-                Seleccionar competición
+                {competitionsLoading
+                  ? "Cargando competiciones…"
+                  : "Seleccionar competición"}
               </option>
+              {competitions.map((competition) => (
+                <option key={competition.id} value={competition.id}>
+                  {competition.nombre}
+                </option>
+              ))}
             </select>
-            <EndpointTag>/api/catalogo/competiciones/</EndpointTag>
+            {competitionsError && (
+              <span className="competition-api-error" role="alert">
+                No se pudo cargar el catálogo: {competitionsError}
+              </span>
+            )}
           </label>
-          <UnavailableNotice
-            title="El catálogo no ofrece filtros de confederación o país"
-            detail="La lista admite búsqueda por nombre. Los filtros de afiliación se muestran en la sección de competiciones relacionadas."
-          />
         </section>
 
         <section className="competition-feature">
           <div className="competition-feature-main">
-            <CompetitionEmblem />
+            <CompetitionEmblem logoUrl={selectedDetails?.logo_url} />
             <div>
               <span className="competition-feature-kicker">
                 COMPETICIÓN SELECCIONADA
               </span>
-              <h2>[nombre de la competición]</h2>
+              <h2>
+                {selectedDetails?.nombre ??
+                  selectedCompetition?.nombre ??
+                  "Selecciona una competición"}
+              </h2>
               <div className="competition-feature-meta">
-                <span>[tipo]</span>
-                <span>[país o confederación]</span>
+                {selectedDetails ? (
+                  <>
+                    <span>{selectedDetails.tipo}</span>
+                    <span>{getCompetitionAffiliation(selectedDetails)}</span>
+                  </>
+                ) : detailsLoading ? (
+                  <span>Cargando detalle…</span>
+                ) : detailsError ? (
+                  <span role="alert">{detailsError}</span>
+                ) : null}
               </div>
             </div>
           </div>
           <div className="competition-feature-endpoints">
             <div>
               <span>DETALLE Y TEMPORADAS</span>
-              <EndpointTag>/api/catalogo/competiciones/&lt;id&gt;</EndpointTag>
+              <EndpointTag>{`/api/catalogo/competiciones/${competitionId ?? "<id>"}`}</EndpointTag>
             </div>
             <div>
               <span>PAÍS Y CONFEDERACIÓN</span>
-              <EndpointTag>/api/catalogo/competiciones/&lt;id&gt;</EndpointTag>
+              <EndpointTag>{`/api/catalogo/competiciones/${competitionId ?? "<id>"}`}</EndpointTag>
             </div>
           </div>
         </section>
@@ -121,16 +297,50 @@ export default function CompetitionsPage() {
             </div>
             <label className="competition-season-select">
               <span>TEMPORADA</span>
-              <select defaultValue="">
+              <select
+                disabled={
+                  detailsLoading ||
+                  !selectedDetails?.temporadas.length ||
+                  Boolean(detailsError)
+                }
+                onChange={(event) =>
+                  setSeasonId(event.target.value ? Number(event.target.value) : null)
+                }
+                value={seasonId ?? ""}
+              >
                 <option value="" disabled>
-                  Seleccionar temporada
+                  {detailsLoading
+                    ? "Cargando temporadas…"
+                    : "Seleccionar temporada"}
                 </option>
+                {selectedDetails?.temporadas.map((season) => (
+                  <option key={season.id} value={season.id}>
+                    {season.etiqueta}
+                  </option>
+                ))}
               </select>
-              <EndpointTag>
-                /api/catalogo/competiciones/&lt;id&gt;
-              </EndpointTag>
+              <EndpointTag>{`/api/catalogo/competiciones/${competitionId ?? "<id>"}`}</EndpointTag>
             </label>
           </div>
+          {selectedSeason && (
+            <p className="competition-season-date-range">
+              {formatSeasonDate(selectedSeason.fecha_inicio)} –{" "}
+              {formatSeasonDate(selectedSeason.fecha_fin)}
+            </p>
+          )}
+          {detailsError && (
+            <p className="competition-api-error" role="alert">
+              No se pudieron cargar las temporadas: {detailsError}
+            </p>
+          )}
+          {!detailsLoading &&
+            !detailsError &&
+            selectedDetails &&
+            selectedDetails.temporadas.length === 0 && (
+              <p className="competition-season-status">
+                Esta competición no tiene temporadas registradas.
+              </p>
+            )}
 
           <div className="competition-teams-panel">
             <div className="competition-subsection-heading">
@@ -138,22 +348,51 @@ export default function CompetitionsPage() {
                 <span className="section-label">PARTICIPANTES</span>
                 <h3>Equipos de la temporada</h3>
               </div>
-              <EndpointTag>
-                /api/catalogo/competiciones/&lt;id&gt;/temporadas/&lt;temporada_id&gt;
-              </EndpointTag>
+              <EndpointTag>{`/api/catalogo/competiciones/${competitionId ?? "<id>"}/temporadas/${seasonId ?? "<temporada_id>"}`}</EndpointTag>
             </div>
-            <div className="competition-team-list">
-              {[1, 2, 3, 4, 5].map((item) => (
-                <div className="competition-team-chip" key={item}>
-                  <span>[ESCUDO]</span>
-                  <strong>[nombre del equipo]</strong>
-                </div>
-              ))}
-              <p className="competition-team-more">
-                Los participantes restantes se obtienen del mismo recurso de
-                temporada.
+            {seasonLoading ? (
+              <p className="competition-season-status">
+                Cargando equipos…
               </p>
-            </div>
+            ) : seasonError ? (
+              <p className="competition-api-error" role="alert">
+                No se pudieron cargar los equipos: {seasonError}
+              </p>
+            ) : seasonData?.equipos.length ? (
+              <div className="associations-grid competition-team-grid">
+                {seasonData.equipos.map((team, index) => (
+                  <article
+                    className="association-card competition-team-card"
+                    key={team.id}
+                  >
+                    <span className="association-number">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    {team.escudo_url ? (
+                      <img
+                        alt=""
+                        className="competition-team-crest"
+                        src={team.escudo_url}
+                      />
+                    ) : (
+                      <span className="competition-team-crest-placeholder">
+                        {team.siglas || "—"}
+                      </span>
+                    )}
+                    <div>
+                      <h4>{team.nombre}</h4>
+                      {team.siglas && <p>{team.siglas}</p>}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p className="competition-season-status">
+                {seasonId === null
+                  ? "Selecciona una temporada para ver sus equipos."
+                  : "No hay equipos asociados a esta temporada."}
+              </p>
+            )}
           </div>
 
           <div className="competition-standings-panel">
@@ -162,59 +401,73 @@ export default function CompetitionsPage() {
                 <span className="section-label">CLASIFICACIÓN</span>
                 <h3>Tabla de posiciones</h3>
               </div>
-              <EndpointTag>
-                /api/catalogo/competiciones/&lt;id&gt;/temporadas/&lt;temporada_id&gt;/tabla
-              </EndpointTag>
+              <EndpointTag>{`/api/catalogo/competiciones/${competitionId ?? "<id>"}/temporadas/${seasonId ?? "<temporada_id>"}/tabla`}</EndpointTag>
             </div>
             <p className="competition-standings-description">
               La clasificación corresponde únicamente a la temporada
               seleccionada.
             </p>
-            <div className="competition-standings-scroll">
-              <table className="competition-standings-table">
-                <thead>
-                  <tr>
-                    <th scope="col">#</th>
-                    <th scope="col" className="standings-team-column">
-                      Equipo
-                    </th>
-                    <th scope="col">PJ</th>
-                    <th scope="col">G</th>
-                    <th scope="col">E</th>
-                    <th scope="col">P</th>
-                    <th scope="col">GF</th>
-                    <th scope="col">GC</th>
-                    <th scope="col">DG</th>
-                    <th scope="col">PTS</th>
-                    <th scope="col">Forma</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[1, 2, 3, 4].map((position) => (
-                    <tr key={position}>
-                      <td className="standings-position">{position}</td>
-                      <td className="standings-team">
-                        <span>[ESCUDO]</span>
-                        <strong>[nombre del equipo]</strong>
-                      </td>
-                      <td>[PJ]</td>
-                      <td>[G]</td>
-                      <td>[E]</td>
-                      <td>[P]</td>
-                      <td>[GF]</td>
-                      <td>[GC]</td>
-                      <td>[DG]</td>
-                      <td className="standings-points">[PTS]</td>
-                      <td className="standings-form">[W-D-L]</td>
+            {seasonLoading ? (
+              <p className="competition-season-status">
+                Cargando clasificación…
+              </p>
+            ) : seasonError ? (
+              <p className="competition-api-error" role="alert">
+                No se pudo cargar la clasificación: {seasonError}
+              </p>
+            ) : seasonData?.tabla.length ? (
+              <div className="competition-standings-scroll">
+                <table className="competition-standings-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">#</th>
+                      <th scope="col" className="standings-team-column">
+                        Equipo
+                      </th>
+                      <th scope="col">PJ</th>
+                      <th scope="col">G</th>
+                      <th scope="col">E</th>
+                      <th scope="col">P</th>
+                      <th scope="col">GF</th>
+                      <th scope="col">GC</th>
+                      <th scope="col">DG</th>
+                      <th scope="col">PTS</th>
+                      <th scope="col">Forma</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <UnavailableNotice
-              title="Las competiciones tipo copa no tienen tabla de posiciones"
-              detail="Para una temporada cuya competición es de tipo COPA, este endpoint devuelve una lista vacía."
-            />
+                  </thead>
+                  <tbody>
+                    {seasonData.tabla.map((row, index) => (
+                      <tr key={row.equipo.id}>
+                        <td className="standings-position">{index + 1}</td>
+                        <td className="standings-team">
+                          {row.equipo.imagen ? (
+                            <img alt="" src={row.equipo.imagen} />
+                          ) : (
+                            <span>—</span>
+                          )}
+                          <strong>{row.equipo.nombre}</strong>
+                        </td>
+                        <td>{row.partidos_jugados}</td>
+                        <td>{row.ganados}</td>
+                        <td>{row.empatados}</td>
+                        <td>{row.perdidos}</td>
+                        <td>{row.goles_favor}</td>
+                        <td>{row.goles_contra}</td>
+                        <td>{row.diferencia_goles}</td>
+                        <td className="standings-points">{row.puntos}</td>
+                        <td className="standings-form">{row.forma || "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="competition-season-status">
+                {seasonId === null
+                  ? "Selecciona una temporada para ver la clasificación."
+                  : "La API no devuelve filas para esta tabla (por ejemplo, en competiciones tipo copa)."}
+              </p>
+            )}
           </div>
 
           <div className="competition-fixtures-panel">
@@ -223,147 +476,88 @@ export default function CompetitionsPage() {
                 <span className="section-label">CALENDARIO DE TEMPORADA</span>
                 <h3>Partidos</h3>
               </div>
-              <EndpointTag>
-                /api/catalogo/competiciones/&lt;id&gt;/temporadas/&lt;temporada_id&gt;/partidos
-              </EndpointTag>
+              <EndpointTag>{`/api/catalogo/competiciones/${competitionId ?? "<id>"}/temporadas/${seasonId ?? "<temporada_id>"}/partidos`}</EndpointTag>
             </div>
             <div className="competition-date-toolbar">
-              <div className="competition-date-tabs" aria-label="Filtrar por fecha">
-                <button type="button">Ayer</button>
-                <button className="selected" type="button">
-                  Hoy
-                </button>
-                <button type="button">Mañana</button>
-              </div>
               <span className="competition-season-scope">
-                Resultados, partidos actuales y próximos
+                Partidos registrados en la temporada seleccionada
               </span>
             </div>
-            <div className="competition-fixture-list">
-              <article className="competition-fixture">
-                <div className="fixture-date">
-                  <strong>[fecha]</strong>
-                  <span>[hora]</span>
-                </div>
-                <div className="fixture-team fixture-home">
-                  <span>[ESCUDO]</span>
-                  <strong>[equipo local]</strong>
-                </div>
-                <div className="fixture-result">
-                  <strong>[goles] — [goles]</strong>
-                  <span>FINALIZADO</span>
-                </div>
-                <div className="fixture-team fixture-away">
-                  <span>[ESCUDO]</span>
-                  <strong>[equipo visitante]</strong>
-                </div>
-                <span className="fixture-endpoint">MISMA TEMPORADA</span>
-              </article>
-              <article className="competition-fixture fixture-live">
-                <div className="fixture-date">
-                  <strong>[fecha]</strong>
-                  <span>[hora]</span>
-                </div>
-                <div className="fixture-team fixture-home">
-                  <span>[ESCUDO]</span>
-                  <strong>[equipo local]</strong>
-                </div>
-                <div className="fixture-result">
-                  <strong>[goles] — [goles]</strong>
-                  <span><i /> EN JUEGO · [minuto]</span>
-                </div>
-                <div className="fixture-team fixture-away">
-                  <span>[ESCUDO]</span>
-                  <strong>[equipo visitante]</strong>
-                </div>
-                <span className="fixture-endpoint">MISMA TEMPORADA</span>
-              </article>
-              <article className="competition-fixture">
-                <div className="fixture-date">
-                  <strong>[fecha]</strong>
-                  <span>[hora]</span>
-                </div>
-                <div className="fixture-team fixture-home">
-                  <span>[ESCUDO]</span>
-                  <strong>[equipo local]</strong>
-                </div>
-                <div className="fixture-result fixture-upcoming">
-                  <strong>[hora]</strong>
-                  <span>PROGRAMADO</span>
-                </div>
-                <div className="fixture-team fixture-away">
-                  <span>[ESCUDO]</span>
-                  <strong>[equipo visitante]</strong>
-                </div>
-                <span className="fixture-endpoint">MISMA TEMPORADA</span>
-              </article>
-            </div>
-            <UnavailableNotice
-              title="Los filtros de fecha y estado aún no están disponibles"
-              detail="La ruta de partidos de temporada devuelve sus encuentros, pero no acepta parámetros para separar anteriores, en juego o próximos ni para filtrar por fecha."
-            />
-          </div>
-        </section>
-
-        <section className="related-competitions">
-          <div className="related-heading">
-            <div>
-              <span className="section-label">DESCUBRIR MÁS</span>
-              <h2>Competencias relacionadas</h2>
-              <p>
-                Otras competencias asociadas a la misma confederación.
+            {seasonLoading ? (
+              <p className="competition-season-status">
+                Cargando partidos…
               </p>
-            </div>
-            <EndpointTag>
-              /api/catalogo/confederaciones/&lt;id&gt;/
-            </EndpointTag>
-          </div>
-          <div className="related-filters">
-            <label>
-              <span>CONFEDERACIÓN</span>
-              <select defaultValue="">
-                <option value="" disabled>
-                  Seleccionar confederación
-                </option>
-              </select>
-              <EndpointTag>/api/catalogo/confederaciones/</EndpointTag>
-            </label>
-            <label>
-              <span>PAÍS</span>
-              <select defaultValue="">
-                <option value="" disabled>
-                  Seleccionar país
-                </option>
-              </select>
-              <EndpointTag>/api/catalogo/paises/</EndpointTag>
-            </label>
-          </div>
-          <div className="related-competition-list">
-            {[1, 2, 3].map((item) => (
-              <article className="related-competition-card" key={item}>
-                <span className="related-competition-logo">LOGO</span>
-                <div>
-                  <strong>[nombre de la competencia]</strong>
-                  <p>[tipo] · [país o confederación]</p>
-                </div>
-                <EndpointTag>
-                  /api/catalogo/confederaciones/&lt;id&gt;/
-                </EndpointTag>
-              </article>
-            ))}
-          </div>
-          <UnavailableNotice
-            title="El filtro por país no existe como parámetro de listado"
-            detail="La confederación lista sus competencias y el detalle de una competencia incluye país/confederación; la API no permite filtrar directamente el listado por ambos criterios."
-          />
-        </section>
+            ) : seasonError ? (
+              <p className="competition-api-error" role="alert">
+                No se pudieron cargar los partidos: {seasonError}
+              </p>
+            ) : seasonData?.partidos.length ? (
+              <div className="competition-fixture-list">
+                {seasonData.partidos.map((match) => {
+                  const matchDate = formatMatchDate(match.fecha)
+                  const isLive = match.estado === "EN_JUEGO"
+                  const scoreAvailable =
+                    match.goles.local !== null &&
+                    match.goles.visitante !== null
 
+                  return (
+                    <article
+                      className={`competition-fixture${isLive ? " fixture-live" : ""}`}
+                      key={match.id}
+                    >
+                      <div className="fixture-date">
+                        <strong>{matchDate.date}</strong>
+                        <span>{matchDate.time}</span>
+                      </div>
+                      <div className="fixture-team fixture-home">
+                        {match.equipos.local.imagen ? (
+                          <img alt="" src={match.equipos.local.imagen} />
+                        ) : (
+                          <span>—</span>
+                        )}
+                        <strong>{match.equipos.local.nombre}</strong>
+                      </div>
+                      <div
+                        className={`fixture-result${match.estado === "PROGRAMADO" ? " fixture-upcoming" : ""}`}
+                      >
+                        <strong>
+                          {scoreAvailable
+                            ? `${match.goles.local} — ${match.goles.visitante}`
+                            : matchDate.time || "vs"}
+                        </strong>
+                        <span>
+                          {isLive
+                            ? `EN JUEGO${match.minuto_actual !== null ? ` · ${match.minuto_actual}'` : ""}`
+                            : match.estado}
+                        </span>
+                      </div>
+                      <div className="fixture-team fixture-away">
+                        {match.equipos.visitante.imagen ? (
+                          <img alt="" src={match.equipos.visitante.imagen} />
+                        ) : (
+                          <span>—</span>
+                        )}
+                        <strong>{match.equipos.visitante.nombre}</strong>
+                      </div>
+                      <span className="fixture-endpoint">TEMPORADA</span>
+                    </article>
+                  )
+                })}
+              </div>
+            ) : (
+              <p className="competition-season-status">
+                {seasonId === null
+                  ? "Selecciona una temporada para ver sus partidos."
+                  : "No hay partidos disponibles para esta temporada."}
+              </p>
+            )}
+          </div>
+        </section>
         <aside className="country-implementation-note">
           <span className="country-note-mark">i</span>
           <p>
-            Los equipos y partidos se muestran como estructura de ejemplo; no
-            son datos reales. Temporada y calendario están ligados al mismo
-            temporada_id en las rutas indicadas.
+            Selecciona una competición y una temporada para cargar sus equipos,
+            clasificación y partidos desde la API.
           </p>
         </aside>
       </div>

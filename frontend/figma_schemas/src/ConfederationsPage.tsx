@@ -1,43 +1,145 @@
+import { useEffect, useState } from "react"
+import {
+  fetchConfederationDetails,
+  type Confederation,
+  type ConfederationDetails,
+} from "./api/confederations"
+
+const CONFEDERATIONS_ENDPOINT =
+  "http://127.0.0.1:8000/api/catalogo/confederaciones/"
+
+function isConfederation(value: unknown): value is Confederation {
+  if (typeof value !== "object" || value === null) return false
+
+  const confederation = value as Record<string, unknown>
+  return (
+    typeof confederation.id === "number" &&
+    typeof confederation.nombre === "string" &&
+    typeof confederation.region === "string" &&
+    typeof confederation.logo_url === "string"
+  )
+}
+
 function EndpointTag({ children }: { children: string }) {
   return <code className="country-endpoint">{children}</code>
 }
 
-function UnavailableNotice({
-  title,
-  detail,
-}: {
-  title: string
-  detail: string
-}) {
-  return (
-    <div className="country-unavailable">
-      <span className="country-unavailable-icon" aria-hidden="true">
-        !
-      </span>
-      <div>
-        <strong>{title}</strong>
-        <p>{detail}</p>
-        <span className="country-endpoint country-endpoint-missing">
-          Sin endpoint disponible
-        </span>
-      </div>
-    </div>
-  )
-}
-
-function ConfederationMark() {
+function ConfederationMark({ logoUrl }: { logoUrl?: string | null }) {
   return (
     <span className="confed-mark confed-mark-large" aria-hidden="true">
-      <svg viewBox="0 0 56 56">
-        <circle cx="28" cy="28" r="24" />
-        <path d="M17 35c5-3 5-11 11-16 4 5 8 8 11 15M18 21c5 2 15 2 21-1" />
-      </svg>
-      <b>[LOGO]</b>
+      {logoUrl ? (
+        <img
+          alt=""
+          src={logoUrl}
+          style={{ width: "100%", height: "100%", objectFit: "contain" }}
+        />
+      ) : (
+        <>
+          <svg viewBox="0 0 56 56">
+            <circle cx="28" cy="28" r="24" />
+            <path d="M17 35c5-3 5-11 11-16 4 5 8 8 11 15M18 21c5 2 15 2 21-1" />
+          </svg>
+          <b>LOGO</b>
+        </>
+      )}
     </span>
   )
 }
 
 export default function ConfederationsPage() {
+  const [confederations, setConfederations] = useState<Confederation[]>([])
+  const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [details, setDetails] = useState<ConfederationDetails | null>(null)
+  const [detailsLoading, setDetailsLoading] = useState(false)
+  const [detailsError, setDetailsError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadConfederations() {
+      try {
+        const response = await fetch(CONFEDERATIONS_ENDPOINT)
+        if (!response.ok) {
+          throw new Error(`El servidor respondió con HTTP ${response.status}.`)
+        }
+
+        const payload: unknown = await response.json()
+        if (
+          typeof payload !== "object" ||
+          payload === null ||
+          !("confederaciones" in payload) ||
+          !Array.isArray(payload.confederaciones) ||
+          !payload.confederaciones.every(isConfederation)
+        ) {
+          throw new Error("La respuesta no contiene una lista válida de confederaciones.")
+        }
+
+        if (!cancelled) {
+          setConfederations(payload.confederaciones)
+          setSelectedId(payload.confederaciones[0]?.id ?? null)
+        }
+      } catch (loadError) {
+        if (!cancelled) {
+          setError(
+            loadError instanceof Error
+              ? loadError.message
+              : "No se pudieron cargar las confederaciones.",
+          )
+        }
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    void loadConfederations()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    if (selectedId === null) {
+      setDetails(null)
+      setDetailsError(null)
+      setDetailsLoading(false)
+      return
+    }
+
+    const confederationId = selectedId
+    let cancelled = false
+    setDetails(null)
+    setDetailsError(null)
+    setDetailsLoading(true)
+
+    async function loadDetails() {
+      try {
+        const result = await fetchConfederationDetails(confederationId)
+        if (!cancelled) setDetails(result)
+      } catch (loadError) {
+        if (!cancelled) {
+          setDetailsError(
+            loadError instanceof Error
+              ? loadError.message
+              : "No se pudo cargar el detalle de la confederación.",
+          )
+        }
+      } finally {
+        if (!cancelled) setDetailsLoading(false)
+      }
+    }
+
+    void loadDetails()
+    return () => {
+      cancelled = true
+    }
+  }, [selectedId])
+
+  const selectedConfederation =
+    confederations.find(({ id }) => id === selectedId) ?? null
+  const selectedDetails = details?.id === selectedId ? details : null
+
   return (
     <div className="confederations-page">
       <section className="confed-hero">
@@ -54,7 +156,7 @@ export default function ConfederationsPage() {
               </p>
             </div>
             <div className="confed-world-stat">
-              <strong>[N]</strong>
+              <strong>{loading ? "…" : confederations.length}</strong>
               <span>
                 confederaciones
                 <br />
@@ -78,63 +180,66 @@ export default function ConfederationsPage() {
           <EndpointTag>/api/catalogo/confederaciones/</EndpointTag>
         </div>
         <div className="confed-picker">
-          <button className="selected" type="button">
-            <ConfederationMark />
-            <span>
-              <strong>[nombre]</strong>
-              <small>[región]</small>
-            </span>
-            <i>[id]</i>
-          </button>
-          <div className="confed-picker-placeholder">
-            Los demás registros de la lista se obtienen del mismo endpoint.
-          </div>
+          {loading ? (
+            <div className="confed-picker-placeholder">
+              Cargando confederaciones…
+            </div>
+          ) : error ? (
+            <div className="confed-picker-placeholder" role="alert">
+              No se pudo cargar el catálogo: {error}
+            </div>
+          ) : confederations.length ? (
+            confederations.map((confederation) => (
+              <button
+                aria-pressed={selectedId === confederation.id}
+                className={selectedId === confederation.id ? "selected" : ""}
+                key={confederation.id}
+                onClick={() => setSelectedId(confederation.id)}
+                type="button"
+              >
+                <ConfederationMark logoUrl={confederation.logo_url} />
+                <span>
+                  <strong>{confederation.nombre}</strong>
+                  <small>{confederation.region || "Región no informada"}</small>
+                </span>
+                <i>{confederation.id}</i>
+              </button>
+            ))
+          ) : (
+            <div className="confed-picker-placeholder">
+              El catálogo no contiene confederaciones.
+            </div>
+          )}
         </div>
       </div>
 
       <div className="content confed-layout">
-        <aside className="confed-sidebar">
-          <label htmlFor="association-search">BUSCAR CONFEDERACIÓN</label>
-          <div className="confed-search">
-            <input
-              id="association-search"
-              placeholder="Buscar por nombre..."
-              type="search"
-            />
-          </div>
-          <div className="confed-endpoint-note">
-            <span>CAMPO DE BÚSQUEDA</span>
-            <p>
-              El endpoint de lista admite el parámetro <code>?nombre=</code>.
-            </p>
-            <EndpointTag>/api/catalogo/confederaciones/?nombre=</EndpointTag>
-          </div>
-          <div className="side-fact">
-            <span>REGIÓN</span>
-            <strong>[región de la confederación]</strong>
-            <EndpointTag>/api/catalogo/confederaciones/&lt;id&gt;/</EndpointTag>
-          </div>
-          <UnavailableNotice
-            title="Año de fundación no disponible"
-            detail="El recurso de confederación no expone la fecha o el año de fundación."
-          />
-        </aside>
-
         <section className="confed-detail">
           <header className="confed-detail-header">
-            <ConfederationMark />
+            <ConfederationMark logoUrl={selectedConfederation?.logo_url} />
             <div>
-              <span>[REGIÓN]</span>
-              <h2>[nombre]</h2>
-              <p>Identificador: [id]</p>
-              <EndpointTag>/api/catalogo/confederaciones/&lt;id&gt;/</EndpointTag>
+              <span>{selectedConfederation?.region || "CONFEDERACIÓN"}</span>
+              <h2>{selectedConfederation?.nombre || "Selecciona una confederación"}</h2>
+              {selectedConfederation && (
+                <p>Identificador: {selectedConfederation.id}</p>
+              )}
+              <EndpointTag>
+                {`/api/catalogo/confederaciones/${selectedConfederation?.id ?? ""}/`}
+              </EndpointTag>
             </div>
             <div className="member-total">
-              <strong>[N]</strong>
+              <strong>
+                {detailsLoading ? "…" : selectedDetails?.paises.length ?? "—"}
+              </strong>
               <span>PAÍSES MIEMBROS</span>
-              <small>cantidad calculada desde la lista</small>
             </div>
           </header>
+
+          {detailsError && (
+            <p className="confed-api-error" role="alert">
+              No se pudo cargar el detalle: {detailsError}
+            </p>
+          )}
 
           <section className="confed-data-section">
             <div className="associations-heading">
@@ -145,29 +250,46 @@ export default function ConfederationsPage() {
               <EndpointTag>/api/catalogo/confederaciones/&lt;id&gt;/</EndpointTag>
             </div>
             <p className="confed-data-description">
-              El detalle incluye nombre, código ISO3 y bandera de cada país.
+              Países asociados a la confederación seleccionada.
             </p>
-            <div className="associations-grid">
-              {[1, 2, 3].map((item) => (
-                <article className="association-card" key={item}>
-                  <span className="association-number">
-                    {String(item).padStart(2, "0")}
-                  </span>
-                  <span className="association-flag">ISO3</span>
-                  <div>
-                    <h4>[nombre del país]</h4>
-                    <p>[código ISO3] · [bandera]</p>
-                    <EndpointTag>
-                      /api/catalogo/confederaciones/&lt;id&gt;/
-                    </EndpointTag>
-                  </div>
-                </article>
-              ))}
-            </div>
-            <UnavailableNotice
-              title="Nombre de la federación nacional no disponible"
-              detail="La API lista países miembros, pero no provee las asociaciones o federaciones nacionales de cada país."
-            />
+            {detailsLoading ? (
+              <p className="confed-data-status">Cargando países miembros…</p>
+            ) : detailsError ? (
+              <p className="confed-api-error" role="alert">
+                No se pudieron cargar los países miembros.
+              </p>
+            ) : selectedDetails?.paises.length ? (
+              <div className="associations-grid">
+                {selectedDetails.paises.map((country, index) => (
+                  <article className="association-card" key={country.id}>
+                    <span className="association-number">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    {country.bandera_url ? (
+                      <img
+                        alt={`Bandera de ${country.nombre}`}
+                        className="confed-country-flag"
+                        src={country.bandera_url}
+                      />
+                    ) : (
+                      <span className="association-flag">
+                        {country.codigo_iso3}
+                      </span>
+                    )}
+                    <div>
+                      <h4>{country.nombre}</h4>
+                      <p>{country.codigo_iso3}</p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p className="confed-data-status">
+                {selectedId === null
+                  ? "Selecciona una confederación para ver sus países."
+                  : "No hay países asociados a esta confederación."}
+              </p>
+            )}
           </section>
 
           <section className="competitions-section confed-data-section">
@@ -179,26 +301,45 @@ export default function ConfederationsPage() {
               <EndpointTag>/api/catalogo/confederaciones/&lt;id&gt;/</EndpointTag>
             </div>
             <p className="competitions-description">
-              El detalle incluye nombre, tipo y logo de cada competencia.
+              Competencias asociadas a la confederación seleccionada.
             </p>
-            <div className="competitions-grid">
-              {[1, 2].map((item) => (
-                <article className="competition-card" key={item}>
-                  <span className="competition-logo-placeholder">LOGO</span>
-                  <div>
-                    <h4>[nombre de la competencia]</h4>
-                    <p>[tipo de competencia]</p>
-                    <EndpointTag>
-                      /api/catalogo/confederaciones/&lt;id&gt;/
-                    </EndpointTag>
-                  </div>
-                </article>
-              ))}
-            </div>
-            <UnavailableNotice
-              title="Alcance del torneo no disponible"
-              detail="La respuesta no indica si una competencia es continental, nacional o de selecciones."
-            />
+            {detailsLoading ? (
+              <p className="confed-data-status">Cargando competencias…</p>
+            ) : detailsError ? (
+              <p className="confed-api-error" role="alert">
+                No se pudieron cargar las competencias.
+              </p>
+            ) : selectedDetails?.competiciones.length ? (
+              <div className="competitions-grid">
+                {selectedDetails.competiciones.map((competition) => (
+                  <article className="competition-card" key={competition.id}>
+                    {competition.logo_url ? (
+                      <img
+                        alt=""
+                        className="competition-logo-placeholder"
+                        src={competition.logo_url}
+                      />
+                    ) : (
+                      <span className="competition-logo-placeholder">
+                        LOGO
+                      </span>
+                    )}
+                    <div>
+                      <h4>{competition.nombre}</h4>
+                      <span className={`competition-type competition-type-${competition.tipo.toLocaleLowerCase()}`}>
+                        {competition.tipo}
+                      </span>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p className="confed-data-status">
+                {selectedId === null
+                  ? "Selecciona una confederación para ver sus competencias."
+                  : "No hay competencias asociadas a esta confederación."}
+              </p>
+            )}
           </section>
         </section>
       </div>
@@ -206,9 +347,8 @@ export default function ConfederationsPage() {
       <div className="content confed-implementation-note">
         <span className="country-note-mark">i</span>
         <p>
-          Los elementos repetidos son espacios de muestra, no datos reales. Las
-          etiquetas indican qué endpoint proporcionaría cada campo; los avisos
-          marcan información que requiere ampliar la API.
+          El catálogo y el detalle se cargan desde la API. Al seleccionar una
+          confederación, se actualizan sus países miembros y competencias.
         </p>
       </div>
     </div>

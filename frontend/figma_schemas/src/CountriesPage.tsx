@@ -1,3 +1,13 @@
+import { useEffect, useState } from "react"
+import {
+  fetchCountries,
+  fetchCountryDetails,
+  fetchCountryTeams,
+  type Country,
+  type CountryDetails,
+  type CountryTeam,
+} from "./api/countries"
+
 function EndpointTag({ children }: { children: string }) {
   return <code className="country-endpoint">{children}</code>
 }
@@ -26,6 +36,124 @@ function UnavailableNotice({
 }
 
 export default function CountriesPage() {
+  const [countries, setCountries] = useState<Country[]>([])
+  const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [countriesLoading, setCountriesLoading] = useState(true)
+  const [countriesError, setCountriesError] = useState<string | null>(null)
+  const [details, setDetails] = useState<CountryDetails | null>(null)
+  const [detailsLoading, setDetailsLoading] = useState(false)
+  const [detailsError, setDetailsError] = useState<string | null>(null)
+  const [teams, setTeams] = useState<CountryTeam[]>([])
+  const [teamsLoading, setTeamsLoading] = useState(false)
+  const [teamsError, setTeamsError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadCountries() {
+      try {
+        const result = await fetchCountries()
+        if (!cancelled) {
+          setCountries(result)
+          setSelectedId(result[0]?.id ?? null)
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setCountriesError(
+            error instanceof Error
+              ? error.message
+              : "No se pudieron cargar los países.",
+          )
+        }
+      } finally {
+        if (!cancelled) setCountriesLoading(false)
+      }
+    }
+
+    void loadCountries()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    if (selectedId === null) {
+      setDetails(null)
+      setDetailsError(null)
+      setDetailsLoading(false)
+      return
+    }
+
+    const countryId = selectedId
+    let cancelled = false
+    setDetails(null)
+    setDetailsError(null)
+    setDetailsLoading(true)
+
+    async function loadDetails() {
+      try {
+        const result = await fetchCountryDetails(countryId)
+        if (!cancelled) setDetails(result)
+      } catch (error) {
+        if (!cancelled) {
+          setDetailsError(
+            error instanceof Error
+              ? error.message
+              : "No se pudo cargar el detalle del país.",
+          )
+        }
+      } finally {
+        if (!cancelled) setDetailsLoading(false)
+      }
+    }
+
+    void loadDetails()
+    return () => {
+      cancelled = true
+    }
+  }, [selectedId])
+
+  useEffect(() => {
+    if (selectedId === null) {
+      setTeams([])
+      setTeamsError(null)
+      setTeamsLoading(false)
+      return
+    }
+
+    const countryId = selectedId
+    let cancelled = false
+    setTeams([])
+    setTeamsError(null)
+    setTeamsLoading(true)
+
+    async function loadTeams() {
+      try {
+        const result = await fetchCountryTeams(countryId)
+        if (!cancelled) setTeams(result)
+      } catch (error) {
+        if (!cancelled) {
+          setTeamsError(
+            error instanceof Error
+              ? error.message
+              : "No se pudieron cargar los equipos del país.",
+          )
+        }
+      } finally {
+        if (!cancelled) setTeamsLoading(false)
+      }
+    }
+
+    void loadTeams()
+    return () => {
+      cancelled = true
+    }
+  }, [selectedId])
+
+  const selectedCountry =
+    countries.find(({ id }) => id === selectedId) ?? null
+  const country = details ?? selectedCountry
+
   return (
     <div className="countries-page">
       <section className="countries-hero">
@@ -56,16 +184,32 @@ export default function CountriesPage() {
             <span className="section-label">EXPLORAR</span>
             <h2>Selecciona un país</h2>
             <p>
-              El listado y la búsqueda se alimentarían desde el catálogo de
-              países.
+              {countriesLoading
+                ? "Cargando países…"
+                : countriesError
+                  ? `No se pudo cargar el catálogo: ${countriesError}`
+                  : `${countries.length} países disponibles en el catálogo.`}
             </p>
           </div>
           <label className="country-select-wrap">
             <span>PAÍS</span>
-            <select defaultValue="">
+            <select
+              disabled={countriesLoading || Boolean(countriesError)}
+              onChange={(event) =>
+                setSelectedId(
+                  event.target.value ? Number(event.target.value) : null,
+                )
+              }
+              value={selectedId ?? ""}
+            >
               <option value="" disabled>
-                Seleccionar país
+                {countriesLoading ? "Cargando países…" : "Seleccionar país"}
               </option>
+              {countries.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
             </select>
             <EndpointTag>/api/catalogo/paises/</EndpointTag>
           </label>
@@ -73,27 +217,47 @@ export default function CountriesPage() {
 
         <section className="country-overview">
           <div className="country-overview-main">
-            <div className="country-flag-placeholder" aria-hidden="true">
-              <span>[ISO3]</span>
+            <div className="country-flag-placeholder">
+              {country?.flagUrl ? (
+                <img
+                  alt={`Bandera de ${country.name}`}
+                  src={country.flagUrl}
+                />
+              ) : (
+                <span>{country?.iso3 ?? "—"}</span>
+              )}
             </div>
             <div className="country-profile">
               <span className="country-overview-kicker">PERFIL DEL PAÍS</span>
-              <h2>[nombre del país]</h2>
-              <p>Nombre, código ISO3 y bandera del país.</p>
+              <h2>{country?.name ?? "Selecciona un país"}</h2>
+              <p>
+                {country
+                  ? `Código ISO3: ${country.iso3}`
+                  : "Nombre, código ISO3 y bandera del país."}
+              </p>
               <EndpointTag>/api/catalogo/paises/&lt;id&gt;/</EndpointTag>
             </div>
           </div>
           <div className="country-affiliations">
             <article>
               <span>CONFEDERACIÓN</span>
-              <strong>[nombre y región]</strong>
+              <strong>
+                {detailsLoading
+                  ? "Cargando…"
+                  : detailsError
+                    ? "No disponible"
+                    : details?.confederation
+                      ? `${details.confederation.name} · ${details.confederation.region}`
+                      : "Sin país seleccionado"}
+              </strong>
               <EndpointTag>/api/catalogo/paises/&lt;id&gt;/</EndpointTag>
             </article>
             <article className="country-federation-unavailable">
               <span>FEDERACIÓN NACIONAL</span>
               <strong>Información no disponible</strong>
               <p>
-                No existe un recurso ni una relación de federación para el país.
+                El modelo y los endpoints actuales no exponen una federación
+                nacional asociada al país.
               </p>
               <span className="country-endpoint country-endpoint-missing">
                 Sin endpoint disponible
@@ -101,6 +265,12 @@ export default function CountriesPage() {
             </article>
           </div>
         </section>
+
+        {detailsError && (
+          <p className="country-api-error" role="alert">
+            No se pudo cargar el detalle del país: {detailsError}
+          </p>
+        )}
 
         <div className="country-sections-grid">
           <section className="country-panel">
@@ -110,16 +280,43 @@ export default function CountriesPage() {
                 <h3>Equipos del país</h3>
               </div>
               <span className="country-panel-symbol" aria-hidden="true">
-                01
+                {teams.length.toString().padStart(2, "0")}
               </span>
             </header>
-            <UnavailableNotice
-              title="No se pueden listar por país"
-              detail="El listado de equipos no filtra por país y no incluye su país en la respuesta. El detalle del país tampoco devuelve equipos."
-            />
+            {teamsLoading ? (
+              <p className="country-panel-message">Cargando equipos…</p>
+            ) : teamsError ? (
+              <p className="country-api-error" role="alert">
+                No se pudieron cargar los equipos: {teamsError}
+              </p>
+            ) : teams.length ? (
+              <div className="country-team-list">
+                {teams.map((team) => (
+                  <article className="country-team-item" key={team.id}>
+                    {team.crestUrl ? (
+                      <img alt="" src={team.crestUrl} />
+                    ) : (
+                      <span className="country-team-abbreviation">
+                        {team.abbreviation || "—"}
+                      </span>
+                    )}
+                    <div>
+                      <strong>{team.name}</strong>
+                      {team.abbreviation && <small>{team.abbreviation}</small>}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p className="country-panel-message">
+                {selectedId === null
+                  ? "Selecciona un país para ver sus equipos."
+                  : "No hay equipos asociados a este país."}
+              </p>
+            )}
             <div className="country-endpoint-pair">
-              <EndpointTag>/api/catalogo/equipos/</EndpointTag>
-              <span>sin filtro por país</span>
+              <EndpointTag>{`/api/catalogo/equipos/?pais_id=${selectedId ?? ""}`}</EndpointTag>
+              <span>filtrado por país</span>
             </div>
           </section>
 
@@ -130,25 +327,54 @@ export default function CountriesPage() {
                 <h3>Competencias del país</h3>
               </div>
               <span className="country-panel-symbol" aria-hidden="true">
-                02
+                {(details?.competitions.length ?? 0).toString().padStart(2, "0")}
               </span>
             </header>
-            <div className="country-competition-placeholder">
-              <div className="country-competition-emblem" aria-hidden="true">
-                <span />
-                <span />
-                <span />
+            {detailsLoading ? (
+              <p className="country-panel-message">Cargando competencias…</p>
+            ) : detailsError ? (
+              <p className="country-api-error" role="alert">
+                No se pudieron cargar las competencias: {detailsError}
+              </p>
+            ) : details?.competitions.length ? (
+              <div className="country-competition-list">
+                {details.competitions.map((competition) => (
+                  <article
+                    className="country-competition-placeholder"
+                    key={competition.id}
+                  >
+                    {competition.logoUrl ? (
+                      <img
+                        alt=""
+                        className="country-competition-logo"
+                        src={competition.logoUrl}
+                      />
+                    ) : (
+                      <div
+                        className="country-competition-emblem"
+                        aria-hidden="true"
+                      >
+                        <span />
+                        <span />
+                        <span />
+                      </div>
+                    )}
+                    <div className="country-competition-info">
+                      <strong>{competition.name}</strong>
+                      <p>{competition.type}</p>
+                    </div>
+                  </article>
+                ))}
               </div>
-              <div className="country-competition-info">
-                <strong>[nombre de la competencia]</strong>
-                <p>[tipo de torneo] · [logo de la competencia]</p>
-              </div>
-              <span className="country-competition-arrow" aria-hidden="true">
-                →
-              </span>
-            </div>
+            ) : (
+              <p className="country-panel-message">
+                {selectedId === null
+                  ? "Selecciona un país para ver sus competencias."
+                  : "No hay competencias asociadas a este país."}
+              </p>
+            )}
             <p className="country-competition-caption">
-              La respuesta del país incluye sus competencias asociadas.
+              Las competencias se obtienen del detalle del país.
             </p>
             <EndpointTag>/api/catalogo/paises/&lt;id&gt;/</EndpointTag>
           </section>
@@ -157,10 +383,9 @@ export default function CountriesPage() {
         <aside className="country-implementation-note">
           <span className="country-note-mark">i</span>
           <p>
-            Las etiquetas indican el origen previsto de cada dato. Los bloques
-            con aviso requieren endpoints o filtros que todavía no están
-            implementados; este boceto no muestra datos ficticios como si
-            provinieran de la API.
+            Países, confederación, competencias y equipos se cargan desde el
+            backend. La federación nacional no está representada en el modelo
+            ni en los endpoints actuales.
           </p>
         </aside>
       </div>
