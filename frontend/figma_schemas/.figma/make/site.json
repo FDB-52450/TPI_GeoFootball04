@@ -1,0 +1,10 @@
+{
+  "description": "Consulta partidos de fútbol en juego en todo el mundo y explora información por confederación, país, competición, equipo o jugador.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
