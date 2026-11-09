@@ -1,4 +1,5 @@
 from django.db.models import Q
+from django.utils import timezone
 
 from .models import Confederacion, Pais, Competicion, Temporada, Equipo, Estadio
 from apps.partidos.models import Partido
@@ -153,10 +154,52 @@ def get_competicion_temporada(competicion_id: int, temporada_id: int) -> dict:
         
         raise ResourceNotFound("temporada", temporada_id)
 
-    if temporada.estado_datos == Temporada.EstadoDatos.NO_CARGADA:
+    if temporada.estado_datos == Temporada.EstadoDatos.NO_CARGADA:    
         sync.sync_matches([temporada.competicion.api_id], [temporada.api_id])
 
-    matches = Partido.objects.filter(temporada=temporada).order_by("-fecha", "-id")
+    season_matches = Partido.objects.filter(temporada=temporada)
+    live_matches = season_matches.filter(estado=Partido.Estado.EN_JUEGO).order_by("-fecha", "-id")
+    live_count = live_matches.count()
+
+    finished_count = max(0, 5 - (live_count + 1) // 2)
+    upcoming_count = max(0, 5 - live_count // 2)
+
+    selected_matches = list(
+        season_matches.filter(estado=Partido.Estado.FINALIZADO)
+        .order_by("-fecha", "-id")
+        .values(
+            "id", "fecha", "estado", "semana",
+            "goles_local", "goles_vis",
+            "equipo_local_id", "equipo_local__nombre", "equipo_local__escudo_url",
+            "equipo_visitante_id", "equipo_visitante__nombre", "equipo_visitante__escudo_url"
+        )[:finished_count]
+    )
+    selected_matches.extend(
+        live_matches.values(
+            "id", "fecha", "estado", "semana",
+            "goles_local", "goles_vis",
+            "equipo_local_id", "equipo_local__nombre", "equipo_local__escudo_url",
+            "equipo_visitante_id", "equipo_visitante__nombre", "equipo_visitante__escudo_url"
+        )
+    )
+    selected_matches.extend(
+        season_matches.filter(
+            estado=Partido.Estado.PROGRAMADO,
+            fecha__gte=timezone.now(),
+        )
+        .order_by("fecha", "id")
+        .values(
+            "id", "fecha", "estado", "semana",
+            "goles_local", "goles_vis",
+            "equipo_local_id", "equipo_local__nombre", "equipo_local__escudo_url",
+            "equipo_visitante_id", "equipo_visitante__nombre", "equipo_visitante__escudo_url"
+        )[:upcoming_count]
+    )
+    selected_matches.sort(
+        key=lambda match: (match["fecha"], match["id"]),
+        reverse=False,
+    )
+
     temporada_data = {
         "id": temporada.id,
         "periodo": temporada.periodo,
@@ -173,24 +216,15 @@ def get_competicion_temporada(competicion_id: int, temporada_id: int) -> dict:
                 "equipo_local": {
                     "id": match["equipo_local_id"],
                     "nombre": match["equipo_local__nombre"],
+                    "imagen": match['equipo_local__escudo_url']
                 },
                 "equipo_visitante": {
                     "id": match["equipo_visitante_id"],
                     "nombre": match["equipo_visitante__nombre"],
+                    "imagen": match['equipo_visitante__escudo_url']
                 },
             }
-            for match in matches.values(
-                "id",
-                "fecha",
-                "estado",
-                "semana",
-                "goles_local",
-                "goles_vis",
-                "equipo_local_id",
-                "equipo_local__nombre",
-                "equipo_visitante_id",
-                "equipo_visitante__nombre",
-            )[:10]
+            for match in selected_matches
         ],
         "equipos": list(
             temporada.equipos.order_by("nombre").values(
