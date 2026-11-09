@@ -18,6 +18,17 @@ def _resource_not_found(error: services.ResourceNotFound) -> JsonResponse:
     )
 
 
+def _parametro_id(request, nombre):
+    valor = request.GET.get(nombre)
+
+    if not valor:
+        return None
+    try:
+        return int(valor)
+    except ValueError:
+        raise ValueError(f"{nombre} debe ser un entero.")
+
+
 #region Confederaciones
 @require_GET
 def confederaciones_list(request):
@@ -111,7 +122,18 @@ def competicion_temporada_stats(request, competicion_id: int, temporada_id: int)
 @require_GET
 def equipos_list(request):
     nombre = request.GET.get("nombre")
-    equipos = services.get_equipos(nombre)
+
+    try:
+        competicion_id = _parametro_id(request, 'competicion_id')
+        temporada_id = _parametro_id(request, 'temporada_id')
+        pais_id = _parametro_id(request, "pais_id")
+    except ValueError as exc:
+        return JsonResponse({"detail": str(exc)}, status=400)
+
+    equipos = services.get_equipos(
+        nombre, competicion_id = competicion_id, 
+        temporada_id = temporada_id, pais_id = pais_id
+    )
 
     return JsonResponse({"equipos": equipos})
 

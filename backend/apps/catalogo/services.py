@@ -311,12 +311,29 @@ def get_competicion_temporada_stats(competicion_id: int, temporada_id: int) -> d
 #endregion
 
 #region Equipo
-def get_equipos(nombre: str | None = None) -> list[dict]:
+def get_equipos(
+    nombre: str | None = None, competicion_id: int | None = None,
+    temporada_id: int | None = None, pais_id: int | None = None,
+) -> list[dict]:
     equipos = Equipo.objects.all()
 
     if nombre:
         equipos = equipos.filter(nombre__icontains=nombre)
 
+    filters = {}
+
+    if competicion_id is not None:
+        filters["temporadas__competicion_id"] = competicion_id
+
+    if temporada_id is not None:
+        filters["temporadas__id"] = temporada_id
+
+    if pais_id is not None:
+        filters["pais_id"] = pais_id
+
+    if filters:
+        equipos = equipos.filter(**filters).distinct()
+        
     return list(
         equipos.order_by("nombre").values("id", "nombre", "siglas", "escudo_url")
     )
