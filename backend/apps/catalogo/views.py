@@ -71,7 +71,14 @@ def pais_detail(request, pais_id: int):
 @require_GET
 def competiciones_list(request):
     nombre = request.GET.get("nombre")
-    competiciones = services.get_competiciones(nombre)
+  
+    try:
+        confederacion_id = _parametro_id(request, 'confederacion_id')
+        pais_id = _parametro_id(request, "pais_id")
+    except ValueError as exc:
+        return JsonResponse({"detail": str(exc)}, status=400)
+    
+    competiciones = services.get_competiciones(nombre, confederacion_id = confederacion_id, pais_id = pais_id)
 
     return JsonResponse({"competiciones": competiciones})
 

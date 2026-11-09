@@ -82,11 +82,25 @@ def get_pais(pais_id: int) -> dict | None:
 #endregion
 
 #region Competicion
-def get_competiciones(nombre: str | None = None) -> list[dict]:
+def get_competiciones(
+        nombre: str | None = None, confederacion_id: int | None = None,
+        pais_id: int | None = None,
+    ) -> list[dict]:
     competiciones = Competicion.objects.all()
 
     if nombre:
         competiciones = competiciones.filter(nombre__icontains=nombre)
+
+    filters = {}
+
+    if confederacion_id is not None:
+        filters["confederacion__id"] = confederacion_id
+
+    if pais_id is not None:
+        filters["pais__id"] = pais_id
+
+    if filters:
+        competiciones = competiciones.filter(**filters).distinct()
 
     return list(
         competiciones.order_by("nombre").values("id", "nombre", "tipo", "logo_url")
