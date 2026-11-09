@@ -333,16 +333,24 @@ def sync_matches(comp_ids: list[str] = None, season_ids: list[str] = None):
 
                 page += 1
 
+            refresh_season_detail_status(season)
+
 
 def refresh_current_matches():
     provider = get_provider('footballdataio')
 
     data, meta = provider.get_today_matches()
     mapped_matches = ioMapper.map_matches(data)
+    
+    season_ids = set()
 
     with transaction.atomic():
         for match_data in mapped_matches:
+            season_ids.add(match_data["temporada_id"])
             _save_match_data(match_data)
+
+    for season in Temporada.objects.filter(api_id__in=season_ids):
+        refresh_season_detail_status(season)
 
 
 def _save_match_data(match_data):
@@ -426,6 +434,8 @@ def sync_match_detail(match_ids: list[str] = None, comp_ids: list[str] = None, s
             
             sync_players_and_callups(match_data, partido)
             sync_events(match_data, partido)
+
+            refresh_season_detail_status(partido.temporada)
 
 
 def sync_players_and_callups(raw_data, partido):
@@ -565,5 +575,25 @@ def sync_player_detail(player_ids: list[str] = None):
                         equipo_temporada = equipoTemporada,
                         jugador = jugador
                     )
-
 #endregion
+
+def refresh_season_detail_status(temporada):
+    eligible = temporada.partidos.filter(
+        estado__in=[
+            Partido.Estado.EN_JUEGO,
+            Partido.Estado.FINALIZADO,
+        ]
+    )
+    total = eligible.count()
+    complete = eligible.filter(
+        nivel_datos=Partido.NivelDatos.COMPLETO
+    ).count()
+
+    if total > 0 and complete == total:
+        status = Temporada.EstadoDatos.DETALLE_CARGADO
+    elif complete > 0:
+        status = Temporada.EstadoDatos.DETALLE_PARCIAL
+    else:
+        status = Temporada.EstadoDatos.PARTIDOS_CARGADOS
+
+    Temporada.objects.filter(pk=temporada.pk).update(estado_datos=status)

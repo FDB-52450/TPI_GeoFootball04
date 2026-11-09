@@ -67,6 +67,12 @@ class Competicion(models.Model):
 
 
 class Temporada(models.Model):
+    class EstadoDatos(models.TextChoices):
+        NO_CARGADA = "NO_CARGADA", "No cargada"
+        PARTIDOS_CARGADOS = "PARTIDOS_CARGADOS", "Partidos cargados"
+        DETALLE_PARCIAL = "DETALLE_PARCIAL", "Detalles parcialmente cargados"
+        DETALLE_CARGADO = "DETALLE_CARGADO", "Detalles cargados"
+
     api_id = models.CharField(max_length=50, unique=True)
     competicion = models.ForeignKey(
         Competicion, 
@@ -77,6 +83,12 @@ class Temporada(models.Model):
     periodo = models.CharField(max_length=50)
     fecha_inicio = models.DateField()
     fecha_fin = models.DateField()
+    
+    estado_datos = models.CharField(
+        max_length=30,
+        choices=EstadoDatos.choices,
+        default=EstadoDatos.NO_CARGADA,
+    )
 
     class Meta:
         constraints = [

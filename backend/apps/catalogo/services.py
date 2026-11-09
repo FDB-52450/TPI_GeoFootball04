@@ -3,6 +3,8 @@ from django.db.models import Q
 from .models import Confederacion, Pais, Competicion, Temporada, Equipo, Estadio
 from apps.partidos.models import Partido
 
+from ..ingesta import sync
+
 
 class ResourceNotFound(Exception):
     def __init__(self, resource: str, resource_id: int):
@@ -150,6 +152,9 @@ def get_competicion_temporada(competicion_id: int, temporada_id: int) -> dict:
             raise ResourceNotFound("competicion", competicion_id)
         
         raise ResourceNotFound("temporada", temporada_id)
+
+    if temporada.estado_datos == Temporada.EstadoDatos.NO_CARGADA:
+        sync.sync_matches([temporada.competicion.api_id], [temporada.api_id])
 
     matches = Partido.objects.filter(temporada=temporada).order_by("-fecha", "-id")
     temporada_data = {
