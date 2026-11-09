@@ -73,34 +73,41 @@ def sync_confederations():
 
 def sync_countries(provider=None):
     provider = get_provider('footballdataio')
-    
-    data, meta = provider.get_countries()
-    mapped_data = ioMapper.map_countries(data)
-
     confederation_codes = ioMapper.map_country_confederations(get_confederations())
 
-    with transaction.atomic():
-        for datos in mapped_data:
-            if datos.get('codigo_iso3') == '':
-                continue
+    page = 1
+    total_pages = 1
 
-            if datos.get('api_id') in DUPLICATE_COUNTRIES:
-                continue
+    while page <= total_pages:
+        data, meta = provider.get_countries(page)
+        mapped_data = ioMapper.map_countries(data)
 
-            conf_codigo = confederation_codes.get(datos.get('codigo_iso3'))
+        total_pages = meta["pagination"]["total_pages"]
 
-            if conf_codigo is None:
-                continue
+        with transaction.atomic():
+            for datos in mapped_data:
+                if datos.get('codigo_iso3') == '':
+                    continue
 
-            try:
-                confederacion = Confederacion.objects.get(api_id = conf_codigo)
-            except Confederacion.DoesNotExist:
-                continue
+                if datos.get('api_id') in DUPLICATE_COUNTRIES:
+                    continue
 
-            Pais.objects.update_or_create(
-                api_id=datos["api_id"],
-                defaults={**_defaults(datos), "confederacion": confederacion},
-            )
+                conf_codigo = confederation_codes.get(datos.get('codigo_iso3'))
+
+                if conf_codigo is None:
+                    continue
+
+                try:
+                    confederacion = Confederacion.objects.get(api_id = conf_codigo)
+                except Confederacion.DoesNotExist:
+                    continue
+
+                Pais.objects.update_or_create(
+                    api_id=datos["api_id"],
+                    defaults={**_defaults(datos), "confederacion": confederacion},
+                )
+
+        page += 1
 
 
 def sync_leagues():

@@ -25,8 +25,8 @@ class FootballDataIoApiClient:
         return response.json()['data'], response.json()['meta']
 
     
-    def get_countries(self):
-        return self._get("countries")
+    def get_countries(self, page):
+        return self._get("countries", params = {'limit': 100, 'page': page})
 
     def get_leagues(self):
         return self._get("leagues")

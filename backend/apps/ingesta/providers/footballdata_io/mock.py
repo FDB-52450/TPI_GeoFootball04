@@ -4,7 +4,7 @@ from pathlib import Path
 MOCK_DATA_DIR = Path(__file__).resolve().parents[0] / "mock-data"
 
 class MockProvider:
-    def get_countries(self):
+    def get_countries(self, page = None):
         return self._read_json("countries.json")
 
     def get_leagues(self):
