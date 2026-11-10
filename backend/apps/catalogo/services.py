@@ -137,7 +137,7 @@ def get_competicion(competicion_id: int) -> dict | None:
         }
 
     competicion["temporadas"] = list(
-        instance.temporadas.order_by("periodo").values("id", "periodo", "fecha_inicio", "fecha_fin")
+        instance.temporadas.order_by("-periodo").values("id", "periodo", "fecha_inicio", "fecha_fin")
     )
     
     return competicion
