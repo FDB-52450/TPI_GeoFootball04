@@ -1,4 +1,6 @@
-const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"}/api/catalogo`
+import { getSeasonLabel } from "../utils/seasonLabel"
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"
 
 export type TeamCatalogItem = {
   id: number
@@ -10,6 +12,7 @@ export type TeamCatalogItem = {
 export type TeamSeason = {
   id: number
   periodo: string
+  etiqueta: string
   fecha_inicio: string
   fecha_fin: string
 }
@@ -28,6 +31,12 @@ export type TeamStadium = {
   ciudad: string
   capacidad: number | null
   foto_url: string
+}
+
+export type TeamPlayer = {
+  id: number
+  nombre: string
+  foto_url: string | null
 }
 
 export type TeamDetails = TeamCatalogItem & {
@@ -72,6 +81,13 @@ function stringField(value: unknown, field: string): string {
   return value
 }
 
+function optionalStringField(value: unknown, field: string): string | null {
+  if (value !== undefined && value !== null && typeof value !== "string") {
+    throw new Error(`El campo "${field}" no es válido.`)
+  }
+  return typeof value === "string" ? value : null
+}
+
 function recordField(value: unknown, field: string): Record<string, unknown> {
   if (!isRecord(value)) throw new Error(`El campo "${field}" no es válido.`)
   return value
@@ -95,11 +111,16 @@ function mapTeam(value: unknown): TeamCatalogItem {
 
 function mapSeason(value: unknown): TeamSeason {
   const season = recordField(value, "temporada")
+  const fechaInicio = stringField(season.fecha_inicio, "temporada.fecha_inicio")
+  const fechaFin = stringField(season.fecha_fin, "temporada.fecha_fin")
+  const periodo = stringField(season.periodo, "temporada.periodo")
+
   return {
     id: numberField(season.id, "temporada.id"),
-    periodo: stringField(season.periodo, "temporada.periodo"),
-    fecha_inicio: stringField(season.fecha_inicio, "temporada.fecha_inicio"),
-    fecha_fin: stringField(season.fecha_fin, "temporada.fecha_fin"),
+    periodo,
+    etiqueta: getSeasonLabel(periodo),
+    fecha_inicio: fechaInicio,
+    fecha_fin: fechaFin,
   }
 }
 
@@ -144,7 +165,7 @@ function mapMatch(value: unknown): TeamMatch {
 }
 
 export async function fetchTeams(): Promise<TeamCatalogItem[]> {
-  const payload = await getJson(`${API_BASE_URL}/equipos/`)
+  const payload = await getJson(`${API_BASE_URL}/api/catalogo/equipos/`)
   if (!isRecord(payload) || !Array.isArray(payload.equipos)) {
     throw new Error("La respuesta no contiene una lista válida de equipos.")
   }
@@ -152,7 +173,7 @@ export async function fetchTeams(): Promise<TeamCatalogItem[]> {
 }
 
 export async function fetchTeamDetails(teamId: number): Promise<TeamDetails> {
-  const payload = await getJson(`${API_BASE_URL}/equipos/${teamId}`)
+  const payload = await getJson(`${API_BASE_URL}/api/catalogo/equipos/${teamId}`)
   if (!isRecord(payload) || !isRecord(payload.equipo)) {
     throw new Error("La respuesta no contiene el detalle del equipo.")
   }
@@ -196,19 +217,30 @@ export async function fetchTeamDetails(teamId: number): Promise<TeamDetails> {
   }
 }
 
-export async function fetchTeamPlayers(teamId: number): Promise<unknown | null> {
-  const payload = await getJson(`${API_BASE_URL}/equipos/${teamId}/jugadores`)
-  if (!isRecord(payload) || !("temporada" in payload)) {
-    throw new Error("La respuesta no contiene la lista de jugadores.")
+export async function fetchTeamPlayers(teamId: number): Promise<TeamPlayer[]> {
+  const params = new URLSearchParams({ equipo_id: String(teamId) })
+  const payload = await getJson(
+    `${API_BASE_URL}/api/partidos/jugadores/?${params}`,
+  )
+  if (!isRecord(payload) || !Array.isArray(payload.jugadores)) {
+    throw new Error("La respuesta no contiene una lista válida de jugadores.")
   }
-  return payload.temporada
+
+  return payload.jugadores.map((value): TeamPlayer => {
+    const player = recordField(value, "jugador")
+    return {
+      id: numberField(player.id, "jugador.id"),
+      nombre: stringField(player.nombre, "jugador.nombre"),
+      foto_url: optionalStringField(player.foto_url, "jugador.foto_url"),
+    }
+  })
 }
 
 export async function fetchTeamMatches(
   teamId: number,
   seasonId?: number | null,
 ): Promise<TeamMatch[]> {
-  const url = new URL(`${API_BASE_URL}/equipos/${teamId}/partidos`)
+  const url = new URL(`${API_BASE_URL}/api/catalogo/equipos/${teamId}/partidos`)
   if (seasonId !== undefined && seasonId !== null) {
     url.searchParams.set("temporada_id", String(seasonId))
   }

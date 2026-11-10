@@ -30,10 +30,12 @@ export type PlayerClub = {
 }
 
 export type PlayerRecentMatch = {
+  fecha: string
   competicion: PlayerCompetition
   temporada: { id: number; periodo: string }
   equipo_jugador: { id: number; nombre: string; escudo_url: string }
   equipo_rival: { id: number; nombre: string; escudo_url: string }
+  marcador: { equipo_jugador: number | null; equipo_rival: number | null }
   minutos: number
   goles: number
 }
@@ -173,6 +175,7 @@ export async function fetchPlayerDetails(playerId: number): Promise<PlayerDetail
   const recentMatches = player.ultimos_partidos.map((value): PlayerRecentMatch => {
     const match = recordField(value, "ultimos_partidos")
     const season = recordField(match.temporada, "temporada")
+    const score = recordField(match.marcador, "partido.marcador")
     const mapTeam = (teamValue: unknown, field: string) => {
       const team = recordField(teamValue, field)
       return {
@@ -182,6 +185,7 @@ export async function fetchPlayerDetails(playerId: number): Promise<PlayerDetail
       }
     }
     return {
+      fecha: stringField(match.fecha, "partido.fecha"),
       competicion: mapCompetition(match.competicion),
       temporada: {
         id: numberField(season.id, "temporada.id"),
@@ -189,6 +193,16 @@ export async function fetchPlayerDetails(playerId: number): Promise<PlayerDetail
       },
       equipo_jugador: mapTeam(match.equipo_jugador, "equipo_jugador"),
       equipo_rival: mapTeam(match.equipo_rival, "equipo_rival"),
+      marcador: {
+        equipo_jugador: nullableNumberField(
+          score.equipo_jugador,
+          "partido.marcador.equipo_jugador",
+        ),
+        equipo_rival: nullableNumberField(
+          score.equipo_rival,
+          "partido.marcador.equipo_rival",
+        ),
+      },
       minutos: numberField(match.minutos, "partido.minutos"),
       goles: numberField(match.goles, "partido.goles"),
     }

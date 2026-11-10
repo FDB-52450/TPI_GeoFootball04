@@ -8,9 +8,34 @@ import {
   type PlayerRecentMatch,
 } from "./api/players"
 import { EntityLink } from "./EntityNavigation"
+import { getSeasonLabel } from "./utils/seasonLabel.ts"
 
 function EndpointTag({ children }: { children: string }) {
   return <code className="country-endpoint">{children}</code>
+}
+
+function PlayerPhoto({
+  url,
+  name,
+  alt,
+  fallbackClassName,
+}: {
+  url: string
+  name: string
+  alt: string
+  fallbackClassName: string
+}) {
+  const [failedUrl, setFailedUrl] = useState<string | null>(null)
+
+  if (!url || failedUrl === url) {
+    return (
+      <span className={fallbackClassName} aria-label={`No hay foto disponible para ${name}`}>
+        {name.slice(0, 1)}
+      </span>
+    )
+  }
+
+  return <img alt={alt} src={url} onError={() => setFailedUrl(url)} />
 }
 
 function formatDate(value: string | null) {
@@ -37,7 +62,7 @@ function calculateAge(birthDate: string | null): number | null {
 }
 
 function seasonLabel(season: PlayerPerformance["temporada"]) {
-  return season.periodo || String(season.id)
+  return getSeasonLabel(season.periodo) || String(season.id)
 }
 
 function PerformanceCard({
@@ -76,6 +101,9 @@ function PerformanceCard({
 function RecentMatchRow({ match }: { match: PlayerRecentMatch }) {
   return (
     <article className="player-recent-match">
+      <div className="player-recent-date">
+        <strong>{formatDate(match.fecha)}</strong>
+      </div>
       <EntityLink
         kind="equipo"
         id={match.equipo_jugador.id}
@@ -90,7 +118,13 @@ function RecentMatchRow({ match }: { match: PlayerRecentMatch }) {
         )}
         <strong>{match.equipo_jugador.nombre}</strong>
       </EntityLink>
-      <span className="player-versus">VS</span>
+      <div className="player-recent-score">
+        <strong>
+          {match.marcador.equipo_jugador !== null && match.marcador.equipo_rival !== null
+            ? `${match.marcador.equipo_jugador} — ${match.marcador.equipo_rival}`
+            : "—"}
+        </strong>
+      </div>
       <EntityLink
         kind="equipo"
         id={match.equipo_rival.id}
@@ -105,10 +139,6 @@ function RecentMatchRow({ match }: { match: PlayerRecentMatch }) {
         )}
         <strong>{match.equipo_rival.nombre}</strong>
       </EntityLink>
-      <div className="player-recent-score">
-        <strong>—</strong>
-        <span>Score no provisto</span>
-      </div>
       <EntityLink
         kind="competicion"
         id={match.competicion.id}
@@ -136,7 +166,7 @@ export default function PlayersPage({ playerId }: { playerId: number | null }) {
   const [player, setPlayer] = useState<PlayerDetails | null>(null)
   const [detailsLoading, setDetailsLoading] = useState(false)
   const [detailsError, setDetailsError] = useState<string | null>(null)
-  const [seasonId, setSeasonId] = useState("all")
+  const [competitionId, setCompetitionId] = useState("all")
   const [playerSearch, setPlayerSearch] = useState("")
   const [searchOpen, setSearchOpen] = useState(false)
 
@@ -207,15 +237,15 @@ export default function PlayersPage({ playerId }: { playerId: number | null }) {
     }
   }, [selectedId])
 
-  const seasons = useMemo(() => {
-    const values = new Map<number, PlayerPerformance["temporada"]>()
+  const competitions = useMemo(() => {
+    const values = new Map<number, PlayerPerformance["competicion"]>()
     for (const performance of player?.datos_rendimiento ?? []) {
-      values.set(performance.temporada.id, performance.temporada)
+      values.set(performance.competicion.id, performance.competicion)
     }
     return [...values.values()]
   }, [player])
   const visiblePerformance = (player?.datos_rendimiento ?? []).filter(
-    (performance) => seasonId === "all" || String(performance.temporada.id) === seasonId,
+    (performance) => competitionId === "all" || String(performance.competicion.id) === competitionId,
   )
   const matchingPlayers = useMemo(() => {
     const query = playerSearch.trim().toLocaleLowerCase()
@@ -311,11 +341,12 @@ export default function PlayersPage({ playerId }: { playerId: number | null }) {
                       role="option"
                       type="button"
                     >
-                      {item.foto_url ? (
-                        <img alt="" src={item.foto_url} />
-                      ) : (
-                        <span className="player-search-initial">{item.nombre.slice(0, 1)}</span>
-                      )}
+                      <PlayerPhoto
+                        url={item.foto_url}
+                        name={item.nombre}
+                        alt=""
+                        fallbackClassName="player-search-initial"
+                      />
                       <span>{item.nombre}</span>
                     </button>
                   )) : (
@@ -340,11 +371,12 @@ export default function PlayersPage({ playerId }: { playerId: number | null }) {
         )}
         <section className="player-profile-card">
           <div className="player-portrait">
-            {player?.foto_url ? (
-              <img alt={`Foto de ${player.nombre}`} src={player.foto_url} />
-            ) : (
-              <span>{player?.nombre.slice(0, 1) ?? "?"}</span>
-            )}
+            <PlayerPhoto
+              url={player?.foto_url ?? ""}
+              name={player?.nombre ?? "Jugador"}
+              alt={player ? `Foto de ${player.nombre}` : ""}
+              fallbackClassName="player-profile-initial"
+            />
           </div>
           <div className="player-profile-main">
             <span className="player-profile-kicker">PERFIL DEL JUGADOR</span>
@@ -366,20 +398,28 @@ export default function PlayersPage({ playerId }: { playerId: number | null }) {
               <div className="player-league-logos">
                 <span className="player-league-caption">LIGAS CON DATOS</span>
                 {(player?.datos_rendimiento ?? []).length ? (
-                  player?.datos_rendimiento.map((performance) => (
+                  [...new Map(
+                    player?.datos_rendimiento.map((performance) => [
+                    performance.competicion.id,
+                    performance,
+                    ])
+                  ).values()].map((performance) => (
                     <EntityLink
-                      kind="competicion"
-                      id={performance.competicion.id}
-                      className="player-league-link"
-                      title={`${performance.competicion.nombre} · ${performance.temporada.periodo}`}
-                      key={performance.temporada.id}
+                    kind="competicion"
+                    id={performance.competicion.id}
+                    className="player-league-link"
+                    title={`${performance.competicion.nombre}`}
+                    key={performance.competicion.id}
                     >
-                      {performance.competicion.logo_url ? (
-                        <img alt={performance.competicion.nombre} src={performance.competicion.logo_url} />
-                      ) : (
+                    {performance.competicion.logo_url ? (
+                        <img
+                        alt={performance.competicion.nombre}
+                        src={performance.competicion.logo_url}
+                        />
+                    ) : (
                         <span>{performance.competicion.nombre}</span>
-                      )}
-                    </EntityLink>
+                    )}
+                  </EntityLink>
                   ))
                 ) : (
                   <span className="player-data-missing">Ligas sin información disponible</span>
@@ -402,15 +442,15 @@ export default function PlayersPage({ playerId }: { playerId: number | null }) {
               <h3>Estadísticas</h3>
             </div>
             <label className="player-season-select">
-              <span>TEMPORADA</span>
+              <span>COMPETICIÓN</span>
               <select
-                value={seasonId}
-                onChange={(event) => setSeasonId(event.target.value)}
-                disabled={!seasons.length}
+                value={competitionId}
+                onChange={(event) => setCompetitionId(event.target.value)}
+                disabled={!competitions.length}
               >
-                <option value="all">Todas las temporadas disponibles</option>
-                {seasons.map((season) => (
-                  <option key={season.id} value={season.id}>{season.periodo}</option>
+                <option value="all">Todas las competiciones disponibles</option>
+                {competitions.map((competition) => (
+                  <option key={competition.id} value={competition.id}>{competition.nombre}</option>
                 ))}
               </select>
             </label>
@@ -432,7 +472,7 @@ export default function PlayersPage({ playerId }: { playerId: number | null }) {
             </div>
           ) : (
             <p className="player-empty-state">
-              {player ? "No hay estadísticas disponibles para la temporada seleccionada." : "Selecciona un jugador para consultar sus estadísticas."}
+              {player ? "No hay estadísticas disponibles para la competición seleccionada." : "Selecciona un jugador para consultar sus estadísticas."}
             </p>
           )}
         </section>
@@ -480,9 +520,6 @@ export default function PlayersPage({ playerId }: { playerId: number | null }) {
             <div><span className="section-label">ACTUACIONES RECIENTES</span><h3>Últimos partidos</h3></div>
             <EndpointTag>/api/partidos/jugadores/&lt;jugador_id&gt;</EndpointTag>
           </header>
-          <aside className="player-score-notice">
-            El detalle del jugador no incluye la fecha ni el marcador final de sus apariciones; se muestra como no disponible.
-          </aside>
           {player?.ultimos_partidos.length ? (
             <div className="player-recent-list">
               {player.ultimos_partidos.map((match, index) => (

@@ -1937,6 +1937,38 @@ footer {
   gap: 10px;
 }
 
+.competition-data-warning {
+  display: flex;
+  margin-top: 18px;
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  align-items: flex-start;
+  border: 1px solid #f0c9bd;
+  background: #fff1ec;
+  color: #8e3f2a;
+  gap: 10px;
+}
+
+.competition-data-warning-mark {
+  display: grid;
+  width: 18px;
+  height: 18px;
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  background: #f7d9ce;
+  color: #a34329;
+  font-family: 'Manrope', sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.competition-data-warning p {
+  color: #8e3f2a;
+  font-size: 9px;
+  line-height: 1.55;
+}
+
 .country-note-mark {
   display: grid;
   width: 18px;
@@ -3300,6 +3332,17 @@ footer {
   object-fit: cover;
 }
 
+.team-stadium > .team-stadium-image-fallback {
+  display: grid;
+  width: 76px;
+  height: 76px;
+  place-items: center;
+  background: #edf0ed;
+  color: #68766d;
+  font-size: 24px;
+  font-weight: 800;
+}
+
 .team-stadium > div {
   display: grid;
   gap: 4px;
@@ -3352,6 +3395,18 @@ footer {
   object-fit: contain;
 }
 
+.team-competition-card > .team-competition-image-fallback {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: none;
+  place-items: center;
+  background: #edf0ed;
+  color: #68766d;
+  font-size: 16px;
+  font-weight: 800;
+}
+
 .team-competition-card > div {
   display: grid;
   min-width: 0;
@@ -3368,6 +3423,47 @@ footer {
 .team-competition-card small {
   color: #858d89;
   font-size: 9px;
+}
+
+.team-player-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.team-player-card {
+  min-width: 0;
+  border: 1px solid #e3e1da;
+}
+
+.team-player-card a {
+  display: flex;
+  min-height: 60px;
+  padding: 8px;
+  align-items: center;
+  color: #263239;
+  gap: 9px;
+}
+
+.team-player-card img,
+.team-player-initial {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  background: #edf0ed;
+  color: #68766d;
+  font-size: 14px;
+  font-weight: 800;
+  object-fit: cover;
+}
+
+.team-player-card strong {
+  overflow: hidden;
+  font-size: 10px;
+  text-overflow: ellipsis;
 }
 
 .team-empty-state,
@@ -3484,6 +3580,19 @@ footer {
   object-fit: contain;
 }
 
+.team-match-side > .team-match-image-fallback {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  background: #edf0ed;
+  color: #68766d;
+  font-size: 9px;
+  font-weight: 800;
+}
+
 .team-match-side strong {
   overflow: hidden;
   font-size: 10px;
@@ -3501,6 +3610,14 @@ footer {
   font-family: 'Manrope', sans-serif;
   font-size: 14px;
   text-align: center;
+}
+
+.team-match-score.team-match-win {
+  color: #299956;
+}
+
+.team-match-score.team-match-loss {
+  color: #c53932;
 }
 
 .team-match-competition {
@@ -3605,7 +3722,8 @@ footer {
   }
 
   .team-competition-grid,
-  .team-match-filters {
+  .team-match-filters,
+  .team-player-grid {
     grid-template-columns: 1fr;
   }
 
@@ -4507,27 +4625,30 @@ footer {
   font-size: 11px;
 }
 
-.player-score-notice {
-  margin: 0 0 12px;
-  padding: 10px 12px;
-  border-left: 3px solid #e4a47f;
-  background: #fff8f2;
-  color: #795b4b;
-  font-size: 10px;
-  line-height: 1.5;
-}
-
 .player-recent-list {
   border-top: 1px solid #e3e1da;
 }
 
 .player-recent-match {
   display: grid;
-  min-height: 76px;
+  min-height: 79px;
   align-items: center;
   border-bottom: 1px solid #e3e1da;
-  grid-template-columns: minmax(120px, 1fr) 32px minmax(120px, 1fr) 90px 70px 100px;
+  grid-template-columns: 67px minmax(0, 1fr) 90px minmax(0, 1fr) 70px 80px;
   gap: 10px;
+}
+
+.player-recent-date,
+.player-recent-score {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+
+.player-recent-date strong {
+  color: #49565a;
+  font-size: 9px;
+  text-align: center;
 }
 
 .player-recent-team {
@@ -4569,28 +4690,10 @@ footer {
   text-align: right;
 }
 
-.player-versus {
-  color: #9aa19e;
-  font-size: 8px;
-  font-weight: 800;
-  text-align: center;
-}
-
-.player-recent-score {
-  display: grid;
-  justify-items: center;
-  gap: 2px;
-}
-
 .player-recent-score strong {
-  color: #7d8582;
+  color: #1d2b32;
   font-family: 'Manrope', sans-serif;
-  font-size: 18px;
-}
-
-.player-recent-score span {
-  color: #a05c44;
-  font-size: 7px;
+  font-size: 16px;
   text-align: center;
 }
 
@@ -4673,7 +4776,7 @@ footer {
   .player-league-caption,
   .player-performance-card dt,
   .player-performance-competition small,
-  .player-recent-score span,
+  .player-recent-date strong,
   .player-recent-league {
     font-size: 12px;
   }
@@ -4682,7 +4785,6 @@ footer {
     font-size: 21px;
   }
 
-  .player-score-notice,
   .player-empty-state,
   .player-api-error {
     font-size: 14px;
@@ -4724,7 +4826,8 @@ footer {
   }
 
   .player-recent-match {
-    grid-template-columns: minmax(100px, 1fr) 25px minmax(100px, 1fr) 70px 55px;
+    grid-template-columns: 55px minmax(0, 1fr) 75px minmax(0, 1fr) 55px;
+    gap: 7px;
   }
 
   .player-recent-league {
@@ -4785,11 +4888,14 @@ footer {
   }
 
   .player-recent-match {
-    position: relative;
-    min-height: 105px;
-    padding: 26px 0 30px;
-    grid-template-columns: minmax(0, 1fr) 24px minmax(0, 1fr) 50px;
+    min-height: 94px;
+    padding: 10px 0;
+    grid-template-columns: 48px minmax(0, 1fr) 58px minmax(0, 1fr);
     gap: 5px;
+  }
+
+  .player-recent-date strong {
+    font-size: 7px;
   }
 
   .player-recent-team {
@@ -4806,22 +4912,18 @@ footer {
     font-size: 9px;
   }
 
-  .player-recent-score {
-    position: absolute;
-    top: 5px;
-    right: 0;
-    display: flex;
-    align-items: center;
+  .player-recent-score strong {
+    font-size: 10px;
   }
 
-  .player-recent-score strong {
-    font-size: 13px;
+  .player-recent-league {
+    display: none;
   }
 
   .player-recent-stats {
     display: flex;
     justify-content: flex-end;
-    grid-column: 1 / -1;
+    grid-column: 2 / -1;
     gap: 14px;
   }
 }

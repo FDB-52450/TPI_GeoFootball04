@@ -7,11 +7,37 @@ import {
   type TeamCatalogItem,
   type TeamDetails,
   type TeamMatch,
+  type TeamPlayer,
 } from "./api/teams"
 import { EntityLink } from "./EntityNavigation"
 
 function EndpointTag({ children }: { children: string }) {
   return <code className="country-endpoint">{children}</code>
+}
+
+function TeamImage({
+  url,
+  alt,
+  fallback,
+  fallbackClassName,
+}: {
+  url: string | null
+  alt: string
+  fallback: string
+  fallbackClassName?: string
+}) {
+  const [failedUrl, setFailedUrl] = useState<string | null>(null)
+  const imageUrl = url?.trim() ?? ""
+
+  if (!imageUrl || failedUrl === imageUrl) {
+    return (
+      <span className={fallbackClassName} aria-label={alt || "Imagen no disponible"}>
+        {fallback}
+      </span>
+    )
+  }
+
+  return <img alt={alt} src={imageUrl} onError={() => setFailedUrl(imageUrl)} />
 }
 
 function DataNotice({
@@ -46,8 +72,28 @@ function formatCapacity(value: number | null) {
   return value === null ? "No informada" : new Intl.NumberFormat().format(value)
 }
 
-function TeamMatchRow({ match }: { match: TeamMatch }) {
+function TeamMatchRow({ match, teamId }: { match: TeamMatch; teamId: number | null }) {
   const hasScore = match.goles.local !== null && match.goles.visitante !== null
+  const teamGoals =
+    teamId === match.equipos.local.id
+      ? match.goles.local
+      : teamId === match.equipos.visitante.id
+        ? match.goles.visitante
+        : null
+  const opponentGoals =
+    teamId === match.equipos.local.id
+      ? match.goles.visitante
+      : teamId === match.equipos.visitante.id
+        ? match.goles.local
+        : null
+  const result =
+    !hasScore || teamGoals === null || opponentGoals === null
+      ? ""
+      : teamGoals > opponentGoals
+        ? "team-match-win"
+        : teamGoals < opponentGoals
+          ? "team-match-loss"
+          : "team-match-draw"
 
   return (
     <article className="team-match-row">
@@ -56,15 +102,29 @@ function TeamMatchRow({ match }: { match: TeamMatch }) {
         <span>{match.estado.replace(/_/g, " ")}</span>
       </div>
       <EntityLink kind="equipo" id={match.equipos.local.id} className="team-match-side">
-        {match.equipos.local.imagen && <img alt="" src={match.equipos.local.imagen} />}
+        {match.equipos.local.imagen && (
+          <TeamImage
+            url={match.equipos.local.imagen}
+            alt=""
+            fallback={match.equipos.local.nombre.slice(0, 1)}
+            fallbackClassName="team-match-image-fallback"
+          />
+        )}
         <strong>{match.equipos.local.nombre}</strong>
       </EntityLink>
-      <strong className="team-match-score">
+      <strong className={`team-match-score ${result}`}>
         {hasScore ? `${match.goles.local} — ${match.goles.visitante}` : "vs"}
       </strong>
       <EntityLink kind="equipo" id={match.equipos.visitante.id} className="team-match-side team-match-away">
         <strong>{match.equipos.visitante.nombre}</strong>
-        {match.equipos.visitante.imagen && <img alt="" src={match.equipos.visitante.imagen} />}
+        {match.equipos.visitante.imagen && (
+          <TeamImage
+            url={match.equipos.visitante.imagen}
+            alt=""
+            fallback={match.equipos.visitante.nombre.slice(0, 1)}
+            fallbackClassName="team-match-image-fallback"
+          />
+        )}
       </EntityLink>
       <EntityLink kind="competicion" id={match.competicion.id} className="team-match-competition">
         {match.competicion.nombre}
@@ -81,7 +141,7 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
   const [details, setDetails] = useState<TeamDetails | null>(null)
   const [detailsLoading, setDetailsLoading] = useState(false)
   const [detailsError, setDetailsError] = useState<string | null>(null)
-  const [players, setPlayers] = useState<unknown | null>(null)
+  const [players, setPlayers] = useState<TeamPlayer[]>([])
   const [playersLoading, setPlayersLoading] = useState(false)
   const [playersError, setPlayersError] = useState<string | null>(null)
   const [matches, setMatches] = useState<TeamMatch[]>([])
@@ -128,7 +188,7 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
       setMatches([])
       setMatchesError(null)
       setMatchesLoading(false)
-      setPlayers(null)
+      setPlayers([])
       setPlayersError(null)
       setPlayersLoading(false)
       return
@@ -164,14 +224,14 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
 
   useEffect(() => {
     if (selectedId === null) {
-      setPlayers(null)
+      setPlayers([])
       setPlayersError(null)
       setPlayersLoading(false)
       return
     }
     const id = selectedId
     let cancelled = false
-    setPlayers(null)
+    setPlayers([])
     setPlayersError(null)
     setPlayersLoading(true)
     async function loadPlayers() {
@@ -270,7 +330,11 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
         <section className="team-profile-card">
           <div className="team-profile-identity">
             <div className="team-profile-crest">
-              {selectedTeam?.escudo_url ? <img alt="" src={selectedTeam.escudo_url} /> : <span>{selectedTeam?.siglas || "EQ"}</span>}
+              <TeamImage
+                url={selectedTeam?.escudo_url ?? ""}
+                alt={selectedTeam ? `Escudo de ${selectedTeam.nombre}` : ""}
+                fallback={selectedTeam?.siglas || "EQ"}
+              />
             </div>
             <div>
               <span className="team-profile-kicker">IDENTIDAD DEL EQUIPO</span>
@@ -307,7 +371,14 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
             </header>
             {details?.estadio ? (
               <div className="team-stadium">
-                {details.estadio.foto_url && <img alt="" src={details.estadio.foto_url} />}
+                {details.estadio.foto_url && (
+                  <TeamImage
+                    url={details.estadio.foto_url}
+                    alt={`Foto de ${details.estadio.nombre}`}
+                    fallback={details.estadio.nombre.slice(0, 1)}
+                    fallbackClassName="team-stadium-image-fallback"
+                  />
+                )}
                 <div>
                   <strong>{details.estadio.nombre}</strong>
                   <span>{details.estadio.ciudad || "Ciudad no informada"}</span>
@@ -330,11 +401,18 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
             <div className="team-competition-grid">
               {details.competiciones.map((competition) => (
                 <article className="team-competition-card" key={competition.id}>
-                  {competition.logo_url && <img alt="" src={competition.logo_url} />}
+                  {competition.logo_url && (
+                    <TeamImage
+                      url={competition.logo_url}
+                      alt=""
+                      fallback={competition.nombre.slice(0, 1)}
+                      fallbackClassName="team-competition-image-fallback"
+                    />
+                  )}
                   <div>
                     <EntityLink kind="competicion" id={competition.id}>{competition.nombre}</EntityLink>
                     <span>{competition.tipo}</span>
-                    <small>{competition.temporadas.map(({ periodo }) => periodo).join(" · ") || "Sin temporadas"}</small>
+                    <small>{competition.temporadas.map(({ etiqueta }) => etiqueta).join(" · ") || "Sin temporadas"}</small>
                   </div>
                 </article>
               ))}
@@ -348,16 +426,32 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
           <section className="team-info-panel">
             <header className="team-panel-heading">
               <div><span className="section-label">PLANTILLA</span><h3>Jugadores</h3></div>
-              <EndpointTag>/api/catalogo/equipos/&lt;equipo_id&gt;/jugadores</EndpointTag>
+              <EndpointTag>{`/api/partidos/jugadores/?equipo_id=${selectedId ?? ""}`}</EndpointTag>
             </header>
             {playersLoading ? (
               <p className="team-empty-state">Consultando la plantilla…</p>
             ) : playersError ? (
               <p className="team-api-error" role="alert">No se pudo consultar la plantilla: {playersError}</p>
-            ) : players === null ? (
-              <p className="team-empty-state">La ruta está declarada, pero el servicio actual devuelve null y no provee jugadores.</p>
+            ) : players.length ? (
+              <div className="team-player-grid">
+                {players.map((player) => (
+                  <article className="team-player-card" key={player.id}>
+                    <EntityLink kind="jugador" id={player.id}>
+                      <TeamImage
+                        url={player.foto_url}
+                        alt=""
+                        fallback={player.nombre.slice(0, 1).toLocaleUpperCase()}
+                        fallbackClassName="team-player-initial"
+                      />
+                      <strong>{player.nombre}</strong>
+                    </EntityLink>
+                  </article>
+                ))}
+              </div>
             ) : (
-              <p className="team-empty-state">La respuesta de jugadores requiere adaptación para poder representarse.</p>
+              <p className="team-empty-state">
+                No hay jugadores registrados para este equipo.
+              </p>
             )}
           </section>
           <DataNotice title="Palmarés histórico">
@@ -398,7 +492,7 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
                 {availableSeasons
                   .filter(({ competicion }) => competitionFilter === "all" || String(competicion.id) === competitionFilter)
                   .map((season) => (
-                    <option key={season.id} value={season.id}>{season.competicion.nombre} · {season.periodo}</option>
+                    <option key={season.id} value={season.id}>{season.competicion.nombre} · {season.etiqueta}</option>
                   ))}
               </select>
             </label>
@@ -411,7 +505,7 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
           {matchesLoading ? (
             <p className="team-empty-state">Cargando partidos…</p>
           ) : filteredMatches.length ? (
-            <div className="team-match-list">{filteredMatches.map((match) => <TeamMatchRow key={match.id} match={match} />)}</div>
+            <div className="team-match-list">{filteredMatches.map((match) => <TeamMatchRow key={match.id} match={match} teamId={selectedId} />)}</div>
           ) : (
             <p className="team-empty-state">{selectedId === null ? "Selecciona un equipo para consultar sus partidos." : "No hay partidos para estos filtros."}</p>
           )}

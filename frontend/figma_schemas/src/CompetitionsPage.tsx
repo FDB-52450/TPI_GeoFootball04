@@ -8,6 +8,7 @@ import {
   type CompetitionSeasonData,
 } from "./api/competitions"
 import { EntityLink } from "./EntityNavigation"
+import { getSeasonLabel } from "./utils/seasonLabel.ts"
 
 function EndpointTag({ children }: { children: string }) {
   return <code className="country-endpoint">{children}</code>
@@ -339,8 +340,7 @@ export default function CompetitionsPage({ initialId }: { initialId: number | nu
           </div>
           {selectedSeason && (
             <p className="competition-season-date-range">
-              {formatSeasonDate(selectedSeason.fecha_inicio)} –{" "}
-              {formatSeasonDate(selectedSeason.fecha_fin)}
+              {getSeasonLabel(selectedSeason.periodo)}
             </p>
           )}
           {detailsError && (
@@ -356,6 +356,16 @@ export default function CompetitionsPage({ initialId }: { initialId: number | nu
                 Esta competición no tiene temporadas registradas.
               </p>
             )}
+
+          {seasonData &&
+          seasonData.equipos.length * 19 !== seasonData.partidos_totales && (
+            <aside className="competition-data-warning" role="alert">
+              <span className="competition-data-warning-mark" aria-hidden="true">
+                !
+              </span>
+              <p>El numero de equipos y partidos no coinciden, por lo que es posible que los datos esten incompletos</p>
+            </aside>
+          )}
 
           <div className="competition-teams-panel">
             <div className="competition-subsection-heading">

@@ -1,3 +1,5 @@
+import { getSeasonLabel } from "../utils/seasonLabel"
+
 const API_BASE_URL = 
   import.meta.env.VITE_API_BASE_URL + "/api/catalogo" || "http://127.0.0.1:8000/api/catalogo"
 
@@ -72,6 +74,7 @@ export type SeasonFixture = {
 
 export type CompetitionSeasonData = {
   temporada: CompetitionSeason
+  partidos_totales: number
   equipos: SeasonTeam[]
   tabla: StandingsRow[]
   partidos: SeasonFixture[]
@@ -128,17 +131,12 @@ function mapSeason(value: unknown): CompetitionSeason {
   }
   const fechaInicio = requireString(value.fecha_inicio, "temporada.fecha_inicio")
   const fechaFin = requireString(value.fecha_fin, "temporada.fecha_fin")
-  const inicioYear = fechaInicio.match(/^\d{4}/)?.[0]
-  const finYear = fechaFin.match(/^\d{4}/)?.[0]
-  if (!inicioYear || !finYear) {
-    throw new Error("Las fechas de la temporada no tienen un formato válido.")
-  }
+  const periodo = requireString(value.periodo, "temporada.periodo")
 
   return {
     id: requireNumber(value.id, "temporada.id"),
-    periodo: requireString(value.periodo, "temporada.periodo"),
-    etiqueta:
-      inicioYear === finYear ? inicioYear : `${inicioYear}/${finYear}`,
+    periodo,
+    etiqueta: getSeasonLabel(periodo),
     fecha_inicio: fechaInicio,
     fecha_fin: fechaFin,
   }
@@ -299,6 +297,7 @@ export async function fetchCompetitionSeason(
 
   return {
     temporada: mapSeason(season),
+    partidos_totales: requireNumber(season.partidos_totales, 'partidos_totales'),
     equipos: season.equipos.map(mapSeasonTeam),
     tabla: season.tabla.map(mapStandingsRow),
     partidos: season.partidos.map(mapFixture),
