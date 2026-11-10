@@ -111,6 +111,10 @@ class Temporada(models.Model):
 
 
 class Equipo(models.Model):
+    class NivelDatos(models.TextChoices):
+        PARCIAL = "PARCIAL", "Parcial"
+        COMPLETO = "COMPLETO", "Completo"
+
     api_id = models.CharField(max_length=50, unique=True)
     nombre = models.CharField(max_length=120)
     siglas = models.CharField(max_length=10, blank=True)
@@ -138,6 +142,12 @@ class Equipo(models.Model):
         null=True,
         blank=True,
         related_name="equipos",
+    )
+
+    nivel_datos = models.CharField(
+        max_length=10,
+        choices=NivelDatos.choices,
+        default=NivelDatos.PARCIAL,
     )
 
     def __str__(self):

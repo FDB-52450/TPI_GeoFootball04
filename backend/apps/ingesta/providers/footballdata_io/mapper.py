@@ -69,6 +69,16 @@ def map_teams(data: dict) -> list[dict]:
 
     return list(teams_by_id.values())
 
+
+def map_team(data: dict) -> dict:
+    return {
+        "api_id": data['team_id'],
+        "nombre": data['team_name'],
+        "pais": data['country'],
+        "escudo_url": data['team_logo']
+    }
+
+
 def map_matches(data: dict) -> list[dict]:
     return [
         {

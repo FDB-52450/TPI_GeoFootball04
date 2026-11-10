@@ -192,9 +192,12 @@ def sync_teams(comp_ids: list[str] = None, season_ids: list[str] = None):
                 for datos in mapped_data:
                     pais = None
 
+                    es_nacional = False
+
                     if comp.pais is not None:
                         pais = comp.pais
                     elif 'National Team' in datos['nombre']:
+                        es_nacional = True
                         clean_country_name = data['nombre'].replace('National Team', '').strip()
                         pais = Pais.objects.get(nombre = clean_country_name)
                     else:
@@ -211,7 +214,7 @@ def sync_teams(comp_ids: list[str] = None, season_ids: list[str] = None):
                             
                     team, _ = Equipo.objects.update_or_create(
                         api_id=datos["api_id"],
-                        defaults={**_defaults(datos), 'pais': pais},
+                        defaults={**_defaults(datos), 'pais': pais, 'es_nacional': es_nacional},
                     )
 
                     team.temporadas.add(season)
@@ -225,6 +228,9 @@ def sync_team_data_and_venues(team_ids: list[str] = None):
         teams = teams.filter(api_id__in = team_ids)
 
     for team in teams:
+        if team.nivel_datos == Equipo.NivelDatos.COMPLETO:
+            continue
+        
         name = team.nombre.replace("AFC", "").replace("FC", "").strip()
         data = apiProvider.get_team_data(name, team.pais.nombre)
 
@@ -253,7 +259,7 @@ def sync_team_data_and_venues(team_ids: list[str] = None):
         with transaction.atomic():
             Equipo.objects.update_or_create(
                 api_id = team.api_id,
-                defaults={**_defaults(team_data), 'estadio': venue}
+                defaults={**_defaults(team_data), 'estadio': venue, 'nivel_datos': Equipo.NivelDatos.COMPLETO}
             )
 
 def sync_venue(venue_name: str = None, raw_data: dict = None):
@@ -357,8 +363,16 @@ def _save_match_data(match_data):
     mapProvider = get_provider('openstreetmap')
 
     season = Temporada.objects.filter(api_id = match_data['temporada_id']).first()
-    home_team = Equipo.objects.filter(api_id = match_data['equipo_local_id']).first()
-    away_team = Equipo.objects.filter(api_id = match_data['equipo_vis_id']).first()
+
+    try:
+        home_team = Equipo.objects.get(api_id = match_data['equipo_local_id'])
+    except Equipo.DoesNotExist:
+        home_team = _save_team_data(match_data['equipo_local_id'], season)
+
+    try:
+        away_team = Equipo.objects.get(api_id = match_data['equipo_vis_id'])
+    except Equipo.DoesNotExist:
+        away_team = _save_team_data(match_data['equipo_vis_id'], season)
 
     comp_type = season.competicion.tipo
 
@@ -398,10 +412,40 @@ def _save_match_data(match_data):
             "sede_longitud": None,
         })
 
-    Partido.objects.update_or_create(
-        api_id = match_data['api_id'],
-        defaults = defaults
-    )
+    with transaction.atomic():
+        Partido.objects.update_or_create(
+            api_id = match_data['api_id'],
+            defaults = defaults
+        )
+
+        home_team.temporadas.add(season)
+        away_team.temporadas.add(season)
+
+
+def _save_team_data(team_api_id, season):
+    ioProvider = get_provider('footballdataio')
+
+    data, meta = ioProvider.get_team_data(team_api_id)
+    mapped_data = ioMapper.map_team(data)
+
+    es_nacional = 'National Team' in mapped_data['nombre']
+
+    try:
+        pais = Pais.objects.get(nombre = mapped_data['pais'])
+    except Pais.DoesNotExist:
+        pais = None
+
+    with transaction.atomic():
+        team, _ = Equipo.objects.update_or_create(
+            api_id = team_api_id,
+            defaults = {**_defaults(mapped_data), 'pais': pais, 'es_nacional': es_nacional},
+        )
+
+        team.temporadas.add(season)
+
+        sync_team_data_and_venues([team_api_id])
+
+    return team
 
 
 def sync_match_detail(match_ids: list[str] = None, comp_ids: list[str] = None, season_ids: list[str] = None):
