@@ -3,6 +3,7 @@ from django.db.models import Prefetch, Q
 from django.utils import timezone
 
 from .models import Convocatoria, Evento, Partido, Jugador, Plantilla
+from ..catalogo.models import Temporada
 from ..ingesta import sync
 
 class ResourceNotFound(Exception):
@@ -249,6 +250,17 @@ def get_jugadores(
     ) -> list[dict]:
     jugadores = Jugador.objects.all()
 
+    if equipo_id and not temporada_id:
+        qs = Plantilla.objects.filter(equipo_temporada__equipo_id=equipo_id)
+
+        temporada_id = qs.order_by(
+            "-equipo_temporada__temporada__fecha_inicio",
+            "-equipo_temporada__temporada_id",
+        ).values_list("equipo_temporada__temporada_id", flat=True).first()
+
+        if temporada_id is None:
+            return []
+
     if nombre:
         jugadores = jugadores.filter(nombre__icontains=nombre)
 
@@ -261,7 +273,7 @@ def get_jugadores(
     if pais_id:
         jugadores = jugadores.filter(pais__id = pais_id)
 
-    return jugadores.order_by("nombre").values("id", "nombre", "foto_url")
+    return list(jugadores.order_by("nombre").values("id", "nombre", "foto_url"))
 
 
 
@@ -292,7 +304,7 @@ def get_jugador(jugador_id: int) -> dict | None:
             "equipo_temporada__temporada__competicion",
         )
         .order_by(
-            "equipo_temporada__temporada__fecha_inicio",
+            "-equipo_temporada__temporada__fecha_inicio",
             "equipo_temporada__equipo__nombre",
         )
     )
@@ -444,8 +456,10 @@ def get_jugador(jugador_id: int) -> dict | None:
             if team.id == match.equipo_local_id
             else match.equipo_local
         )
+        equipo_jugador_local = team.id == match.equipo_local_id
         ultimos_partidos.append(
             {
+                "fecha": match.fecha,
                 "competicion": {
                     "id": match.temporada.competicion_id,
                     "nombre": match.temporada.competicion.nombre,
@@ -464,6 +478,14 @@ def get_jugador(jugador_id: int) -> dict | None:
                     "id": rival.id,
                     "nombre": rival.nombre,
                     "escudo_url": rival.escudo_url,
+                },
+                "marcador": {
+                    "equipo_jugador": (
+                        match.goles_local if equipo_jugador_local else match.goles_vis
+                    ),
+                    "equipo_rival": (
+                        match.goles_vis if equipo_jugador_local else match.goles_local
+                    ),
                 },
                 "minutos": appearance["minutes"],
                 "goles": appearance["goals"],
