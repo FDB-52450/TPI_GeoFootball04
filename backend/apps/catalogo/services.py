@@ -154,7 +154,7 @@ def get_competicion_temporada(competicion_id: int, temporada_id: int) -> dict:
         
         raise ResourceNotFound("temporada", temporada_id)
 
-    if temporada.estado_datos == Temporada.EstadoDatos.NO_CARGADA:    
+    if temporada.estado_datos == Temporada.EstadoDatos.NO_CARGADA:
         sync.sync_matches([temporada.competicion.api_id], [temporada.api_id])
 
     season_matches = Partido.objects.filter(temporada=temporada)
@@ -205,6 +205,7 @@ def get_competicion_temporada(competicion_id: int, temporada_id: int) -> dict:
         "periodo": temporada.periodo,
         "fecha_inicio": temporada.fecha_inicio,
         "fecha_fin": temporada.fecha_fin,
+        "partidos_totales": len(season_matches),
         "partidos": [
             {
                 "id": match["id"],
@@ -415,7 +416,7 @@ def get_equipo(equipo_id: int) -> dict | None:
         equipo["estadio"] = None
 
     temporadas = list(
-        instance.temporadas.order_by("periodo").values(
+        instance.temporadas.order_by("-periodo").values(
             "id",
             "periodo",
             "fecha_inicio",
@@ -512,14 +513,6 @@ def get_equipo(equipo_id: int) -> dict | None:
     ]
     
     return equipo
-
-
-def get_equipo_players(equipo_id: int) -> dict:
-    # TODO: Completar metodo
-    players = None
-
-    return players
-
 
 def get_equipo_stats(equipo_id: int, temporada_id: int) -> dict:
     estadisticas = None

@@ -18,7 +18,6 @@ urlpatterns = [
 
     path("equipos/", views.equipos_list, name = "equipos-list"),
     path("equipos/<int:equipo_id>", views.equipo_detail, name = "equipo-detail"),
-    path("equipos/<int:equipo_id>/jugadores", views.equipo_players, name = "equipo-players"),
     path("equipos/<int:equipo_id>/partidos", views.equipo_fixtures, name = "equipo-fixtures"),
     path("equipos/<int:equipo_id>/estadisticas", views.equipo_stats, name = "equipo-stats"),
 ]
