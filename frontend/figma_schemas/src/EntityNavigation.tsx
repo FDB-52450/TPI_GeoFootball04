@@ -1,9 +1,14 @@
 import type { ReactNode } from "react"
 
-export type EntityKind = "equipo" | "pais" | "confederacion" | "competicion"
+export type EntityKind =
+  | "equipo"
+  | "pais"
+  | "confederacion"
+  | "competicion"
+  | "jugador"
 
 export type EntityRoute = {
-  page: "Equipos" | "Países" | "Confederaciones" | "Competiciones"
+  page: "Equipos" | "Países" | "Confederaciones" | "Competiciones" | "Jugadores"
   id: number | null
 }
 
@@ -12,6 +17,7 @@ const entityPages: Record<EntityKind, EntityRoute["page"]> = {
   pais: "Países",
   confederacion: "Confederaciones",
   competicion: "Competiciones",
+  jugador: "Jugadores",
 }
 
 export function entityHref(kind: EntityKind, id?: number | null): string {
@@ -19,7 +25,9 @@ export function entityHref(kind: EntityKind, id?: number | null): string {
 }
 
 export function parseEntityRoute(hash: string): EntityRoute | null {
-  const match = hash.match(/^#(equipo|pais|confederacion|competicion)(?:\/(\d+))?$/)
+  const match = hash.match(
+    /^#(equipo|pais|confederacion|competicion|jugador)(?:\/(\d+))?$/,
+  )
   if (!match) return null
 
   return {

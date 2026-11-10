@@ -3,6 +3,7 @@ import ConfederationsPage from "./ConfederationsPage"
 import CompetitionsPage from "./CompetitionsPage"
 import CountriesPage from "./CountriesPage"
 import TeamsPage from "./TeamsPage"
+import PlayersPage from "./PlayersPage"
 import { EntityLink, parseEntityRoute } from "./EntityNavigation"
 
 type Match = {
@@ -329,6 +330,8 @@ export default function App() {
           <CompetitionsPage initialId={route?.page === "Competiciones" ? route.id : null} />
         ) : activeNav === "Equipos" ? (
           <TeamsPage teamId={route?.page === "Equipos" ? route.id : null} />
+        ) : activeNav === "Jugadores" ? (
+          <PlayersPage playerId={route?.page === "Jugadores" ? route.id : null} />
         ) : (
           <>
             <section className="hero">
