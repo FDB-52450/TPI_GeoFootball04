@@ -11,14 +11,29 @@ type Match = {
   country: string
   flag: string
   minute: string
+  dateOffset: number
+  status: "live" | "played" | "upcoming"
   home: string
   away: string
   homeCode: string
   awayCode: string
-  homeScore: number
-  awayScore: number
+  homeScore: number | null
+  awayScore: number | null
   colorA: string
   colorB: string
+}
+
+function localDateKey(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+  return `${year}-${month}-${day}`
+}
+
+function dateWithOffset(offset: number): string {
+  const date = new Date()
+  date.setDate(date.getDate() + offset)
+  return localDateKey(date)
 }
 
 const navItems = [
@@ -35,7 +50,9 @@ const matches: Match[] = [
     competition: "Premier League",
     country: "Inglaterra",
     flag: "GB",
-    minute: "67'",
+    minute: "FINALIZADO",
+    dateOffset: -1,
+    status: "played",
     home: "Arsenal",
     away: "Manchester City",
     homeCode: "ARS",
@@ -50,6 +67,8 @@ const matches: Match[] = [
     country: "España",
     flag: "ES",
     minute: "43'",
+    dateOffset: 0,
+    status: "live",
     home: "Real Madrid",
     away: "Real Sociedad",
     homeCode: "RMA",
@@ -63,13 +82,15 @@ const matches: Match[] = [
     competition: "CONMEBOL Libertadores",
     country: "Sudamérica",
     flag: "SA",
-    minute: "81'",
+    minute: "PROGRAMADO · 20:00",
+    dateOffset: 1,
+    status: "upcoming",
     home: "Flamengo",
     away: "River Plate",
     homeCode: "FLA",
     awayCode: "RIV",
-    homeScore: 3,
-    awayScore: 2,
+    homeScore: null,
+    awayScore: null,
     colorA: "#d72635",
     colorB: "#efefeb",
   },
@@ -78,6 +99,8 @@ const matches: Match[] = [
     country: "Italia",
     flag: "IT",
     minute: "24'",
+    dateOffset: 0,
+    status: "live",
     home: "Inter",
     away: "Napoli",
     homeCode: "INT",
@@ -171,15 +194,17 @@ function TeamBadge({ code, color }: { code: string; color: string }) {
 }
 
 function MatchCard({ match }: { match: Match }) {
+  const scoreAvailable = match.homeScore !== null && match.awayScore !== null
+
   return (
-    <article className="match-card">
+    <article className={`match-card match-card-${match.status}`}>
       <div className="match-meta">
         <div>
           <span className="country-code">{match.flag}</span>
           <EntityLink kind="competicion">{match.competition}</EntityLink>
         </div>
-        <span className="live-time">
-          <span className="live-dot" />
+        <span className={`live-time match-status-${match.status}`}>
+          {match.status === "live" && <span className="live-dot" />}
           {match.minute}
         </span>
       </div>
@@ -189,9 +214,9 @@ function MatchCard({ match }: { match: Match }) {
           <TeamBadge code={match.homeCode} color={match.colorA} />
           <EntityLink kind="equipo">{match.home}</EntityLink>
         </div>
-        <span className="team-score">{match.homeScore}</span>
-        <span className="score-divider">—</span>
-        <span className="team-score">{match.awayScore}</span>
+        <span className="team-score">{scoreAvailable ? match.homeScore : "—"}</span>
+        <span className="score-divider">{match.status === "upcoming" ? "VS" : "—"}</span>
+        <span className="team-score">{scoreAvailable ? match.awayScore : "—"}</span>
         <div className="team team-away">
           <EntityLink kind="equipo">{match.away}</EntityLink>
           <TeamBadge code={match.awayCode} color={match.colorB} />
@@ -223,10 +248,23 @@ function MatchCard({ match }: { match: Match }) {
 export default function App() {
   const [route, setRoute] = useState(() => parseEntityRoute(window.location.hash))
   const [activeNav, setActiveNav] = useState(() => route?.page ?? "Home")
-  const [selectedDay, setSelectedDay] = useState("Hoy")
-  const [showAll, setShowAll] = useState(false)
+  const [selectedDate, setSelectedDate] = useState(() => dateWithOffset(0))
+  const [competitionFilter, setCompetitionFilter] = useState("Todas")
 
-  const visibleMatches = showAll ? matches : matches.slice(0, 3)
+  const selectedOffset = [-1, 0, 1].find(
+    (offset) => dateWithOffset(offset) === selectedDate,
+  )
+  const dateShortcuts = [
+    { label: "Ayer", offset: -1 },
+    { label: "Hoy", offset: 0 },
+    { label: "Mañana", offset: 1 },
+  ]
+  const dateMatches = matches.filter(
+    (match) =>
+      dateWithOffset(match.dateOffset) === selectedDate &&
+      (competitionFilter === "Todas" || match.competition === competitionFilter),
+  )
+  const competitions = [...new Set(matches.map((match) => match.competition))]
 
   useEffect(() => {
     function handleHashChange() {
@@ -368,46 +406,70 @@ export default function App() {
                 <div className="section-heading">
                   <div>
                     <span className="section-label">MARCADOR GLOBAL</span>
-                    <h2>Partidos en vivo</h2>
+                    <h2>{activeNav === "Partidos" ? "Partidos" : "Partidos en vivo"}</h2>
                   </div>
-                  <div className="date-switcher" aria-label="Seleccionar fecha">
-                    {["Ayer", "Hoy", "Mañana"].map((day) => (
+                  <div className="matches-controls">
+                    <div className="date-switcher" aria-label="Seleccionar fecha">
+                    {dateShortcuts.map(({ label, offset }) => (
                       <button
-                        className={selectedDay === day ? "selected" : ""}
-                        key={day}
+                        className={selectedOffset === offset ? "selected" : ""}
+                        key={label}
                         type="button"
-                        onClick={() => setSelectedDay(day)}
+                        onClick={() => {
+                          setSelectedDate(dateWithOffset(offset))
+                        }}
                       >
-                        {day}
+                        {label}
                       </button>
                     ))}
+                    </div>
+                    <label className="match-date-picker">
+                      <span>FECHA</span>
+                      <input
+                        aria-label="Elegir fecha de partidos"
+                        type="date"
+                        value={selectedDate}
+                        onChange={(event) => {
+                          setSelectedDate(event.target.value)
+                        }}
+                      />
+                    </label>
+                    <label className="match-competition-filter">
+                      <span>COMPETICIÓN</span>
+                      <select
+                        value={competitionFilter}
+                        onChange={(event) => {
+                          setCompetitionFilter(event.target.value)
+                        }}
+                      >
+                        <option value="Todas">Todas</option>
+                        {competitions.map((competition) => (
+                          <option key={competition} value={competition}>{competition}</option>
+                        ))}
+                      </select>
+                    </label>
                   </div>
                 </div>
 
                 <div className="matches-list">
-                  {visibleMatches.map((match) => (
+                  {dateMatches.map((match) => (
                     <MatchCard
                       key={`${match.home}-${match.away}`}
                       match={match}
                     />
                   ))}
+                  {!dateMatches.length && (
+                    <p className="matches-empty-state">
+                      No hay partidos de muestra para esta fecha y competición.
+                    </p>
+                  )}
                 </div>
-
-                <button
-                  className="all-matches"
-                  type="button"
-                  onClick={() => setShowAll((current) => !current)}
-                >
-                  {showAll ? "Mostrar menos" : "Ver todos los partidos"}
-                  <Icon size={16}>
-                    <path
-                      d={showAll ? "m6 15 6-6 6 6" : "m6 9 6 6 6-6"}
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeWidth="1.8"
-                    />
-                  </Icon>
-                </button>
+                <aside className="matches-api-note">
+                  <span>DATOS DE DEMOSTRACIÓN</span>
+                  <p>
+                    <code>/api/partidos/</code> actualmente ofrece filtro por fecha solo para hoy y por temporada; el filtro arbitrario por fecha y competición de este boceto aún no está disponible en el endpoint.
+                  </p>
+                </aside>
               </section>
 
               <aside className="sidebar">
@@ -453,17 +515,6 @@ export default function App() {
                   </button>
                 </section>
 
-                <section className="news-card">
-                  <span className="news-tag">HISTORIAS</span>
-                  <p>Dentro del juego</p>
-                  <h3>
-                    Las cinco ligas que están redefiniendo el fútbol mundial
-                  </h3>
-                  <button type="button">
-                    Leer historia <span>→</span>
-                  </button>
-                  <div className="pitch-lines" aria-hidden="true" />
-                </section>
               </aside>
             </div>
           </>

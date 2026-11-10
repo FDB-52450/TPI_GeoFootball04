@@ -329,6 +329,41 @@
   box-shadow: 0 2px 8px rgb(18 28 36 / 7%);
 }
 
+.matches-controls {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.match-date-picker,
+.match-competition-filter {
+  display: grid;
+  min-width: 130px;
+  gap: 5px;
+}
+
+.match-date-picker > span,
+.match-competition-filter > span {
+  color: #858b89;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .8px;
+}
+
+.match-date-picker input,
+.match-competition-filter select {
+  height: 35px;
+  padding: 0 9px;
+  border: 1px solid #deddd7;
+  border-radius: 0;
+  background: #fff;
+  color: #35414a;
+  font: inherit;
+  font-size: 10px;
+}
+
 .matches-list {
   display: grid;
   gap: 10px;
@@ -344,6 +379,63 @@
   border-color: #b9b8b2;
   box-shadow: 0 12px 30px rgb(18 28 36 / 6%);
   transform: translateY(-2px);
+}
+
+.match-card-upcoming .match-teams {
+  grid-template-columns: minmax(0, 1fr) 36px minmax(0, 1fr);
+}
+
+.match-card-upcoming .team-score {
+  display: none;
+}
+
+.match-card-upcoming .score-divider {
+  color: #8c9390;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.match-status-played {
+  color: #75817e;
+}
+
+.match-status-upcoming {
+  color: #506b85;
+}
+
+.matches-empty-state {
+  padding: 28px 18px;
+  border: 1px solid #deddd7;
+  background: #fff;
+  color: #737d7d;
+  font-size: 12px;
+  text-align: center;
+}
+
+.matches-api-note {
+  display: grid;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-left: 3px solid #e4a47f;
+  background: #fff8f2;
+  gap: 5px;
+}
+
+.matches-api-note > span {
+  color: #a05c44;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .8px;
+}
+
+.matches-api-note p {
+  color: #795b4b;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.matches-api-note code {
+  font-size: 9px;
 }
 
 .match-meta,
@@ -1268,9 +1360,17 @@ footer {
     gap: 16px;
   }
   .date-switcher {
-    width: 100%;
+    width: auto;
   }
   .date-switcher button {
+    flex: none;
+  }
+  .matches-controls {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .match-date-picker,
+  .match-competition-filter {
     flex: 1;
   }
   .match-teams {
@@ -3654,6 +3754,22 @@ footer {
 
   .main-nav button {
     font-size: 15px;
+  }
+
+  .match-date-picker > span,
+  .match-competition-filter > span,
+  .matches-api-note > span {
+    font-size: 11px;
+  }
+
+  .match-date-picker input,
+  .match-competition-filter select {
+    font-size: 13px;
+  }
+
+  .matches-empty-state,
+  .matches-api-note p {
+    font-size: 14px;
   }
 
   footer {
