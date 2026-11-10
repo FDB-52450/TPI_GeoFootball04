@@ -4,6 +4,7 @@ import {
   type Confederation,
   type ConfederationDetails,
 } from "./api/confederations"
+import { EntityLink } from "./EntityNavigation"
 
 const CONFEDERATIONS_ENDPOINT =
   "http://127.0.0.1:8000/api/catalogo/confederaciones/"
@@ -46,7 +47,7 @@ function ConfederationMark({ logoUrl }: { logoUrl?: string | null }) {
   )
 }
 
-export default function ConfederationsPage() {
+export default function ConfederationsPage({ initialId }: { initialId: number | null }) {
   const [confederations, setConfederations] = useState<Confederation[]>([])
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
@@ -78,7 +79,7 @@ export default function ConfederationsPage() {
 
         if (!cancelled) {
           setConfederations(payload.confederaciones)
-          setSelectedId(payload.confederaciones[0]?.id ?? null)
+          setSelectedId(initialId ?? payload.confederaciones[0]?.id ?? null)
         }
       } catch (loadError) {
         if (!cancelled) {
@@ -98,6 +99,10 @@ export default function ConfederationsPage() {
       cancelled = true
     }
   }, [])
+
+  useEffect(() => {
+    if (initialId !== null) setSelectedId(initialId)
+  }, [initialId])
 
   useEffect(() => {
     if (selectedId === null) {
@@ -190,12 +195,11 @@ export default function ConfederationsPage() {
             </div>
           ) : confederations.length ? (
             confederations.map((confederation) => (
-              <button
-                aria-pressed={selectedId === confederation.id}
+              <a
                 className={selectedId === confederation.id ? "selected" : ""}
+                aria-current={selectedId === confederation.id ? "page" : undefined}
+                href={`#confederacion/${confederation.id}`}
                 key={confederation.id}
-                onClick={() => setSelectedId(confederation.id)}
-                type="button"
               >
                 <ConfederationMark logoUrl={confederation.logo_url} />
                 <span>
@@ -203,7 +207,7 @@ export default function ConfederationsPage() {
                   <small>{confederation.region || "Región no informada"}</small>
                 </span>
                 <i>{confederation.id}</i>
-              </button>
+              </a>
             ))
           ) : (
             <div className="confed-picker-placeholder">
@@ -219,7 +223,15 @@ export default function ConfederationsPage() {
             <ConfederationMark logoUrl={selectedConfederation?.logo_url} />
             <div>
               <span>{selectedConfederation?.region || "CONFEDERACIÓN"}</span>
-              <h2>{selectedConfederation?.nombre || "Selecciona una confederación"}</h2>
+              <h2>
+                {selectedConfederation ? (
+                  <EntityLink kind="confederacion" id={selectedConfederation.id}>
+                    {selectedConfederation.nombre}
+                  </EntityLink>
+                ) : (
+                  "Selecciona una confederación"
+                )}
+              </h2>
               {selectedConfederation && (
                 <p>Identificador: {selectedConfederation.id}</p>
               )}
@@ -277,7 +289,9 @@ export default function ConfederationsPage() {
                       </span>
                     )}
                     <div>
-                      <h4>{country.nombre}</h4>
+                      <h4>
+                        <EntityLink kind="pais" id={country.id}>{country.nombre}</EntityLink>
+                      </h4>
                       <p>{country.codigo_iso3}</p>
                     </div>
                   </article>
@@ -325,7 +339,9 @@ export default function ConfederationsPage() {
                       </span>
                     )}
                     <div>
-                      <h4>{competition.nombre}</h4>
+                      <h4>
+                        <EntityLink kind="competicion" id={competition.id}>{competition.nombre}</EntityLink>
+                      </h4>
                       <span className={`competition-type competition-type-${competition.tipo.toLocaleLowerCase()}`}>
                         {competition.tipo}
                       </span>

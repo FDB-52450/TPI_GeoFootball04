@@ -1,7 +1,9 @@
-import { useState, type ReactNode } from "react"
+import { useEffect, useState, type ReactNode } from "react"
 import ConfederationsPage from "./ConfederationsPage"
 import CompetitionsPage from "./CompetitionsPage"
 import CountriesPage from "./CountriesPage"
+import TeamsPage from "./TeamsPage"
+import { EntityLink, parseEntityRoute } from "./EntityNavigation"
 
 type Match = {
   competition: string
@@ -173,7 +175,7 @@ function MatchCard({ match }: { match: Match }) {
       <div className="match-meta">
         <div>
           <span className="country-code">{match.flag}</span>
-          <span>{match.competition}</span>
+          <EntityLink kind="competicion">{match.competition}</EntityLink>
         </div>
         <span className="live-time">
           <span className="live-dot" />
@@ -184,19 +186,19 @@ function MatchCard({ match }: { match: Match }) {
       <div className="match-teams">
         <div className="team">
           <TeamBadge code={match.homeCode} color={match.colorA} />
-          <span>{match.home}</span>
+          <EntityLink kind="equipo">{match.home}</EntityLink>
         </div>
         <span className="team-score">{match.homeScore}</span>
         <span className="score-divider">—</span>
         <span className="team-score">{match.awayScore}</span>
         <div className="team team-away">
-          <span>{match.away}</span>
+          <EntityLink kind="equipo">{match.away}</EntityLink>
           <TeamBadge code={match.awayCode} color={match.colorB} />
         </div>
       </div>
 
       <div className="match-footer">
-        <span>{match.country}</span>
+        <EntityLink kind="pais">{match.country}</EntityLink>
         <button
           className="text-button"
           type="button"
@@ -218,11 +220,33 @@ function MatchCard({ match }: { match: Match }) {
 }
 
 export default function App() {
-  const [activeNav, setActiveNav] = useState("Home")
+  const [route, setRoute] = useState(() => parseEntityRoute(window.location.hash))
+  const [activeNav, setActiveNav] = useState(() => route?.page ?? "Home")
   const [selectedDay, setSelectedDay] = useState("Hoy")
   const [showAll, setShowAll] = useState(false)
 
   const visibleMatches = showAll ? matches : matches.slice(0, 3)
+
+  useEffect(() => {
+    function handleHashChange() {
+      const nextRoute = parseEntityRoute(window.location.hash)
+      setRoute(nextRoute)
+      if (nextRoute) setActiveNav(nextRoute.page)
+    }
+
+    window.addEventListener("hashchange", handleHashChange)
+    return () => window.removeEventListener("hashchange", handleHashChange)
+  }, [])
+
+  function navigateToSection(section: string) {
+    setActiveNav(section)
+    setRoute(null)
+    window.history.replaceState(
+      null,
+      "",
+      `${window.location.pathname}${window.location.search}`,
+    )
+  }
 
   return (
     <div className="app-shell">
@@ -231,7 +255,7 @@ export default function App() {
           <button
             className="brand"
             type="button"
-            onClick={() => setActiveNav("Home")}
+            onClick={() => navigateToSection("Home")}
             aria-label="Ir al inicio"
           >
             <BallMark />
@@ -242,7 +266,7 @@ export default function App() {
             <button
               className={`home-button ${activeNav === "Home" ? "active" : ""}`}
               type="button"
-              onClick={() => setActiveNav("Home")}
+              onClick={() => navigateToSection("Home")}
             >
               <HomeIcon />
               Home
@@ -253,7 +277,7 @@ export default function App() {
                 className={activeNav === item ? "active" : ""}
                 key={item}
                 type="button"
-                onClick={() => setActiveNav(item)}
+                onClick={() => navigateToSection(item)}
               >
                 {item}
               </button>
@@ -298,11 +322,13 @@ export default function App() {
 
       <main>
         {activeNav === "Confederaciones" ? (
-          <ConfederationsPage />
+          <ConfederationsPage initialId={route?.page === "Confederaciones" ? route.id : null} />
         ) : activeNav === "Países" ? (
-          <CountriesPage />
+          <CountriesPage initialId={route?.page === "Países" ? route.id : null} />
         ) : activeNav === "Competiciones" ? (
-          <CompetitionsPage />
+          <CompetitionsPage initialId={route?.page === "Competiciones" ? route.id : null} />
+        ) : activeNav === "Equipos" ? (
+          <TeamsPage teamId={route?.page === "Equipos" ? route.id : null} />
         ) : (
           <>
             <section className="hero">
@@ -410,8 +436,8 @@ export default function App() {
                             {club.slice(0, 1)}
                           </span>
                           <span className="rank-team">
-                            <strong>{club}</strong>
-                            <small>{country}</small>
+                            <strong><EntityLink kind="equipo">{club}</EntityLink></strong>
+                            <small><EntityLink kind="pais">{country}</EntityLink></small>
                           </span>
                           <span>{played}</span>
                           <strong>{points}</strong>

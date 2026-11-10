@@ -7,6 +7,7 @@ import {
   type CompetitionDetails,
   type CompetitionSeasonData,
 } from "./api/competitions"
+import { EntityLink } from "./EntityNavigation"
 
 function EndpointTag({ children }: { children: string }) {
   return <code className="country-endpoint">{children}</code>
@@ -43,13 +44,7 @@ function formatSeasonDate(value: string): string {
   return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString()
 }
 
-function getCompetitionAffiliation(competition: CompetitionDetails): string {
-  if (competition.pais) return competition.pais.nombre
-  if (competition.confederacion) return competition.confederacion.nombre
-  return "Sin afiliación informada"
-}
-
-export default function CompetitionsPage() {
+export default function CompetitionsPage({ initialId }: { initialId: number | null }) {
   const [competitions, setCompetitions] = useState<Competition[]>([])
   const [competitionId, setCompetitionId] = useState<number | null>(null)
   const [competitionsLoading, setCompetitionsLoading] = useState(true)
@@ -73,7 +68,7 @@ export default function CompetitionsPage() {
         const result = await fetchCompetitions()
         if (!cancelled) {
           setCompetitions(result)
-          setCompetitionId(result[0]?.id ?? null)
+          setCompetitionId(initialId ?? result[0]?.id ?? null)
         }
       } catch (error) {
         if (!cancelled) {
@@ -93,6 +88,10 @@ export default function CompetitionsPage() {
       cancelled = true
     }
   }, [])
+
+  useEffect(() => {
+    if (initialId !== null) setCompetitionId(initialId)
+  }, [initialId])
 
   useEffect(() => {
     if (competitionId === null) {
@@ -263,7 +262,23 @@ export default function CompetitionsPage() {
                 {selectedDetails ? (
                   <>
                     <span>{selectedDetails.tipo}</span>
-                    <span>{getCompetitionAffiliation(selectedDetails)}</span>
+                    {selectedDetails.pais && (
+                      <span>
+                        <EntityLink kind="pais" id={selectedDetails.pais.id}>
+                          {selectedDetails.pais.nombre}
+                        </EntityLink>
+                      </span>
+                    )}
+                    {selectedDetails.confederacion && (
+                      <span>
+                        <EntityLink
+                          kind="confederacion"
+                          id={selectedDetails.confederacion.id}
+                        >
+                          {selectedDetails.confederacion.nombre}
+                        </EntityLink>
+                      </span>
+                    )}
                   </>
                 ) : detailsLoading ? (
                   <span>Cargando detalle…</span>
@@ -380,7 +395,9 @@ export default function CompetitionsPage() {
                       </span>
                     )}
                     <div>
-                      <h4>{team.nombre}</h4>
+                      <h4>
+                        <EntityLink kind="equipo" id={team.id}>{team.nombre}</EntityLink>
+                      </h4>
                       {team.siglas && <p>{team.siglas}</p>}
                     </div>
                   </article>
@@ -445,7 +462,11 @@ export default function CompetitionsPage() {
                           ) : (
                             <span>—</span>
                           )}
-                          <strong>{row.equipo.nombre}</strong>
+                          <strong>
+                            <EntityLink kind="equipo" id={row.equipo.id}>
+                              {row.equipo.nombre}
+                            </EntityLink>
+                          </strong>
                         </td>
                         <td>{row.partidos_jugados}</td>
                         <td>{row.ganados}</td>
@@ -515,7 +536,11 @@ export default function CompetitionsPage() {
                         ) : (
                           <span>—</span>
                         )}
-                        <strong>{match.equipos.local.nombre}</strong>
+                        <strong>
+                          <EntityLink kind="equipo" id={match.equipos.local.id}>
+                            {match.equipos.local.nombre}
+                          </EntityLink>
+                        </strong>
                       </div>
                       <div
                         className={`fixture-result${match.estado === "PROGRAMADO" ? " fixture-upcoming" : ""}`}
@@ -537,7 +562,11 @@ export default function CompetitionsPage() {
                         ) : (
                           <span>—</span>
                         )}
-                        <strong>{match.equipos.visitante.nombre}</strong>
+                        <strong>
+                          <EntityLink kind="equipo" id={match.equipos.visitante.id}>
+                            {match.equipos.visitante.nombre}
+                          </EntityLink>
+                        </strong>
                       </div>
                       <span className="fixture-endpoint">TEMPORADA</span>
                     </article>

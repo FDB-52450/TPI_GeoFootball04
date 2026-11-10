@@ -7,6 +7,7 @@ import {
   type CountryDetails,
   type CountryTeam,
 } from "./api/countries"
+import { EntityLink } from "./EntityNavigation"
 
 function EndpointTag({ children }: { children: string }) {
   return <code className="country-endpoint">{children}</code>
@@ -35,7 +36,7 @@ function UnavailableNotice({
   )
 }
 
-export default function CountriesPage() {
+export default function CountriesPage({ initialId }: { initialId: number | null }) {
   const [countries, setCountries] = useState<Country[]>([])
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [countriesLoading, setCountriesLoading] = useState(true)
@@ -55,7 +56,7 @@ export default function CountriesPage() {
         const result = await fetchCountries()
         if (!cancelled) {
           setCountries(result)
-          setSelectedId(result[0]?.id ?? null)
+          setSelectedId(initialId ?? result[0]?.id ?? null)
         }
       } catch (error) {
         if (!cancelled) {
@@ -75,6 +76,10 @@ export default function CountriesPage() {
       cancelled = true
     }
   }, [])
+
+  useEffect(() => {
+    if (initialId !== null) setSelectedId(initialId)
+  }, [initialId])
 
   useEffect(() => {
     if (selectedId === null) {
@@ -229,7 +234,13 @@ export default function CountriesPage() {
             </div>
             <div className="country-profile">
               <span className="country-overview-kicker">PERFIL DEL PAÍS</span>
-              <h2>{country?.name ?? "Selecciona un país"}</h2>
+              <h2>
+                {country ? (
+                  <EntityLink kind="pais" id={country.id}>{country.name}</EntityLink>
+                ) : (
+                  "Selecciona un país"
+                )}
+              </h2>
               <p>
                 {country
                   ? `Código ISO3: ${country.iso3}`
@@ -247,7 +258,14 @@ export default function CountriesPage() {
                   : detailsError
                     ? "No disponible"
                     : details?.confederation
-                      ? `${details.confederation.name} · ${details.confederation.region}`
+                      ? (
+                        <>
+                          <EntityLink kind="confederacion" id={details.confederation.id}>
+                            {details.confederation.name}
+                          </EntityLink>
+                          {` · ${details.confederation.region}`}
+                        </>
+                      )
                       : "Sin país seleccionado"}
               </strong>
               <EndpointTag>/api/catalogo/paises/&lt;id&gt;/</EndpointTag>
@@ -301,7 +319,9 @@ export default function CountriesPage() {
                       </span>
                     )}
                     <div>
-                      <strong>{team.name}</strong>
+                      <strong>
+                        <EntityLink kind="equipo" id={team.id}>{team.name}</EntityLink>
+                      </strong>
                       {team.abbreviation && <small>{team.abbreviation}</small>}
                     </div>
                   </article>
@@ -360,7 +380,9 @@ export default function CountriesPage() {
                       </div>
                     )}
                     <div className="country-competition-info">
-                      <strong>{competition.name}</strong>
+                      <strong>
+                        <EntityLink kind="competicion" id={competition.id}>{competition.name}</EntityLink>
+                      </strong>
                       <p>{competition.type}</p>
                     </div>
                   </article>
