@@ -111,6 +111,14 @@ class Partido(models.Model):
         default=NivelDatos.PARCIAL,
     )
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["temporada", "equipo_visitante", "equipo_local"],
+                name="unico_partido_por_temporada",
+            )
+        ]
+
     def __str__(self):
         return f"{self.equipo_local} vs {self.equipo_visitante} ({self.fecha:%Y-%m-%d})"
 
