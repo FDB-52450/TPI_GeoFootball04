@@ -2,7 +2,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from .models import Confederacion, Pais, Competicion, Temporada, Equipo, Estadio
-from apps.partidos.models import Partido
+from apps.partidos.models import Evento, Partido
 
 from ..ingesta import sync
 
@@ -359,9 +359,331 @@ def get_competicion_temporada_stats(competicion_id: int, temporada_id: int) -> d
         
         raise ResourceNotFound("temporada", temporada_id)
 
-    # TODO: Determinar que stats devolver.
+    matches = list(
+        Partido.objects.filter(
+            temporada=temporada,
+            estado=Partido.Estado.FINALIZADO,
+        )
+        .select_related("equipo_local", "equipo_visitante")
+        .prefetch_related(
+            "estadisticas_equipo",
+            "convocatorias__jugador",
+            "eventos__jugador",
+            "eventos__jugador_sale",
+        )
+        .order_by("fecha", "id")
+    )
 
-    return temporada
+    team_stats = {}
+    player_stats = {}
+    match_stats = []
+
+    def get_team_stats(team):
+        return team_stats.setdefault(
+            team.id,
+            {
+                "team": team,
+                "matches": 0,
+                "clean_sheets": 0,
+                "xg_for": [],
+                "xg_against": [],
+                "current_unbeaten": 0,
+                "longest_unbeaten": 0,
+            },
+        )
+
+    for match in matches:
+        if match.goles_local is None or match.goles_vis is None:
+            continue
+
+        home = match.equipo_local
+        away = match.equipo_visitante
+        home_stats = get_team_stats(home)
+        away_stats = get_team_stats(away)
+        home_stats["matches"] += 1
+        away_stats["matches"] += 1
+
+        if match.goles_vis == 0:
+            home_stats["clean_sheets"] += 1
+        if match.goles_local == 0:
+            away_stats["clean_sheets"] += 1
+
+        if match.goles_local >= match.goles_vis:
+            home_stats["current_unbeaten"] += 1
+        else:
+            home_stats["current_unbeaten"] = 0
+        home_stats["longest_unbeaten"] = max(
+            home_stats["longest_unbeaten"],
+            home_stats["current_unbeaten"],
+        )
+
+        if match.goles_vis >= match.goles_local:
+            away_stats["current_unbeaten"] += 1
+        else:
+            away_stats["current_unbeaten"] = 0
+        away_stats["longest_unbeaten"] = max(
+            away_stats["longest_unbeaten"],
+            away_stats["current_unbeaten"],
+        )
+
+        stats_by_team = {
+            stat.equipo_id: stat for stat in match.estadisticas_equipo.all()
+        }
+        home_match_stats = stats_by_team.get(home.id)
+        away_match_stats = stats_by_team.get(away.id)
+
+        if home_match_stats is not None and home_match_stats.xg is not None:
+            home_stats["xg_for"].append(float(home_match_stats.xg))
+            away_stats["xg_against"].append(float(home_match_stats.xg))
+        if away_match_stats is not None and away_match_stats.xg is not None:
+            away_stats["xg_for"].append(float(away_match_stats.xg))
+            home_stats["xg_against"].append(float(away_match_stats.xg))
+
+        home_xg = (
+            float(home_match_stats.xg)
+            if home_match_stats is not None and home_match_stats.xg is not None
+            else None
+        )
+        away_xg = (
+            float(away_match_stats.xg)
+            if away_match_stats is not None and away_match_stats.xg is not None
+            else None
+        )
+
+        match_stats.append(
+            {
+                "partido": {"id": match.id},
+                "equipos": {
+                    "local": {
+                        "id": home.id,
+                        "nombre": home.nombre,
+                        "imagen": home.escudo_url,
+                    },
+                    "visitante": {
+                        "id": away.id,
+                        "nombre": away.nombre,
+                        "imagen": away.escudo_url,
+                    },
+                },
+                "goles": {
+                    "local": match.goles_local,
+                    "visitante": match.goles_vis,
+                },
+                "xg": {"local": home_xg, "visitante": away_xg},
+                "total_goles": match.goles_local + match.goles_vis,
+                "diferencia_goles": abs(match.goles_local - match.goles_vis),
+                "diferencia_xg": (
+                    round(abs(home_xg - away_xg), 2)
+                    if home_xg is not None and away_xg is not None
+                    else None
+                ),
+            }
+        )
+
+        player_match_ids = set()
+        for callup in match.convocatorias.all():
+            if not callup.titular and callup.min_entrada is None:
+                continue
+
+            player = callup.jugador
+            player_data = player_stats.setdefault(
+                player.id,
+                {
+                    "player": player,
+                    "matches": 0,
+                    "goals": 0,
+                    "yellow_cards": 0,
+                    "red_cards": 0,
+                    "minutes": 0,
+                },
+            )
+            player_match_ids.add(player.id)
+            start_minute = 0 if callup.titular else callup.min_entrada
+            end_minute = callup.min_salida if callup.min_salida is not None else 90
+            player_data["minutes"] += max(0, end_minute - start_minute)
+
+        for event in match.eventos.all():
+            if event.jugador_id is not None:
+                player_match_ids.add(event.jugador_id)
+                player_data = player_stats.setdefault(
+                    event.jugador_id,
+                    {
+                        "player": event.jugador,
+                        "matches": 0,
+                        "goals": 0,
+                        "yellow_cards": 0,
+                        "red_cards": 0,
+                        "minutes": 0,
+                    },
+                )
+                if event.tipo in (Evento.Tipo.GOL, Evento.Tipo.PENAL):
+                    player_data["goals"] += 1
+                elif event.tipo == Evento.Tipo.TARJETA_AMARILLA or event.tipo == Evento.Tipo.SEGUNDA_TARJETA_AMARILLA:
+                    player_data["yellow_cards"] += 1
+                elif event.tipo == Evento.Tipo.TARJETA_ROJA or event.tipo == Evento.Tipo.SEGUNDA_TARJETA_AMARILLA:
+                    player_data["red_cards"] += 1
+
+            if event.jugador_sale_id is not None:
+                player_match_ids.add(event.jugador_sale_id)
+                player_stats.setdefault(
+                    event.jugador_sale_id,
+                    {
+                        "player": event.jugador_sale,
+                        "matches": 0,
+                        "goals": 0,
+                        "yellow_cards": 0,
+                        "red_cards": 0,
+                        "minutes": 0,
+                    },
+                )
+
+        for player_id in player_match_ids:
+            player_stats[player_id]["matches"] += 1
+
+    def team_entry(team_data, value, unit):
+        team = team_data["team"]
+        return {
+            "partidos_jugados": team_data["matches"],
+            "equipo": {
+                "id": team.id,
+                "nombre": team.nombre,
+                "imagen": team.escudo_url,
+            },
+            "valor": value,
+            "unidad": unit,
+        }
+
+    def player_entries(stat_name, unit):
+        entries = [
+            {
+                "partidos_jugados": data["matches"],
+                "jugador": {
+                    "id": data["player"].id,
+                    "nombre": data["player"].nombre,
+                    "imagen": data["player"].foto_url,
+                },
+                "valor": data[stat_name],
+                "unidad": unit,
+            }
+            for data in player_stats.values()
+            if data[stat_name] > 0
+        ]
+        return sorted(
+            entries,
+            key=lambda entry: (-entry["valor"], entry["jugador"]["nombre"]),
+        )[:5]
+
+    team_entries = list(team_stats.values())
+    unbeaten = sorted(
+        team_entries,
+        key=lambda data: (
+            -data["longest_unbeaten"],
+            data["team"].nombre,
+        ),
+    )[:5]
+    clean_sheets = sorted(
+        team_entries,
+        key=lambda data: (-data["clean_sheets"], data["team"].nombre),
+    )[:5]
+    best_attack = sorted(
+        (data for data in team_entries if data["xg_for"]),
+        key=lambda data: (
+            -sum(data["xg_for"]) / len(data["xg_for"]),
+            data["team"].nombre,
+        ),
+    )[:5]
+    best_defense = sorted(
+        (data for data in team_entries if data["xg_against"]),
+        key=lambda data: (
+            sum(data["xg_against"]) / len(data["xg_against"]),
+            data["team"].nombre,
+        ),
+    )[:5]
+
+    def match_entries(matches_to_format, value_key, unit):
+        entries = []
+        for match_data in matches_to_format:
+            entry = {
+                key: value
+                for key, value in match_data.items()
+                if key not in {
+                    "total_goles",
+                    "diferencia_goles",
+                    "diferencia_xg",
+                }
+            }
+            entry["valor"] = match_data[value_key]
+            entry["unidad"] = unit
+            entries.append(entry)
+        return entries
+
+    most_goals = sorted(
+        match_stats,
+        key=lambda data: (-data["total_goles"], data["partido"]["id"]),
+    )[:5]
+    biggest_wins = sorted(
+        match_stats,
+        key=lambda data: (-data["diferencia_goles"], data["partido"]["id"]),
+    )[:5]
+    xg_matches = [data for data in match_stats if data["diferencia_xg"] is not None]
+    most_uneven_xg = sorted(
+        xg_matches,
+        key=lambda data: (-data["diferencia_xg"], data["partido"]["id"]),
+    )[:5]
+    most_even_xg = sorted(
+        xg_matches,
+        key=lambda data: (data["diferencia_xg"], data["partido"]["id"]),
+    )[:5]
+
+    return {
+        "partidos": {
+            "partidos_jugados": len(match_stats),
+            "partido_con_mas_goles": match_entries(
+                most_goals, "total_goles", "goles"
+            ),
+            "mayor_goleada": match_entries(
+                biggest_wins, "diferencia_goles", "goles"
+            ),
+            "partido_mas_disparejo": match_entries(
+                most_uneven_xg, "diferencia_xg", "xG"
+            ),
+            "partido_mas_parejo": match_entries(
+                most_even_xg, "diferencia_xg", "xG"
+            ),
+        },
+        "equipo": {
+            "mayor_racha_invicto": [
+                team_entry(data, data["longest_unbeaten"], "partidos")
+                for data in unbeaten
+            ],
+            "mayor_vallas_invictas": [
+                team_entry(data, data["clean_sheets"], "partidos")
+                for data in clean_sheets
+            ],
+            "mejor_ataque": [
+                team_entry(
+                    data,
+                    round(sum(data["xg_for"]) / len(data["xg_for"]), 3),
+                    "xG por partido",
+                )
+                for data in best_attack
+            ],
+            "mejor_defensa": [
+                team_entry(
+                    data,
+                    round(sum(data["xg_against"]) / len(data["xg_against"]), 3),
+                    "xG recibido por partido",
+                )
+                for data in best_defense
+            ],
+        },
+        "jugadores": {
+            "goles": player_entries("goals", "goles"),
+            "tarjetas_amarillas": player_entries("yellow_cards", "tarjetas"),
+            "tarjetas_rojas": player_entries("red_cards", "tarjetas"),
+            "minutos": player_entries("minutes", "minutos"),
+        },
+    }
 #endregion
 
 #region Equipo

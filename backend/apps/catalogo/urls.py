@@ -21,17 +21,3 @@ urlpatterns = [
     path("equipos/<int:equipo_id>/partidos", views.equipo_fixtures, name = "equipo-fixtures"),
     path("equipos/<int:equipo_id>/estadisticas", views.equipo_stats, name = "equipo-stats"),
 ]
-
-'''
-TODOS LOS STATS SON TOP 5
-
-JUGADORES
-- Goles
-- Tarjetas Amarillas
-- Tarjetas Rojas
-- Minutos
-
-EQUIPOS
-- Mayor racha invicto
-- Vallas invictas
-'''
