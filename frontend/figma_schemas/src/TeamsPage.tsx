@@ -10,34 +10,10 @@ import {
   type TeamPlayer,
 } from "./api/teams"
 import { EntityLink } from "./EntityNavigation"
+import { ImageWithFallback } from "./utils/ImageWithFallback"
 
 function EndpointTag({ children }: { children: string }) {
   return <code className="country-endpoint">{children}</code>
-}
-
-function TeamImage({
-  url,
-  alt,
-  fallback,
-  fallbackClassName,
-}: {
-  url: string | null
-  alt: string
-  fallback: string
-  fallbackClassName?: string
-}) {
-  const [failedUrl, setFailedUrl] = useState<string | null>(null)
-  const imageUrl = url?.trim() ?? ""
-
-  if (!imageUrl || failedUrl === imageUrl) {
-    return (
-      <span className={fallbackClassName} aria-label={alt || "Imagen no disponible"}>
-        {fallback}
-      </span>
-    )
-  }
-
-  return <img alt={alt} src={imageUrl} onError={() => setFailedUrl(imageUrl)} />
 }
 
 function DataNotice({
@@ -102,14 +78,15 @@ function TeamMatchRow({ match, teamId }: { match: TeamMatch; teamId: number | nu
         <span>{match.estado.replace(/_/g, " ")}</span>
       </div>
       <EntityLink kind="equipo" id={match.equipos.local.id} className="team-match-side">
-        {match.equipos.local.imagen && (
-          <TeamImage
-            url={match.equipos.local.imagen}
-            alt=""
-            fallback={match.equipos.local.nombre.slice(0, 1)}
-            fallbackClassName="team-match-image-fallback"
-          />
-        )}
+        <ImageWithFallback
+          url={match.equipos.local.imagen}
+          alt=""
+          fallback={
+            <span className="team-match-image-fallback">
+              {match.equipos.local.nombre.slice(0, 1)}
+            </span>
+          }
+        />
         <strong>{match.equipos.local.nombre}</strong>
       </EntityLink>
       <strong className={`team-match-score ${result}`}>
@@ -117,14 +94,15 @@ function TeamMatchRow({ match, teamId }: { match: TeamMatch; teamId: number | nu
       </strong>
       <EntityLink kind="equipo" id={match.equipos.visitante.id} className="team-match-side team-match-away">
         <strong>{match.equipos.visitante.nombre}</strong>
-        {match.equipos.visitante.imagen && (
-          <TeamImage
-            url={match.equipos.visitante.imagen}
-            alt=""
-            fallback={match.equipos.visitante.nombre.slice(0, 1)}
-            fallbackClassName="team-match-image-fallback"
-          />
-        )}
+        <ImageWithFallback
+          url={match.equipos.visitante.imagen}
+          alt=""
+          fallback={
+            <span className="team-match-image-fallback">
+              {match.equipos.visitante.nombre.slice(0, 1)}
+            </span>
+          }
+        />
       </EntityLink>
       <EntityLink kind="competicion" id={match.competicion.id} className="team-match-competition">
         {match.competicion.nombre}
@@ -330,7 +308,7 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
         <section className="team-profile-card">
           <div className="team-profile-identity">
             <div className="team-profile-crest">
-              <TeamImage
+              <ImageWithFallback
                 url={selectedTeam?.escudo_url ?? ""}
                 alt={selectedTeam ? `Escudo de ${selectedTeam.nombre}` : ""}
                 fallback={selectedTeam?.siglas || "EQ"}
@@ -371,14 +349,15 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
             </header>
             {details?.estadio ? (
               <div className="team-stadium">
-                {details.estadio.foto_url && (
-                  <TeamImage
-                    url={details.estadio.foto_url}
-                    alt={`Foto de ${details.estadio.nombre}`}
-                    fallback={details.estadio.nombre.slice(0, 1)}
-                    fallbackClassName="team-stadium-image-fallback"
-                  />
-                )}
+                <ImageWithFallback
+                  url={details.estadio.foto_url}
+                  alt={`Foto de ${details.estadio.nombre}`}
+                  fallback={
+                    <span className="team-stadium-image-fallback">
+                      {details.estadio.nombre.slice(0, 1)}
+                    </span>
+                  }
+                />
                 <div>
                   <strong>{details.estadio.nombre}</strong>
                   <span>{details.estadio.ciudad || "Ciudad no informada"}</span>
@@ -401,14 +380,15 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
             <div className="team-competition-grid">
               {details.competiciones.map((competition) => (
                 <article className="team-competition-card" key={competition.id}>
-                  {competition.logo_url && (
-                    <TeamImage
-                      url={competition.logo_url}
-                      alt=""
-                      fallback={competition.nombre.slice(0, 1)}
-                      fallbackClassName="team-competition-image-fallback"
-                    />
-                  )}
+                  <ImageWithFallback
+                    url={competition.logo_url}
+                    alt=""
+                    fallback={
+                      <span className="team-competition-image-fallback">
+                        {competition.nombre.slice(0, 1)}
+                      </span>
+                    }
+                  />
                   <div>
                     <EntityLink kind="competicion" id={competition.id}>{competition.nombre}</EntityLink>
                     <span>{competition.tipo}</span>
@@ -437,11 +417,14 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
                 {players.map((player) => (
                   <article className="team-player-card" key={player.id}>
                     <EntityLink kind="jugador" id={player.id}>
-                      <TeamImage
+                      <ImageWithFallback
                         url={player.foto_url}
                         alt=""
-                        fallback={player.nombre.slice(0, 1).toLocaleUpperCase()}
-                        fallbackClassName="team-player-initial"
+                        fallback={
+                          <span className="team-player-initial">
+                            {player.nombre.slice(0, 1).toLocaleUpperCase()}
+                          </span>
+                        }
                       />
                       <strong>{player.nombre}</strong>
                     </EntityLink>

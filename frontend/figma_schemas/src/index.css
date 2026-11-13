@@ -2602,6 +2602,7 @@ footer {
 .competition-teams-panel,
 .competition-standings-panel,
 .competition-fixtures-panel,
+.competition-statistics-panel,
 .related-competitions {
   padding: 21px;
   border: 1px solid #d9d7d1;
@@ -2784,6 +2785,235 @@ footer {
 
 .competition-fixtures-panel {
   margin-top: 17px;
+}
+
+.competition-statistics-panel {
+  margin-top: 17px;
+}
+
+.competition-statistics-content {
+  display: grid;
+  margin-top: 15px;
+  gap: 18px;
+}
+
+.competition-stat-total {
+  display: flex;
+  min-height: 64px;
+  padding: 11px 16px;
+  align-items: center;
+  border: 1px solid #e3e1da;
+  background: #f8f7f3;
+  gap: 13px;
+}
+
+.competition-stat-total strong {
+  color: #172730;
+  font-family: 'Manrope', sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.competition-stat-total span {
+  color: #858d89;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .7px;
+}
+
+.competition-stat-category > h4 {
+  margin-bottom: 9px;
+  color: #526064;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+}
+
+.competition-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.competition-stat-leaderboard {
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid #e3e1da;
+  background: #fff;
+}
+
+.competition-stat-leaderboard > h4 {
+  margin-bottom: 8px;
+  color: #263239;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.competition-stat-leaderboard ol {
+  display: grid;
+  gap: 3px;
+  list-style: none;
+}
+
+.competition-stat-leaderboard li {
+  display: grid;
+  min-height: 40px;
+  padding: 6px 7px;
+  align-items: center;
+  border-bottom: 1px solid #f0eee8;
+  grid-template-columns: 21px minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.competition-stat-leaderboard li.competition-stat-match-row {
+  grid-template-columns: 21px minmax(0, 1fr);
+}
+
+.competition-stat-leaderboard li:last-child {
+  border-bottom: 0;
+}
+
+.competition-stat-rank {
+  color: #929996;
+  font-size: 11px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.competition-stat-entity {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  color: #36434a;
+  gap: 8px;
+}
+
+.competition-stat-entity img,
+.competition-stat-entity-initial {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  background: #f3f2ed;
+  color: #68766d;
+  font-size: 10px;
+  font-weight: 800;
+  object-fit: contain;
+}
+
+.competition-stat-entity > strong {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.competition-stat-entity > small {
+  margin-left: auto;
+  color: #858d89;
+  font-size: 8px;
+  white-space: nowrap;
+}
+
+.competition-stat-value {
+  display: grid;
+  justify-items: end;
+  color: #465458;
+  font-size: 15px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.competition-stat-value small {
+  color: #929996;
+  font-size: 9px;
+  font-weight: 500;
+}
+
+.competition-stat-match {
+  display: grid;
+  min-width: 0;
+  align-items: center;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 3px;
+}
+
+.competition-stat-match-team {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  color: #36434a;
+  font-size: 12px;
+  font-weight: bold;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.competition-stat-match-away {
+  text-align: right;
+}
+
+.competition-stat-score {
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+}
+
+.competition-stat-score > strong {
+  color: #526064;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.competition-stat-xg {
+  display: block;
+  height: 10px;
+  color: #929996;
+  font-size: 9px;
+  line-height: 10px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.competition-stat-leaderboard li.competition-stat-leader {
+  min-height: 55px;
+  background: #f8f7f3;
+}
+
+.competition-stat-leader .competition-stat-rank {
+  color: #d65b3b;
+  font-size: 13px;
+}
+
+.competition-stat-leader .competition-stat-entity img,
+.competition-stat-leader .competition-stat-entity-initial {
+  width: 37px;
+  height: 37px;
+}
+
+.competition-stat-leader .competition-stat-entity > strong,
+.competition-stat-leader .competition-stat-match-team {
+  color: #1b2930;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.competition-stat-leader .competition-stat-score > strong {
+  color: #1b2930;
+  font-size: 15px;
+}
+
+.competition-stat-leader .competition-stat-value {
+  color: #1b2930;
+  font-size: 16px;
+}
+
+.competition-stat-leader .competition-stat-value small,
+.competition-stat-leader .competition-stat-entity > small {
+  font-size: 10px;
 }
 
 .competition-date-toolbar {
@@ -3813,9 +4043,13 @@ footer {
   }
   .competition-fixtures-panel,
   .competition-standings-panel,
+  .competition-statistics-panel,
   .competition-teams-panel,
   .related-competitions {
     padding: 15px;
+  }
+  .competition-stat-grid {
+    grid-template-columns: 1fr;
   }
   .competition-date-toolbar {
     align-items: flex-start;

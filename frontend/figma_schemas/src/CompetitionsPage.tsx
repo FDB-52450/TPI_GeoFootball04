@@ -3,11 +3,16 @@ import {
   fetchCompetitionDetails,
   fetchCompetitions,
   fetchCompetitionSeason,
+  fetchCompetitionSeasonStatistics,
   type Competition,
   type CompetitionDetails,
   type CompetitionSeasonData,
+  type CompetitionSeasonStatistics,
+  type EntityStatistic,
+  type MatchStatistic,
 } from "./api/competitions"
 import { EntityLink } from "./EntityNavigation"
+import { ImageWithFallback } from "./utils/ImageWithFallback"
 import { getSeasonLabel } from "./utils/seasonLabel.ts"
 
 function EndpointTag({ children }: { children: string }) {
@@ -15,18 +20,19 @@ function EndpointTag({ children }: { children: string }) {
 }
 
 function CompetitionEmblem({ logoUrl }: { logoUrl?: string }) {
-  return logoUrl ? (
-    <img
+  return (
+    <ImageWithFallback
+      url={logoUrl}
       alt=""
       className="competition-feature-image"
-      src={logoUrl}
+      fallback={
+        <span className="competition-feature-emblem" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </span>
+      }
     />
-  ) : (
-    <span className="competition-feature-emblem" aria-hidden="true">
-      <span />
-      <span />
-      <span />
-    </span>
   )
 }
 
@@ -45,6 +51,158 @@ function formatSeasonDate(value: string): string {
   return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString()
 }
 
+function formatStatisticValue(value: number): string {
+  return new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(value)
+}
+
+function StatisticLeaderboard({
+  title,
+  entries,
+  entityKind,
+}: {
+  title: string
+  entries: (EntityStatistic | MatchStatistic)[]
+  entityKind: "equipo" | "jugador"
+}) {
+  return (
+    <section className="competition-stat-leaderboard">
+      <h4>{title}</h4>
+      {entries.length ? (
+        <ol>
+          {entries.map((entry, index) => {
+            const isMatch = "partido_id" in entry
+            const xgLabel = isMatch
+              ? entry.xg.local !== null || entry.xg.visitante !== null
+                ? `xG ${entry.xg.local === null ? "—" : formatStatisticValue(entry.xg.local)} — ${entry.xg.visitante === null ? "—" : formatStatisticValue(entry.xg.visitante)}`
+                : "xG no disponible"
+              : null
+            return (
+              <li
+                className={[
+                  index === 0 ? "competition-stat-leader" : "",
+                  isMatch ? "competition-stat-match-row" : "",
+                ].filter(Boolean).join(" ")}
+                key={isMatch ? entry.partido_id : entry.entity.id}
+              >
+                <span className="competition-stat-rank">{index + 1}</span>
+                {isMatch ? (
+                  <div className="competition-stat-match">
+                    <EntityLink
+                      className="competition-stat-match-team"
+                      kind="equipo"
+                      id={entry.local.id}
+                    >
+                      {entry.local.nombre}
+                    </EntityLink>
+                    <div className="competition-stat-score">
+                      <strong>
+                        {entry.goles.local !== null && entry.goles.visitante !== null
+                          ? `${entry.goles.local} — ${entry.goles.visitante}`
+                          : "vs"}
+                      </strong>
+                      <small className="competition-stat-xg">{xgLabel}</small>
+                    </div>
+                    <EntityLink
+                      className="competition-stat-match-team competition-stat-match-away"
+                      kind="equipo"
+                      id={entry.visitante.id}
+                    >
+                      {entry.visitante.nombre}
+                    </EntityLink>
+                  </div>
+                ) : (
+                  <EntityLink
+                    className="competition-stat-entity"
+                    kind={entityKind}
+                    id={entry.entity.id}
+                  >
+                    <ImageWithFallback
+                      url={entry.entity.imagen}
+                      alt=""
+                      fallback={
+                        <span className="competition-stat-entity-initial">
+                          {entry.entity.nombre.slice(0, 1)}
+                        </span>
+                      }
+                    />
+                    <strong>{entry.entity.nombre}</strong>
+                  </EntityLink>
+                )}
+                {!isMatch && (
+                  <strong className="competition-stat-value">
+                    {formatStatisticValue(entry.valor)}
+                    <small>{entry.unidad}</small>
+                  </strong>
+                )}
+              </li>
+            )
+          })}
+        </ol>
+      ) : (
+        <p className="competition-season-status">Sin datos para esta estadística.</p>
+      )}
+    </section>
+  )
+}
+
+function CompetitionStatistics({
+  statistics,
+}: {
+  statistics: CompetitionSeasonStatistics
+}) {
+  return (
+    <div className="competition-statistics-content">
+      <div className="competition-stat-total">
+        <strong>{statistics.partidos.partidos_jugados}</strong>
+        <span>PARTIDOS ANALIZADOS</span>
+      </div>
+      <div className="competition-stat-category">
+        <h4>Partidos</h4>
+        <div className="competition-stat-grid">
+          <StatisticLeaderboard
+            title="Partidos con más goles"
+            entries={statistics.partidos.partido_con_mas_goles}
+            entityKind="equipo"
+          />
+          <StatisticLeaderboard
+            title="Mayores goleadas"
+            entries={statistics.partidos.mayor_goleada}
+            entityKind="equipo"
+          />
+          <StatisticLeaderboard
+            title="Mayor diferencia de xG"
+            entries={statistics.partidos.partido_mas_disparejo}
+            entityKind="equipo"
+          />
+          <StatisticLeaderboard
+            title="Menor diferencia de xG"
+            entries={statistics.partidos.partido_mas_parejo}
+            entityKind="equipo"
+          />
+        </div>
+      </div>
+      <div className="competition-stat-category">
+        <h4>Equipos</h4>
+        <div className="competition-stat-grid">
+          <StatisticLeaderboard title="Mayor racha invicta" entries={statistics.equipo.mayor_racha_invicto} entityKind="equipo" />
+          <StatisticLeaderboard title="Más porterías imbatidas" entries={statistics.equipo.mayor_vallas_invictas} entityKind="equipo" />
+          <StatisticLeaderboard title="Mejor ataque" entries={statistics.equipo.mejor_ataque} entityKind="equipo" />
+          <StatisticLeaderboard title="Mejor defensa" entries={statistics.equipo.mejor_defensa} entityKind="equipo" />
+        </div>
+      </div>
+      <div className="competition-stat-category">
+        <h4>Jugadores</h4>
+        <div className="competition-stat-grid">
+          <StatisticLeaderboard title="Goles" entries={statistics.jugadores.goles} entityKind="jugador" />
+          <StatisticLeaderboard title="Tarjetas amarillas" entries={statistics.jugadores.tarjetas_amarillas} entityKind="jugador" />
+          <StatisticLeaderboard title="Tarjetas rojas" entries={statistics.jugadores.tarjetas_rojas} entityKind="jugador" />
+          <StatisticLeaderboard title="Minutos jugados" entries={statistics.jugadores.minutos} entityKind="jugador" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function CompetitionsPage({ initialId }: { initialId: number | null }) {
   const [competitions, setCompetitions] = useState<Competition[]>([])
   const [competitionId, setCompetitionId] = useState<number | null>(null)
@@ -60,6 +218,10 @@ export default function CompetitionsPage({ initialId }: { initialId: number | nu
   )
   const [seasonLoading, setSeasonLoading] = useState(false)
   const [seasonError, setSeasonError] = useState<string | null>(null)
+  const [seasonStatistics, setSeasonStatistics] =
+    useState<CompetitionSeasonStatistics | null>(null)
+  const [statisticsLoading, setStatisticsLoading] = useState(false)
+  const [statisticsError, setStatisticsError] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -174,6 +336,47 @@ export default function CompetitionsPage({ initialId }: { initialId: number | nu
     }
 
     void loadSeason()
+    return () => {
+      cancelled = true
+    }
+  }, [competitionId, seasonId])
+
+  useEffect(() => {
+    if (competitionId === null || seasonId === null) {
+      setSeasonStatistics(null)
+      setStatisticsError(null)
+      setStatisticsLoading(false)
+      return
+    }
+
+    const selectedCompetitionId = competitionId
+    const selectedSeasonId = seasonId
+    let cancelled = false
+    setSeasonStatistics(null)
+    setStatisticsError(null)
+    setStatisticsLoading(true)
+
+    async function loadStatistics() {
+      try {
+        const result = await fetchCompetitionSeasonStatistics(
+          selectedCompetitionId,
+          selectedSeasonId,
+        )
+        if (!cancelled) setSeasonStatistics(result)
+      } catch (error) {
+        if (!cancelled) {
+          setStatisticsError(
+            error instanceof Error
+              ? error.message
+              : "No se pudieron cargar las estadísticas.",
+          )
+        }
+      } finally {
+        if (!cancelled) setStatisticsLoading(false)
+      }
+    }
+
+    void loadStatistics()
     return () => {
       cancelled = true
     }
@@ -393,17 +596,16 @@ export default function CompetitionsPage({ initialId }: { initialId: number | nu
                     <span className="association-number">
                       {String(index + 1).padStart(2, "0")}
                     </span>
-                    {team.escudo_url ? (
-                      <img
-                        alt=""
-                        className="competition-team-crest"
-                        src={team.escudo_url}
-                      />
-                    ) : (
-                      <span className="competition-team-crest-placeholder">
-                        {team.siglas || "—"}
-                      </span>
-                    )}
+                    <ImageWithFallback
+                      url={team.escudo_url}
+                      alt=""
+                      className="competition-team-crest"
+                      fallback={
+                        <span className="competition-team-crest-placeholder">
+                          {team.siglas || "—"}
+                        </span>
+                      }
+                    />
                     <div>
                       <h4>
                         <EntityLink kind="equipo" id={team.id}>{team.nombre}</EntityLink>
@@ -421,7 +623,6 @@ export default function CompetitionsPage({ initialId }: { initialId: number | nu
               </p>
             )}
           </div>
-
           <div className="competition-standings-panel">
             <div className="competition-subsection-heading">
               <div>
@@ -467,11 +668,11 @@ export default function CompetitionsPage({ initialId }: { initialId: number | nu
                       <tr key={row.equipo.id}>
                         <td className="standings-position">{index + 1}</td>
                         <td className="standings-team">
-                          {row.equipo.imagen ? (
-                            <img alt="" src={row.equipo.imagen} />
-                          ) : (
-                            <span>—</span>
-                          )}
+                          <ImageWithFallback
+                            url={row.equipo.imagen}
+                            alt=""
+                            fallback={<span>—</span>}
+                          />
                           <strong>
                             <EntityLink kind="equipo" id={row.equipo.id}>
                               {row.equipo.nombre}
@@ -500,103 +701,128 @@ export default function CompetitionsPage({ initialId }: { initialId: number | nu
               </p>
             )}
           </div>
-
-          <div className="competition-fixtures-panel">
+        </section>
+        
+        <div className="competition-fixtures-panel">
             <div className="competition-subsection-heading fixtures-heading">
-              <div>
+                <div>
                 <span className="section-label">CALENDARIO DE TEMPORADA</span>
                 <h3>Partidos</h3>
-              </div>
-              <EndpointTag>{`/api/catalogo/competiciones/${competitionId ?? "<id>"}/temporadas/${seasonId ?? "<temporada_id>"}/partidos`}</EndpointTag>
+                </div>
+                <EndpointTag>{`/api/catalogo/competiciones/${competitionId ?? "<id>"}/temporadas/${seasonId ?? "<temporada_id>"}/partidos`}</EndpointTag>
             </div>
             <div className="competition-date-toolbar">
-              <span className="competition-season-scope">
+                <span className="competition-season-scope">
                 Partidos registrados en la temporada seleccionada
-              </span>
+                </span>
             </div>
             {seasonLoading ? (
-              <p className="competition-season-status">
+                <p className="competition-season-status">
                 Cargando partidos…
-              </p>
+                </p>
             ) : seasonError ? (
-              <p className="competition-api-error" role="alert">
+                <p className="competition-api-error" role="alert">
                 No se pudieron cargar los partidos: {seasonError}
-              </p>
+                </p>
             ) : seasonData?.partidos.length ? (
-              <div className="competition-fixture-list">
+                <div className="competition-fixture-list">
                 {seasonData.partidos.map((match) => {
-                  const matchDate = formatMatchDate(match.fecha)
-                  const isLive = match.estado === "EN_JUEGO"
-                  const scoreAvailable =
+                    const matchDate = formatMatchDate(match.fecha)
+                    const isLive = match.estado === "EN_JUEGO"
+                    const scoreAvailable =
                     match.goles.local !== null &&
                     match.goles.visitante !== null
 
-                  return (
+                    return (
                     <article
-                      className={`competition-fixture${isLive ? " fixture-live" : ""}`}
-                      key={match.id}
+                        className={`competition-fixture${isLive ? " fixture-live" : ""}`}
+                        key={match.id}
                     >
-                      <div className="fixture-date">
+                        <div className="fixture-date">
                         <strong>{matchDate.date}</strong>
                         <span>{matchDate.time}</span>
-                      </div>
-                      <div className="fixture-team fixture-home">
-                        {match.equipos.local.imagen ? (
-                          <img alt="" src={match.equipos.local.imagen} />
-                        ) : (
-                          <span>—</span>
-                        )}
+                        </div>
+                        <div className="fixture-team fixture-home">
+                        <ImageWithFallback
+                            url={match.equipos.local.imagen}
+                            alt=""
+                            fallback={<span>—</span>}
+                        />
                         <strong>
-                          <EntityLink kind="equipo" id={match.equipos.local.id}>
+                            <EntityLink kind="equipo" id={match.equipos.local.id}>
                             {match.equipos.local.nombre}
-                          </EntityLink>
+                            </EntityLink>
                         </strong>
-                      </div>
-                      <div
+                        </div>
+                        <div
                         className={`fixture-result${match.estado === "PROGRAMADO" ? " fixture-upcoming" : ""}`}
-                      >
+                        >
                         <strong>
-                          {scoreAvailable
+                            {scoreAvailable
                             ? `${match.goles.local} — ${match.goles.visitante}`
                             : matchDate.time || "vs"}
                         </strong>
                         <span>
-                          {isLive
+                            {isLive
                             ? `EN JUEGO${match.minuto_actual !== null ? ` · ${match.minuto_actual}'` : ""}`
                             : match.estado}
                         </span>
-                      </div>
-                      <div className="fixture-team fixture-away">
-                        {match.equipos.visitante.imagen ? (
-                          <img alt="" src={match.equipos.visitante.imagen} />
-                        ) : (
-                          <span>—</span>
-                        )}
+                        </div>
+                        <div className="fixture-team fixture-away">
+                        <ImageWithFallback
+                            url={match.equipos.visitante.imagen}
+                            alt=""
+                            fallback={<span>—</span>}
+                        />
                         <strong>
-                          <EntityLink kind="equipo" id={match.equipos.visitante.id}>
+                            <EntityLink kind="equipo" id={match.equipos.visitante.id}>
                             {match.equipos.visitante.nombre}
-                          </EntityLink>
+                            </EntityLink>
                         </strong>
-                      </div>
-                      <span className="fixture-endpoint">TEMPORADA</span>
+                        </div>
+                        <span className="fixture-endpoint">TEMPORADA</span>
                     </article>
-                  )
+                    )
                 })}
-              </div>
+                </div>
             ) : (
-              <p className="competition-season-status">
+                <p className="competition-season-status">
                 {seasonId === null
-                  ? "Selecciona una temporada para ver sus partidos."
-                  : "No hay partidos disponibles para esta temporada."}
-              </p>
+                    ? "Selecciona una temporada para ver sus partidos."
+                    : "No hay partidos disponibles para esta temporada."}
+                </p>
             )}
-          </div>
-        </section>
+            </div>
+
+            <div className="competition-statistics-panel">
+            <div className="competition-subsection-heading">
+                <div>
+                <span className="section-label">RESUMEN DE TEMPORADA</span>
+                <h3>Estadísticas</h3>
+                </div>
+                <EndpointTag>{`/api/catalogo/competiciones/${competitionId ?? "<id>"}/temporadas/${seasonId ?? "<temporada_id>"}/estadisticas`}</EndpointTag>
+            </div>
+            {statisticsLoading ? (
+                <p className="competition-season-status">Cargando estadísticas…</p>
+            ) : statisticsError ? (
+                <p className="competition-api-error" role="alert">
+                No se pudieron cargar las estadísticas: {statisticsError}
+                </p>
+            ) : seasonStatistics ? (
+                <CompetitionStatistics statistics={seasonStatistics} />
+            ) : (
+                <p className="competition-season-status">
+                {seasonId === null
+                    ? "Selecciona una temporada para ver sus estadísticas."
+                    : "No hay estadísticas disponibles para esta temporada."}
+                </p>
+            )}
+        </div>
         <aside className="country-implementation-note">
           <span className="country-note-mark">i</span>
           <p>
             Selecciona una competición y una temporada para cargar sus equipos,
-            clasificación y partidos desde la API.
+            partidos, estadísticas y clasificación desde la API.
           </p>
         </aside>
       </div>

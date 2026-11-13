@@ -1,7 +1,8 @@
 import { getSeasonLabel } from "../utils/seasonLabel"
 
-const API_BASE_URL = 
-  import.meta.env.VITE_API_BASE_URL + "/api/catalogo" || "http://127.0.0.1:8000/api/catalogo"
+const API_BASE_URL = `${(
+  import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"
+).replace(/\/+$/, "")}/api/catalogo`
 
 export type Competition = {
   id: number
@@ -80,6 +81,51 @@ export type CompetitionSeasonData = {
   partidos: SeasonFixture[]
 }
 
+export type CompetitionStatisticEntity = {
+  id: number
+  nombre: string
+  imagen: string
+}
+
+export type MatchStatistic = {
+  partido_id: number
+  local: CompetitionStatisticEntity
+  visitante: CompetitionStatisticEntity
+  goles: { local: number | null; visitante: number | null }
+  xg: { local: number | null; visitante: number | null }
+  valor: number
+  unidad: string
+}
+
+export type EntityStatistic = {
+  entity: CompetitionStatisticEntity
+  partidos_jugados: number
+  valor: number
+  unidad: string
+}
+
+export type CompetitionSeasonStatistics = {
+  partidos: {
+    partidos_jugados: number
+    partido_con_mas_goles: MatchStatistic[]
+    mayor_goleada: MatchStatistic[]
+    partido_mas_disparejo: MatchStatistic[]
+    partido_mas_parejo: MatchStatistic[]
+  }
+  equipo: {
+    mayor_racha_invicto: EntityStatistic[]
+    mayor_vallas_invictas: EntityStatistic[]
+    mejor_ataque: EntityStatistic[]
+    mejor_defensa: EntityStatistic[]
+  }
+  jugadores: {
+    goles: EntityStatistic[]
+    tarjetas_amarillas: EntityStatistic[]
+    tarjetas_rojas: EntityStatistic[]
+    minutos: EntityStatistic[]
+  }
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null
 }
@@ -100,6 +146,13 @@ function requireNullableNumber(value: unknown, field: string): number | null {
 
 function requireString(value: unknown, field: string): string {
   if (typeof value !== "string") {
+    throw new Error(`El campo "${field}" de la API no es válido.`)
+  }
+  return value
+}
+
+function requireRecord(value: unknown, field: string): Record<string, unknown> {
+  if (!isRecord(value)) {
     throw new Error(`El campo "${field}" de la API no es válido.`)
   }
   return value
@@ -254,6 +307,110 @@ function mapFixture(value: unknown): SeasonFixture {
   }
 }
 
+function mapStatisticEntity(
+  value: unknown,
+  field: string,
+): CompetitionStatisticEntity {
+  const entity = requireRecord(value, field)
+  return {
+    id: requireNumber(entity.id, `${field}.id`),
+    nombre: requireString(entity.nombre, `${field}.nombre`),
+    imagen: requireString(entity.imagen, `${field}.imagen`),
+  }
+}
+
+function mapEntityStatistic(value: unknown, field: string): EntityStatistic {
+  const entry = requireRecord(value, field)
+  const entityField = "equipo" in entry ? "equipo" : "jugador"
+  return {
+    entity: mapStatisticEntity(entry[entityField], `${field}.${entityField}`),
+    partidos_jugados: requireNumber(
+      entry.partidos_jugados,
+      `${field}.partidos_jugados`,
+    ),
+    valor: requireNumber(entry.valor, `${field}.valor`),
+    unidad: requireString(entry.unidad, `${field}.unidad`),
+  }
+}
+
+function mapMatchStatistic(value: unknown, field: string): MatchStatistic {
+  const entry = requireRecord(value, field)
+  const match = requireRecord(entry.partido, `${field}.partido`)
+  const teams = requireRecord(entry.equipos, `${field}.equipos`)
+  const goals = requireRecord(entry.goles, `${field}.goles`)
+  const xg = requireRecord(entry.xg, `${field}.xg`)
+  return {
+    partido_id: requireNumber(match.id, `${field}.partido.id`),
+    local: mapStatisticEntity(teams.local, `${field}.equipos.local`),
+    visitante: mapStatisticEntity(
+      teams.visitante,
+      `${field}.equipos.visitante`,
+    ),
+    goles: {
+      local: requireNullableNumber(goals.local, `${field}.goles.local`),
+      visitante: requireNullableNumber(
+        goals.visitante,
+        `${field}.goles.visitante`,
+      ),
+    },
+    xg: {
+      local: requireNullableNumber(xg.local, `${field}.xg.local`),
+      visitante: requireNullableNumber(
+        xg.visitante,
+        `${field}.xg.visitante`,
+      ),
+    },
+    valor: requireNumber(entry.valor, `${field}.valor`),
+    unidad: requireString(entry.unidad, `${field}.unidad`),
+  }
+}
+
+function topFive(value: unknown, field: string): unknown[] {
+  if (Array.isArray(value)) return value.slice(0, 5)
+  if (isRecord(value)) return [value]
+  throw new Error(`El campo "${field}" de la API no es una lista válida.`)
+}
+
+function mapCompetitionSeasonStatistics(value: unknown): CompetitionSeasonStatistics {
+  const stats = requireRecord(value, "estadisticas")
+  const matches = requireRecord(stats.partidos, "estadisticas.partidos")
+  const teams = requireRecord(stats.equipo, "estadisticas.equipo")
+  const players = requireRecord(stats.jugadores, "estadisticas.jugadores")
+  const mapMatchTopFive = (key: string) =>
+    topFive(matches[key], `estadisticas.partidos.${key}`).map((entry, index) =>
+      mapMatchStatistic(entry, `estadisticas.partidos.${key}[${index}]`),
+    )
+  const mapEntityTopFive = (group: Record<string, unknown>, groupName: string, key: string) =>
+    topFive(group[key], `estadisticas.${groupName}.${key}`).map((entry, index) =>
+      mapEntityStatistic(entry, `estadisticas.${groupName}.${key}[${index}]`),
+    )
+
+  return {
+    partidos: {
+      partidos_jugados: requireNumber(
+        matches.partidos_jugados,
+        "estadisticas.partidos.partidos_jugados",
+      ),
+      partido_con_mas_goles: mapMatchTopFive("partido_con_mas_goles"),
+      mayor_goleada: mapMatchTopFive("mayor_goleada"),
+      partido_mas_disparejo: mapMatchTopFive("partido_mas_disparejo"),
+      partido_mas_parejo: mapMatchTopFive("partido_mas_parejo"),
+    },
+    equipo: {
+      mayor_racha_invicto: mapEntityTopFive(teams, "equipo", "mayor_racha_invicto"),
+      mayor_vallas_invictas: mapEntityTopFive(teams, "equipo", "mayor_vallas_invictas"),
+      mejor_ataque: mapEntityTopFive(teams, "equipo", "mejor_ataque"),
+      mejor_defensa: mapEntityTopFive(teams, "equipo", "mejor_defensa"),
+    },
+    jugadores: {
+      goles: mapEntityTopFive(players, "jugadores", "goles"),
+      tarjetas_amarillas: mapEntityTopFive(players, "jugadores", "tarjetas_amarillas"),
+      tarjetas_rojas: mapEntityTopFive(players, "jugadores", "tarjetas_rojas"),
+      minutos: mapEntityTopFive(players, "jugadores", "minutos"),
+    },
+  }
+}
+
 export async function fetchCompetitions(): Promise<Competition[]> {
   const payload = await getJson(`${API_BASE_URL}/competiciones/`)
   if (!isRecord(payload) || !Array.isArray(payload.competiciones)) {
@@ -302,4 +459,17 @@ export async function fetchCompetitionSeason(
     tabla: season.tabla.map(mapStandingsRow),
     partidos: season.partidos.map(mapFixture),
   }
+}
+
+export async function fetchCompetitionSeasonStatistics(
+  competitionId: number,
+  seasonId: number,
+): Promise<CompetitionSeasonStatistics> {
+  const payload = await getJson(
+    `${API_BASE_URL}/competiciones/${competitionId}/temporadas/${seasonId}/estadisticas`,
+  )
+  if (!isRecord(payload) || !isRecord(payload.estadisticas)) {
+    throw new Error("La respuesta no contiene estadísticas válidas.")
+  }
+  return mapCompetitionSeasonStatistics(payload.estadisticas)
 }
