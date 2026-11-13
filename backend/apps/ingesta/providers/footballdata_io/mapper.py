@@ -226,6 +226,34 @@ def map_events(data: dict) -> list[dict]:
     return mapped_events
 
 
+def map_match_stats(data, side) -> dict:
+    sides = ['home', 'away']
+
+    if side not in sides:
+        raise ValueError('type debe ser un tipo de types')
+
+    stats = data['stats']
+
+    return {
+        'xg': data['xg'][side],
+        'xg_prematch': data['xg'][f'prematch_{side}'],
+
+        'tiros_total': stats['shots'][f'{side}_total'],
+        'tiros_a_puerta': stats['shots'][f'{side}_on_target'],
+        'tiros_fuera': stats['shots'][f'{side}_off_target'],
+        'posesion': stats['possession'][side],
+        'corners': stats['corners'][side],
+        'offsides': stats['offsides'][side],
+
+        'tarjetas_amarillas': stats['cards'][f'{side}_yellow'],
+        'tarjetas_rojas': stats['cards'][f'{side}_red'],
+        'faltas': stats['fouls'][side],
+
+        'ataques': stats['attacks'][side],
+        'ataques_peligrosos': stats['attacks'][f'{side}_dangerous']
+    }
+
+
 def map_player_detail(data):
     competitions_by_id = {}
 
@@ -315,8 +343,10 @@ def _map_minute(value):
 def _map_event_tipo(api_event):
     event_types = {
         "yellow": Evento.Tipo.TARJETA_AMARILLA,
+        "second yellow": Evento.Tipo.SEGUNDA_TARJETA_AMARILLA,
         "red": Evento.Tipo.TARJETA_ROJA,
         "goal": Evento.Tipo.GOL,
+        "own goal": Evento.Tipo.GOL_EN_CONTRA,
         "substitution": Evento.Tipo.SUBSTITUCION,
         "penalty": Evento.Tipo.PENAL
     }

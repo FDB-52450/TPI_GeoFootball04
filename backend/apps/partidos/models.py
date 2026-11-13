@@ -126,7 +126,9 @@ class Partido(models.Model):
 class Evento(models.Model):
     class Tipo(models.TextChoices):
         GOL = "Goal", "GOL"
+        GOL_EN_CONTRA = "Own Goal", "Gol en contra"
         TARJETA_AMARILLA = "Yellow", "Tarjeta Amarilla"
+        SEGUNDA_TARJETA_AMARILLA = "Second Yellow", "Segunda Tarjeta Amarilla"
         TARJETA_ROJA = "Red", "Tarjeta Roja"
         SUBSTITUCION = 'Substitution', "Substitucion"
         PENAL = "Penalty", "Penal"
@@ -228,3 +230,45 @@ class Plantilla(models.Model):
             f"{self.jugador} en {participacion.equipo} "
             f"({participacion.temporada.etiqueta})"
         )
+
+
+class EstadisticaPartido(models.Model):
+    equipo = models.ForeignKey(
+        Equipo,
+        on_delete=models.PROTECT,
+        related_name="estadisticas_partido",
+    )
+
+    partido = models.ForeignKey(
+        Partido,
+        on_delete=models.PROTECT,
+        related_name="estadisticas_equipo",
+    )
+
+    xg = models.DecimalField(max_digits=6, decimal_places=3, null=True, blank=True)
+    xg_prematch = models.DecimalField(max_digits=6, decimal_places=3, null=True, blank=True)
+
+    tiros_total = models.PositiveSmallIntegerField(null=True, blank=True)
+    tiros_a_puerta = models.PositiveSmallIntegerField(null=True, blank=True)
+    tiros_fuera = models.PositiveSmallIntegerField(null=True, blank=True)
+    posesion = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    corners = models.PositiveSmallIntegerField(null=True, blank=True)
+    offsides = models.PositiveSmallIntegerField(null=True, blank=True)
+
+    tarjetas_amarillas = models.PositiveSmallIntegerField(null=True, blank=True)
+    tarjetas_rojas = models.PositiveSmallIntegerField(null=True, blank=True)
+    faltas = models.PositiveSmallIntegerField(null=True, blank=True)
+    
+    ataques = models.PositiveSmallIntegerField(null=True, blank=True)
+    ataques_peligrosos = models.PositiveSmallIntegerField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["partido", "equipo"],
+                name="unica_estadistica_por_equipo_partido",
+            )
+        ]
+
+    def __str__(self):
+        return f"Estadísticas de {self.equipo} en {self.partido}"

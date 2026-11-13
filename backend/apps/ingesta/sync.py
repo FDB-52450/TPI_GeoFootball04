@@ -10,7 +10,7 @@ from .providers.openstreetmap import (mapper as mapMapper, client as mapClient, 
 from .providers.local import get_confederations, map_confederations, get_league_types
 
 from ..catalogo.models import Confederacion, Pais, Competicion, Temporada, Equipo, Estadio, EquipoTemporada
-from ..partidos.models import Partido, Evento, Convocatoria, Jugador, Plantilla
+from ..partidos.models import Partido, Evento, Convocatoria, Jugador, Plantilla, EstadisticaPartido
 
 # TODO: Reemplazar esto por un metodo mas robusto
 
@@ -448,21 +448,28 @@ def _save_team_data(team_api_id, season):
     return team
 
 
-def sync_match_detail(match_ids: list[str] = None, comp_ids: list[str] = None, season_ids: list[str] = None):
-    if not any([match_ids, comp_ids, season_ids]):
-        raise ValueError("Indica al menos match_ids, comp_ids o season_ids")
+def sync_match_detail(
+        match_ids: list[str] = None, comp_ids: list[str] = None, 
+        season_ids: list[str] = None, semana: int = None
+    ):
+    if not any([match_ids, comp_ids, season_ids, semana]):
+        raise ValueError("Indica al menos match_ids, comp_ids, season_ids o semana")
     
     provider = get_provider('footballdataio')
-    partidos = Partido.objects.select_related("temporada__competicion")
+    matches = Partido.objects.select_related("temporada__competicion")
 
     if match_ids:
-        matches = partidos.filter(api_id__in=match_ids)
+        matches = matches.filter(api_id__in=match_ids)
     if comp_ids:
-        matches = partidos.filter(temporada__competicion__api_id__in=comp_ids)
+        matches = matches.filter(temporada__competicion__api_id__in=comp_ids)
     if season_ids:
-        matches = partidos.filter(temporada__api_id__in=season_ids)
+        matches = matches.filter(temporada__api_id__in=season_ids)
+    if semana:
+        matches = matches.filter(semana=semana)
 
     for match in matches:
+        if match.nivel_datos == Partido.NivelDatos.COMPLETO: continue
+
         match_data, meta = provider.get_match_detail(match.api_id)
 
         if match.estado == Partido.Estado.FINALIZADO:
@@ -478,6 +485,7 @@ def sync_match_detail(match_ids: list[str] = None, comp_ids: list[str] = None, s
             
             sync_players_and_callups(match_data, partido)
             sync_events(match_data, partido)
+            sync_match_stats(match_data, partido)
 
             refresh_season_detail_status(partido.temporada)
 
@@ -545,6 +553,7 @@ def sync_plantilla(jugador, equipo, temporada):
         equipo_temporada=equipo_temporada,
     )
 
+
 def sync_events(raw_data, partido):
     mapped_events = ioMapper.map_events(raw_data)
     Evento.objects.filter(partido=partido).delete()
@@ -563,6 +572,27 @@ def sync_events(raw_data, partido):
             tipo = mapped_event["tipo"],
             minuto = mapped_event["minuto"],
         )
+
+
+def sync_match_stats(raw_data, match: Partido):
+    local_team = match.equipo_local
+    mapped_stats = ioMapper.map_match_stats(raw_data, 'home')
+
+    EstadisticaPartido.objects.update_or_create(
+        equipo = local_team,
+        partido = match,
+        defaults = _defaults(mapped_stats)
+    )
+
+    away_team = match.equipo_visitante
+    mapped_stats = ioMapper.map_match_stats(raw_data, 'away')
+
+    EstadisticaPartido.objects.update_or_create(
+        equipo = away_team,
+        partido = match,
+        defaults = _defaults(mapped_stats)
+    )
+
 
 
 def sync_player_detail(player_ids: list[str] = None):
