@@ -1,8 +1,10 @@
+import math
+
 from django.db.models import Q
 from django.utils import timezone
 
 from .models import Confederacion, Pais, Competicion, Temporada, Equipo, Estadio
-from apps.partidos.models import Evento, Partido
+from apps.partidos.models import EstadisticaPartido, Evento, Partido
 
 from ..ingesta import sync
 
@@ -155,6 +157,9 @@ def get_competicion_temporada(competicion_id: int, temporada_id: int) -> dict:
         raise ResourceNotFound("temporada", temporada_id)
 
     if temporada.estado_datos == Temporada.EstadoDatos.NO_CARGADA:
+        if competicion_id != 1:
+            return []
+
         sync.sync_matches([temporada.competicion.api_id], [temporada.api_id])
 
     season_matches = Partido.objects.filter(temporada=temporada)
@@ -256,6 +261,20 @@ def get_competicion_temporada_table(competicion_id: int, temporada_id: int) -> l
         return []
 
     table = {}
+    stat_fields = (
+        "ataques",
+        "ataques_peligrosos",
+        "tiros_total",
+        "tiros_a_puerta",
+        "tiros_fuera",
+        "posesion",
+        "corners",
+        "offsides",
+        "faltas",
+        "tarjetas_amarillas",
+        "tarjetas_rojas",
+    )
+    posesion_totals = {}
     teams = temporada.equipos.order_by("nombre").values(
         "id",
         "nombre",
@@ -272,12 +291,44 @@ def get_competicion_temporada_table(competicion_id: int, temporada_id: int) -> l
             "ganados": 0,
             "empatados": 0,
             "perdidos": 0,
+
             "goles_favor": 0,
+            "goles_favor_local": 0,
+            "goles_favor_visitante": 0,
             "goles_contra": 0,
+            "goles_contra_local": 0,
+            "goles_contra_visitante": 0,
             "diferencia_goles": 0,
+
             "puntos": 0,
+            "puntos_local": 0,
+            "puntos_visitante": 0,
+            "puntos_esperados": 0.0,
+            "puntos_esperados_local": 0.0,
+            "puntos_esperados_visitante": 0.0,
+
+            "xg_generado": 0.0,
+            "xg_generado_local": 0.0,
+            "xg_generado_visitante": 0.0,
+            "xg_recibido": 0.0,
+            "xg_recibido_local": 0.0,
+            "xg_recibido_visitante": 0.0,
+
+            "ataques": 0,
+            "ataques_peligrosos": 0,
+            "tiros_total": 0,
+            "tiros_a_puerta": 0,
+            "tiros_fuera": 0,
+            "posesion": 0,
+            "corners": 0,
+            "offsides": 0,
+            "faltas": 0,
+            "tarjetas_amarillas": 0,
+            "tarjetas_rojas": 0,
+
             "forma": [],
         }
+        posesion_totals[team["id"]] = {"total": 0.0, "matches": 0}
 
     completed_matches = (
         Partido.objects.filter(
@@ -288,10 +339,21 @@ def get_competicion_temporada_table(competicion_id: int, temporada_id: int) -> l
         )
         .order_by("fecha", "id")
         .values(
-            "equipo_local_id", "equipo_visitante_id",
+            "id", "equipo_local_id", "equipo_visitante_id",
             "goles_local", "goles_vis",
         )
     )
+
+    completed_matches = list(completed_matches)
+    stats_by_match_and_team = {}
+    if completed_matches:
+        match_ids = [match["id"] for match in completed_matches]
+        stats_by_match_and_team = {
+            (stat["partido_id"], stat["equipo_id"]): stat
+            for stat in EstadisticaPartido.objects.filter(
+                partido_id__in=match_ids
+            ).values("partido_id", "equipo_id", "xg", *stat_fields)
+        }
 
     for match in completed_matches:
         home_id = match["equipo_local_id"]
@@ -307,19 +369,25 @@ def get_competicion_temporada_table(competicion_id: int, temporada_id: int) -> l
         home["partidos_jugados"] += 1
         away["partidos_jugados"] += 1
         home["goles_favor"] += home_goals
+        home["goles_favor_local"] += home_goals
         home["goles_contra"] += away_goals
+        home["goles_contra_local"] += away_goals
         away["goles_favor"] += away_goals
+        away["goles_favor_visitante"] += away_goals
         away["goles_contra"] += home_goals
+        away["goles_contra_visitante"] += home_goals
 
         if home_goals > away_goals:
             home["ganados"] += 1
             home["puntos"] += 3
+            home["puntos_local"] += 3
             away["perdidos"] += 1
             home["forma"].append("W")
             away["forma"].append("L")
         elif home_goals < away_goals:
             away["ganados"] += 1
             away["puntos"] += 3
+            away["puntos_visitante"] += 3
             home["perdidos"] += 1
             home["forma"].append("L")
             away["forma"].append("W")
@@ -327,14 +395,76 @@ def get_competicion_temporada_table(competicion_id: int, temporada_id: int) -> l
             home["empatados"] += 1
             away["empatados"] += 1
             home["puntos"] += 1
+            home["puntos_local"] += 1
             away["puntos"] += 1
+            away["puntos_visitante"] += 1
             home["forma"].append("D")
             away["forma"].append("D")
+
+        home_match_stats = stats_by_match_and_team.get((match["id"], home_id), {})
+        away_match_stats = stats_by_match_and_team.get((match["id"], away_id), {})
+        home_xg = home_match_stats.get("xg")
+        away_xg = away_match_stats.get("xg")
+
+        for team_id, team_row, match_stats in (
+            (home_id, home, home_match_stats),
+            (away_id, away, away_match_stats),
+        ):
+            for field in stat_fields:
+                value = match_stats.get(field)
+                if value is None:
+                    continue
+                if field == "posesion":
+                    posesion_totals[team_id]["total"] += float(value)
+                    posesion_totals[team_id]["matches"] += 1
+                else:
+                    team_row[field] += value
+
+        if home_xg is not None:
+            home_xg = float(home_xg)
+            home["xg_generado"] += home_xg
+            home["xg_generado_local"] += home_xg
+            away["xg_recibido"] += home_xg
+            away["xg_recibido_visitante"] += home_xg
+
+        if away_xg is not None:
+            away_xg = float(away_xg)
+            away["xg_generado"] += away_xg
+            away["xg_generado_visitante"] += away_xg
+            home["xg_recibido"] += away_xg
+            home["xg_recibido_local"] += away_xg
+
+        if home_xg is not None and away_xg is not None:
+            home_xp, away_xp = _expected_points_from_xg(home_xg, away_xg)
+            home["puntos_esperados"] += home_xp
+            home["puntos_esperados_local"] += home_xp
+            away["puntos_esperados"] += away_xp
+            away["puntos_esperados_visitante"] += away_xp
 
     rows = list(table.values())
     
     for row in rows:
         row["diferencia_goles"] = row["goles_favor"] - row["goles_contra"]
+        possession = posesion_totals[row["equipo"]["id"]]
+
+        if possession["matches"]:
+            row["posesion"] = round(
+                possession["total"] / possession["matches"],
+                2,
+            )
+
+        for field in (
+            "puntos_esperados",
+            "puntos_esperados_local",
+            "puntos_esperados_visitante",
+            "xg_generado",
+            "xg_generado_local",
+            "xg_generado_visitante",
+            "xg_recibido",
+            "xg_recibido_local",
+            "xg_recibido_visitante",
+        ):
+            row[field] = round(row[field], 3)
         row["forma"] = "".join(row["forma"][-5:])
 
     return sorted(
@@ -346,6 +476,44 @@ def get_competicion_temporada_table(competicion_id: int, temporada_id: int) -> l
             row["equipo"]["nombre"],
         ),
     )
+
+
+def _expected_points_from_xg(home_xg: float, away_xg: float) -> tuple[float, float]:
+    home_goals = _poisson_probabilities(home_xg)
+    away_goals = _poisson_probabilities(away_xg)
+
+    home_win = 0.0
+    draw = 0.0
+    away_win = 0.0
+    for home_score, home_probability in enumerate(home_goals):
+        for away_score, away_probability in enumerate(away_goals):
+            probability = home_probability * away_probability
+            if home_score > away_score:
+                home_win += probability
+            elif home_score == away_score:
+                draw += probability
+            else:
+                away_win += probability
+
+    return 3 * home_win + draw, 3 * away_win + draw
+
+
+def _poisson_probabilities(expected_goals: float) -> list[float]:
+    if expected_goals < 0:
+        raise ValueError("Expected goals cannot be negative")
+
+    max_goals = max(
+        20,
+        math.ceil(expected_goals + 12 * math.sqrt(expected_goals + 1) + 10),
+    )
+    probabilities = [math.exp(-expected_goals)]
+    for goals in range(1, max_goals + 1):
+        probabilities.append(
+            probabilities[-1] * expected_goals / goals
+        )
+
+    probability_sum = sum(probabilities)
+    return [probability / probability_sum for probability in probabilities]
 
 
 def get_competicion_temporada_stats(competicion_id: int, temporada_id: int) -> dict:
