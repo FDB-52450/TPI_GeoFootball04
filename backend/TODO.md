@@ -74,7 +74,7 @@
   - [x] Manejo de errores basicos
   - [ ] Manejo de errores avanzado
   - [ ] Tests
-- [ ] Tasks de sincronizacion
+- [x] Tasks de sincronizacion
 - [x] Comandos para ejecutar sincronizacion
   - [x] Catalogo
   - [x] Partidos
