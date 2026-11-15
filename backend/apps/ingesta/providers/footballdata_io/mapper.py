@@ -234,7 +234,7 @@ def map_match_stats(data, side) -> dict:
 
     stats = data['stats']
 
-    return {
+    data = {
         'xg': data['xg'][side],
         'xg_prematch': data['xg'][f'prematch_{side}'],
 
@@ -253,6 +253,7 @@ def map_match_stats(data, side) -> dict:
         'ataques_peligrosos': stats['attacks'][f'{side}_dangerous']
     }
 
+    return {k: _valor(v) for k, v in data.items()}
 
 def map_player_detail(data):
     competitions_by_id = {}
@@ -368,3 +369,7 @@ def _map_comp_type(api_type):
         return comp_types[api_type.lower()]
     except KeyError as exc:
         raise ValueError(f"Unknown event type: {api_type!r}") from exc
+
+def _valor(v):
+    # -1 es el sentinel de la API para "sin dato" (tal vez)
+    return None if v is None or v == -1 else v
