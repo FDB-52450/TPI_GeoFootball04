@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import {
   fetchTeamDetails,
+  fetchTeamCompetitionSeasonTable,
   fetchTeamMatches,
   fetchTeamPlayers,
   fetchTeams,
@@ -8,6 +9,7 @@ import {
   type TeamDetails,
   type TeamMatch,
   type TeamPlayer,
+  type TeamSeasonTableRow,
 } from "./api/teams"
 import { EntityLink } from "./EntityNavigation"
 import { ImageWithFallback } from "./utils/ImageWithFallback"
@@ -46,6 +48,225 @@ function dateLabel(value: string) {
 
 function formatCapacity(value: number | null) {
   return value === null ? "No informada" : new Intl.NumberFormat().format(value)
+}
+
+function formatStat(value: number | null, digits = 1): string {
+  return value === null
+    ? "—"
+    : new Intl.NumberFormat(undefined, { maximumFractionDigits: digits }).format(value)
+}
+
+function averagePerMatch(total: number | null, matches: number): number | null {
+  return total === null || matches === 0 ? null : total / matches
+}
+
+function rankLabel(rank: number | null): string {
+  return rank === null ? "—" : `${rank}°`
+}
+
+function statRank(
+  rows: TeamSeasonTableRow[],
+  teamId: number,
+  getValue: (row: TeamSeasonTableRow) => number | null,
+  direction: "desc" | "asc" = "desc",
+): number | null {
+  const team = rows.find((row) => row.equipo.id === teamId)
+  const value = team ? getValue(team) : null
+  if (value === null) return null
+
+  return 1 + rows.filter((row) => {
+    const otherValue = getValue(row)
+    if (row.equipo.id === teamId || otherValue === null) return false
+    return direction === "desc" ? otherValue > value : otherValue < value
+  }).length
+}
+
+function TeamStatMetric({
+  title,
+  value,
+  detail,
+  ranking,
+}: {
+  title: string
+  value: string
+  detail?: string
+  ranking?: number | null
+}) {
+  return (
+    <article className="team-season-stat">
+      <span>{title}</span>
+      <strong>{value}</strong>
+      {detail && <small>{detail}</small>}
+      {ranking !== undefined && (
+        <small>{ranking === null ? "Posición: —" : `Posición: ${ranking}°`}</small>
+      )}
+    </article>
+  )
+}
+
+function TeamSeasonStatistics({
+  rows,
+  teamId,
+}: {
+  rows: TeamSeasonTableRow[]
+  teamId: number
+}) {
+  const team = rows.find((row) => row.equipo.id === teamId)
+  if (!team) {
+    return (
+      <p className="team-empty-state">
+        El equipo no figura en la tabla de esta competición y temporada.
+      </p>
+    )
+  }
+
+  const matches = team.partidos_jugados
+  const goalsAgainstRank = statRank(rows, teamId, (row) => row.goles_contra, "asc")
+  const expectedGoalsAgainst = team.xg_recibido
+  const disciplineRate =
+    team.faltas !== null && team.faltas > 0 &&
+    team.tarjetas_amarillas !== null && team.tarjetas_rojas !== null
+      ? ((team.tarjetas_amarillas + team.tarjetas_rojas) / team.faltas) * 100
+      : null
+
+  return (
+    <div className="team-season-stats-content">
+      <div className="team-season-stat-matches">
+        <strong>{matches}</strong>
+        <span>PARTIDOS JUGADOS</span>
+      </div>
+      <p className="team-season-stats-note">
+        Los promedios de xG y xP usan los partidos jugados como divisor; pueden ser aproximados
+        si faltan datos de esos indicadores para algunos partidos.
+      </p>
+
+      <section className="team-season-stat-section">
+        <h3>Rendimiento general</h3>
+        <div className="team-season-stat-grid">
+          <TeamStatMetric
+            title="Puntos"
+            value={formatStat(team.puntos, 0)}
+            detail={`${formatStat(averagePerMatch(team.puntos, matches))} por partido`}
+            ranking={statRank(rows, teamId, (row) => row.puntos)}
+          />
+          <TeamStatMetric
+            title="Puntos esperados (xP)"
+            value={formatStat(team.puntos_esperados, 2)}
+            detail={`${formatStat(averagePerMatch(team.puntos_esperados, matches), 2)} por partido`}
+            ranking={statRank(rows, teamId, (row) => row.puntos_esperados)}
+          />
+          <TeamStatMetric
+            title="Puntos como local"
+            value={formatStat(team.puntos_local, 0)}
+            detail={`xP: ${formatStat(team.puntos_esperados_local, 2)} · Pos. xP ${rankLabel(
+              statRank(rows, teamId, (row) => row.puntos_esperados_local),
+            )}`}
+            ranking={statRank(rows, teamId, (row) => row.puntos_local)}
+          />
+          <TeamStatMetric
+            title="Puntos como visitante"
+            value={formatStat(team.puntos_visitante, 0)}
+            detail={`xP: ${formatStat(team.puntos_esperados_visitante, 2)} · Pos. xP ${rankLabel(
+              statRank(rows, teamId, (row) => row.puntos_esperados_visitante),
+            )}`}
+            ranking={statRank(rows, teamId, (row) => row.puntos_visitante)}
+          />
+        </div>
+      </section>
+
+      <section className="team-season-stat-section">
+        <h3>Rendimiento ofensivo</h3>
+        <div className="team-season-stat-grid">
+          <TeamStatMetric
+            title="Goles a favor"
+            value={formatStat(team.goles_favor, 0)}
+            detail={`${formatStat(averagePerMatch(team.goles_favor, matches))} por partido`}
+            ranking={statRank(rows, teamId, (row) => row.goles_favor)}
+          />
+          <TeamStatMetric
+            title="xG generado"
+            value={formatStat(team.xg_generado, 2)}
+            detail={`${formatStat(averagePerMatch(team.xg_generado, matches), 2)} por partido`}
+            ranking={statRank(rows, teamId, (row) => row.xg_generado)}
+          />
+          <TeamStatMetric
+            title="Tiros"
+            value={formatStat(team.tiros_total, 0)}
+            detail={`${formatStat(team.tiros_a_puerta, 0)} a puerta · ${
+              team.tiros_total !== null && team.tiros_total > 0 && team.tiros_a_puerta !== null
+                ? `${formatStat((team.tiros_a_puerta / team.tiros_total) * 100)}% a puerta`
+                : "porcentaje no disponible"
+            }`}
+          />
+          <TeamStatMetric
+            title="Ataques"
+            value={formatStat(team.ataques, 0)}
+            detail={`${formatStat(team.ataques_peligrosos, 0)} peligrosos · ${
+              team.ataques !== null && team.ataques > 0 && team.ataques_peligrosos !== null
+                ? `${formatStat((team.ataques_peligrosos / team.ataques) * 100)}% peligrosos`
+                : "porcentaje no disponible"
+            }`}
+          />
+          {/*<TeamStatMetric title="Faltas recibidas" value="—" detail="No disponible en la tabla" />*/}
+        </div>
+      </section>
+
+      <section className="team-season-stat-section">
+        <h3>Rendimiento defensivo</h3>
+        <div className="team-season-stat-grid">
+          <TeamStatMetric
+            title="Goles recibidos"
+            value={formatStat(team.goles_contra, 0)}
+            detail={`${formatStat(averagePerMatch(team.goles_contra, matches))} por partido`}
+            ranking={goalsAgainstRank}
+          />
+          <TeamStatMetric
+            title="xG recibido"
+            value={formatStat(expectedGoalsAgainst, 2)}
+            detail={`${formatStat(averagePerMatch(expectedGoalsAgainst, matches), 2)} por partido`}
+            ranking={statRank(rows, teamId, (row) => row.xg_recibido, "asc")}
+          />
+          {/*
+          <TeamStatMetric title="Tiros recibidos / a puerta" value="—" detail="No disponible en la tabla" />
+          <TeamStatMetric title="Ataques recibidos / peligrosos" value="—" detail="No disponible en la tabla" />
+          */}
+          <TeamStatMetric
+            title="Disciplina"
+            value={`${formatStat(team.faltas, 0)} faltas`}
+            detail={`${formatStat(team.tarjetas_amarillas, 0)} amarillas · ${formatStat(
+              team.tarjetas_rojas,
+              0,
+            )} rojas · ${
+              disciplineRate === null
+                ? "porcentaje de tarjetas por falta no disponible"
+                : `${formatStat(disciplineRate)}% tarjetas por falta`
+            }`}
+          />
+        </div>
+      </section>
+
+      <section className="team-season-stat-section">
+        <h3>Estilo de juego</h3>
+        <div className="team-season-stat-grid">
+          <TeamStatMetric
+            title="Posesión"
+            value={team.posesion === null ? "—" : `${formatStat(team.posesion)}%`}
+            ranking={statRank(rows, teamId, (row) => row.posesion)}
+          />
+          <TeamStatMetric
+            title="Córneres"
+            value={formatStat(team.corners, 0)}
+            ranking={statRank(rows, teamId, (row) => row.corners)}
+          />
+          <TeamStatMetric
+            title="Fueras de juego"
+            value={formatStat(team.offsides, 0)}
+            ranking={statRank(rows, teamId, (row) => row.offsides)}
+          />
+        </div>
+      </section>
+    </div>
+  )
 }
 
 function TeamMatchRow({ match, teamId }: { match: TeamMatch; teamId: number | null }) {
@@ -127,6 +348,12 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
   const [matchesError, setMatchesError] = useState<string | null>(null)
   const [competitionFilter, setCompetitionFilter] = useState("all")
   const [seasonFilter, setSeasonFilter] = useState("all")
+  const [showingSeasonStats, setShowingSeasonStats] = useState(false)
+  const [statsCompetitionId, setStatsCompetitionId] = useState<number | null>(null)
+  const [statsSeasonId, setStatsSeasonId] = useState<number | null>(null)
+  const [seasonStatsRows, setSeasonStatsRows] = useState<TeamSeasonTableRow[]>([])
+  const [seasonStatsLoading, setSeasonStatsLoading] = useState(false)
+  const [seasonStatsError, setSeasonStatsError] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -159,6 +386,11 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
   useEffect(() => {
     setCompetitionFilter("all")
     setSeasonFilter("all")
+    setShowingSeasonStats(false)
+    setStatsCompetitionId(null)
+    setStatsSeasonId(null)
+    setSeasonStatsRows([])
+    setSeasonStatsError(null)
     if (selectedId === null) {
       setDetails(null)
       setDetailsError(null)
@@ -256,6 +488,49 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
     }
   }, [selectedId])
 
+  useEffect(() => {
+    if (
+      !showingSeasonStats ||
+      statsCompetitionId === null ||
+      statsSeasonId === null
+    ) {
+      setSeasonStatsRows([])
+      setSeasonStatsError(null)
+      setSeasonStatsLoading(false)
+      return
+    }
+
+    const competitionId = statsCompetitionId
+    const seasonId = statsSeasonId
+    let cancelled = false
+    setSeasonStatsRows([])
+    setSeasonStatsError(null)
+    setSeasonStatsLoading(true)
+    async function loadSeasonStats() {
+      try {
+        const result = await fetchTeamCompetitionSeasonTable(
+          competitionId,
+          seasonId,
+        )
+        if (!cancelled) setSeasonStatsRows(result)
+      } catch (error) {
+        if (!cancelled) {
+          setSeasonStatsError(
+            error instanceof Error
+              ? error.message
+              : "No se pudieron cargar las estadísticas de la temporada.",
+          )
+        }
+      } finally {
+        if (!cancelled) setSeasonStatsLoading(false)
+      }
+    }
+    void loadSeasonStats()
+    return () => {
+      cancelled = true
+    }
+  }, [showingSeasonStats, statsCompetitionId, statsSeasonId])
+
   const selectedTeam = details ?? teams.find(({ id }) => id === selectedId) ?? null
   const availableSeasons = useMemo(() => {
     const competitions = details?.competiciones ?? []
@@ -263,6 +538,15 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
       competition.temporadas.map((season) => ({ ...season, competicion: competition })),
     )
   }, [details])
+  const statsCompetitions = (details?.competiciones ?? []).filter(
+    (competition) => competition.temporadas.length > 0,
+  )
+  const selectedStatsCompetition = statsCompetitions.find(
+    (competition) => competition.id === statsCompetitionId,
+  ) ?? null
+  const selectedStatsSeason = selectedStatsCompetition?.temporadas.find(
+    (season) => season.id === statsSeasonId,
+  ) ?? null
   const filteredMatches = matches.filter((match) => {
     const matchesCompetition =
       competitionFilter === "all" || String(match.competicion.id) === competitionFilter
@@ -331,6 +615,82 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
           </div>
         </section>
 
+        {showingSeasonStats ? (
+          <section className="team-info-panel team-season-stats-panel">
+            <div className="team-season-stats-toolbar">
+              <button
+                className="team-season-stats-back"
+                onClick={() => setShowingSeasonStats(false)}
+                type="button"
+              >
+                <span aria-hidden="true">←</span> Volver a Equipos
+              </button>
+              <label>
+                <span>COMPETICIÓN</span>
+                <select
+                  disabled={!statsCompetitions.length}
+                  value={statsCompetitionId ?? ""}
+                  onChange={(event) => {
+                    const nextId = event.target.value ? Number(event.target.value) : null
+                    const nextCompetition = statsCompetitions.find(
+                      (competition) => competition.id === nextId,
+                    )
+                    setStatsCompetitionId(nextId)
+                    setStatsSeasonId(nextCompetition?.temporadas[0]?.id ?? null)
+                  }}
+                >
+                  {statsCompetitions.map((competition) => (
+                    <option key={competition.id} value={competition.id}>
+                      {competition.nombre}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span>TEMPORADA</span>
+                <select
+                  disabled={!selectedStatsCompetition?.temporadas.length}
+                  value={statsSeasonId ?? ""}
+                  onChange={(event) =>
+                    setStatsSeasonId(event.target.value ? Number(event.target.value) : null)
+                  }
+                >
+                  {selectedStatsCompetition?.temporadas.map((season) => (
+                    <option key={season.id} value={season.id}>
+                      {season.etiqueta}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <header className="team-season-stats-heading">
+              <div>
+                <span className="section-label">ESTADÍSTICAS DE TEMPORADA</span>
+                <h3>
+                  {selectedStatsCompetition?.nombre ?? "Selecciona una competición"}
+                  {selectedStatsSeason ? ` · ${selectedStatsSeason.etiqueta}` : ""}
+                </h3>
+              </div>
+              <EndpointTag>{`/api/catalogo/competiciones/${statsCompetitionId ?? "<comp_id>"}/temporadas/${statsSeasonId ?? "<tempor_id>"}/tabla`}</EndpointTag>
+            </header>
+            {seasonStatsLoading ? (
+              <p className="team-empty-state">Cargando estadísticas de la temporada…</p>
+            ) : seasonStatsError ? (
+              <p className="team-api-error" role="alert">
+                No se pudieron cargar las estadísticas: {seasonStatsError}
+              </p>
+            ) : seasonStatsRows.length && selectedId !== null ? (
+              <TeamSeasonStatistics rows={seasonStatsRows} teamId={selectedId} />
+            ) : (
+              <p className="team-empty-state">
+                {selectedStatsSeason
+                  ? "No hay estadísticas disponibles para esta temporada."
+                  : "Selecciona una competición y una temporada."}
+              </p>
+            )}
+          </section>
+        ) : (
+          <>
         <div className="team-overview-grid">
           <section className="team-info-panel">
             <header className="team-panel-heading">
@@ -399,6 +759,23 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
             </div>
           ) : (
             <p className="team-empty-state">{detailsLoading ? "Cargando competencias…" : "No hay competencias registradas para este equipo."}</p>
+          )}
+          {statsCompetitions.length > 0 && (
+            <div className="team-competition-footer">
+              <button
+                className="team-view-detail-link"
+                onClick={() => {
+                  const firstSeason = availableSeasons[0]
+                  if (!firstSeason) return
+                  setStatsCompetitionId(firstSeason.competicion.id)
+                  setStatsSeasonId(firstSeason.id)
+                  setShowingSeasonStats(true)
+                }}
+                type="button"
+              >
+                Ver detalle <span aria-hidden="true">→</span>
+              </button>
+            </div>
           )}
         </section>
 
@@ -493,6 +870,8 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
             <p className="team-empty-state">{selectedId === null ? "Selecciona un equipo para consultar sus partidos." : "No hay partidos para estos filtros."}</p>
           )}
         </section>
+          </>
+        )}
       </div>
     </div>
   )

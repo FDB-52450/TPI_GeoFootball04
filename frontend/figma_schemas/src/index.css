@@ -3383,6 +3383,163 @@ footer {
   gap: 18px;
 }
 
+.team-competition-footer {
+  display: flex;
+  margin-top: 16px;
+  justify-content: flex-end;
+}
+
+.team-view-detail-link,
+.team-season-stats-back {
+  padding: 8px 0;
+  border: 0;
+  background: transparent;
+  color: #b73d2b;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.team-view-detail-link span {
+  margin-left: 5px;
+}
+
+.team-season-stats-panel {
+  display: grid;
+  gap: 20px;
+}
+
+.team-season-stats-toolbar {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+}
+
+.team-season-stats-toolbar > label {
+  display: grid;
+  min-width: 180px;
+  gap: 6px;
+}
+
+.team-season-stats-toolbar > label > span {
+  color: #69777d;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .8px;
+}
+
+.team-season-stats-toolbar select {
+  min-width: 0;
+  padding: 9px 11px;
+  border: 1px solid #d9d7d1;
+  background: #fff;
+  color: #1b2930;
+  font: inherit;
+}
+
+.team-season-stats-back {
+  margin-right: auto;
+  color: #374c55;
+}
+
+.team-season-stats-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.team-season-stats-heading h3 {
+  margin-top: 4px;
+  color: #1b2930;
+  font-family: 'Manrope', sans-serif;
+  font-size: 22px;
+  letter-spacing: -.7px;
+}
+
+.team-season-stats-content {
+  display: grid;
+  gap: 20px;
+}
+
+.team-season-stat-matches {
+  display: flex;
+  min-height: 76px;
+  padding: 14px 18px;
+  align-items: center;
+  border-left: 3px solid #ff6846;
+  background: #f5f4f0;
+  gap: 12px;
+}
+
+.team-season-stat-matches strong {
+  color: #1b2930;
+  font-family: 'Manrope', sans-serif;
+  font-size: 30px;
+}
+
+.team-season-stat-matches span {
+  color: #69777d;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .8px;
+}
+
+.team-season-stats-note {
+  margin: -10px 0 0;
+  color: #69777d;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.team-season-stat-section {
+  display: grid;
+  gap: 11px;
+}
+
+.team-season-stat-section h3 {
+  color: #1b2930;
+  font-family: 'Manrope', sans-serif;
+  font-size: 17px;
+}
+
+.team-season-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.team-season-stat {
+  display: grid;
+  min-width: 0;
+  min-height: 104px;
+  padding: 13px;
+  align-content: start;
+  border: 1px solid #e3e1dc;
+  background: #fff;
+  gap: 5px;
+}
+
+.team-season-stat > span {
+  color: #69777d;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.team-season-stat > strong {
+  color: #1b2930;
+  font-family: 'Manrope', sans-serif;
+  font-size: 23px;
+  line-height: 1.15;
+}
+
+.team-season-stat > small {
+  color: #778389;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
 .team-profile-card {
   display: flex;
   min-height: 170px;
@@ -3901,6 +4058,10 @@ footer {
     grid-template-columns: 1fr;
   }
 
+  .team-season-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .team-competition-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -3951,9 +4112,27 @@ footer {
     text-align: left;
   }
 
+  .team-season-stats-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .team-season-stats-toolbar > label {
+    min-width: 0;
+  }
+
+  .team-season-stats-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   .team-competition-grid,
   .team-match-filters,
   .team-player-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .team-season-stat-grid {
     grid-template-columns: 1fr;
   }
 

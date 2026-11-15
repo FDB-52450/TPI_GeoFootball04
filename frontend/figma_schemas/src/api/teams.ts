@@ -39,6 +39,31 @@ export type TeamPlayer = {
   foto_url: string | null
 }
 
+export type TeamSeasonTableRow = {
+  equipo: { id: number; nombre: string; imagen: string }
+  partidos_jugados: number
+  puntos: number
+  puntos_local: number
+  puntos_visitante: number
+  puntos_esperados: number | null
+  puntos_esperados_local: number | null
+  puntos_esperados_visitante: number | null
+  goles_favor: number
+  goles_contra: number
+  xg_generado: number | null
+  xg_recibido: number | null
+  ataques: number | null
+  ataques_peligrosos: number | null
+  tiros_total: number | null
+  tiros_a_puerta: number | null
+  posesion: number | null
+  corners: number | null
+  offsides: number | null
+  faltas: number | null
+  tarjetas_amarillas: number | null
+  tarjetas_rojas: number | null
+}
+
 export type TeamDetails = TeamCatalogItem & {
   estadio: TeamStadium | null
   temporadas: TeamSeason[]
@@ -86,6 +111,13 @@ function optionalStringField(value: unknown, field: string): string | null {
     throw new Error(`El campo "${field}" no es válido.`)
   }
   return typeof value === "string" ? value : null
+}
+
+function optionalNullableNumberField(value: unknown, field: string): number | null {
+  if (value !== undefined && value !== null && typeof value !== "number") {
+    throw new Error(`El campo "${field}" no es válido.`)
+  }
+  return typeof value === "number" ? value : null
 }
 
 function recordField(value: unknown, field: string): Record<string, unknown> {
@@ -249,4 +281,54 @@ export async function fetchTeamMatches(
     throw new Error("La respuesta no contiene una lista válida de partidos.")
   }
   return payload.partidos.map(mapMatch)
+}
+
+function mapTeamSeasonTableRow(value: unknown): TeamSeasonTableRow {
+  const row = recordField(value, "tabla")
+  const team = recordField(row.equipo, "tabla.equipo")
+  const requiredStat = (field: string) => numberField(row[field], `tabla.${field}`)
+  const optionalStat = (field: string) =>
+    optionalNullableNumberField(row[field], `tabla.${field}`)
+
+  return {
+    equipo: {
+      id: numberField(team.id, "tabla.equipo.id"),
+      nombre: stringField(team.nombre, "tabla.equipo.nombre"),
+      imagen: optionalStringField(team.imagen, "tabla.equipo.imagen") ?? "",
+    },
+    partidos_jugados: requiredStat("partidos_jugados"),
+    puntos: requiredStat("puntos"),
+    puntos_local: requiredStat("puntos_local"),
+    puntos_visitante: requiredStat("puntos_visitante"),
+    puntos_esperados: optionalStat("puntos_esperados"),
+    puntos_esperados_local: optionalStat("puntos_esperados_local"),
+    puntos_esperados_visitante: optionalStat("puntos_esperados_visitante"),
+    goles_favor: requiredStat("goles_favor"),
+    goles_contra: requiredStat("goles_contra"),
+    xg_generado: optionalStat("xg_generado"),
+    xg_recibido: optionalStat("xg_recibido"),
+    ataques: optionalStat("ataques"),
+    ataques_peligrosos: optionalStat("ataques_peligrosos"),
+    tiros_total: optionalStat("tiros_total"),
+    tiros_a_puerta: optionalStat("tiros_a_puerta"),
+    posesion: optionalStat("posesion"),
+    corners: optionalStat("corners"),
+    offsides: optionalStat("offsides"),
+    faltas: optionalStat("faltas"),
+    tarjetas_amarillas: optionalStat("tarjetas_amarillas"),
+    tarjetas_rojas: optionalStat("tarjetas_rojas"),
+  }
+}
+
+export async function fetchTeamCompetitionSeasonTable(
+  competitionId: number,
+  seasonId: number,
+): Promise<TeamSeasonTableRow[]> {
+  const payload = await getJson(
+    `${API_BASE_URL}/api/catalogo/competiciones/${competitionId}/temporadas/${seasonId}/tabla`,
+  )
+  if (!isRecord(payload) || !Array.isArray(payload.tabla)) {
+    throw new Error("La respuesta no contiene una tabla válida.")
+  }
+  return payload.tabla.map(mapTeamSeasonTableRow)
 }
