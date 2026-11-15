@@ -14,15 +14,19 @@ from pathlib import Path
 from dotenv import load_dotenv
 import os
 
+from celery.schedules import crontab
 from django.core.exceptions import ImproperlyConfigured
 
 load_dotenv()
 
-def get_env_variable(nombre: str) -> str:
-    valor = os.environ.get(nombre)
+def get_env_variable(nombre: str, default: str | None = None) -> str:
+    valor = os.environ.get(nombre, default)
 
     if not valor:
-        raise ImproperlyConfigured(f"Falta la variable de entorno {nombre}")
+        if default is None:
+            raise ImproperlyConfigured(f"Falta la variable de entorno {nombre}")
+        return default
+
     return valor
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -44,6 +48,11 @@ APIFOOTBALL_API_BASE_URL = get_env_variable("APIFOOTBALL_API_BASE_URL")
 APIFOOTBALL_API_KEY = get_env_variable('APIFOOTBALL_API_KEY')
 
 OPENSTREETMAP_API_BASE_URL = get_env_variable('OPENSTREETMAP_API_BASE_URL')
+
+CELERY_BROKER_URL = get_env_variable("CELERY_BROKER_URL", "redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = get_env_variable("CELERY_RESULT_BACKEND", "redis://localhost:6379/0")
+
+INTERVALO_SYNC_MINUTOS = int(get_env_variable("INTERVALO_SYNC_MINUTOS"))
 
 USE_MOCK_DATA = get_env_variable('USE_MOCK_DATA').lower() == 'true'
 
@@ -158,3 +167,18 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     FRONTEND_URL
 ]
+
+# Celery
+CELERY_TIMEZONE = "America/Argentina/Buenos_Aires"  # ajusta a tu zona horaria
+CELERY_TASK_TRACK_STARTED = True
+
+CELERY_BEAT_SCHEDULE = {
+    "refrescar-partidos-del-dia": {
+        "task": "apps.ingesta.tasks.refrescar_partidos_del_dia",
+        "schedule": crontab(hour=6, minute=0),
+    },
+    "sondear-partidos-en-vivo": {
+        "task": "apps.ingesta.tasks.sondear_partidos_en_vivo",
+        "schedule": 60.0 * INTERVALO_SYNC_MINUTOS,
+    },
+}
