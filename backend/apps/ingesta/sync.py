@@ -221,6 +221,12 @@ def sync_teams(comp_ids: list[str] = None, season_ids: list[str] = None):
 
 def sync_team_data_and_venues(team_ids: list[str] = None):
     # TODO: Determinar la resilencia de este metodo en especifico
+    def nombre_simplificado(nombre: str) -> str:
+        generic_words_list = ["AFC", "FC", "DEPORTIVO", "CF", "F.C", "C.F", "CLUB", "CA", "BALOMPIE"]
+        palabras = [p for p in nombre.split() if p.upper() not in generic_words_list]
+
+        return " ".join(palabras)
+
     apiProvider = get_provider('api-football')
     teams = Equipo.objects.select_related('pais').all()
 
@@ -230,23 +236,16 @@ def sync_team_data_and_venues(team_ids: list[str] = None):
     for team in teams:
         if team.nivel_datos == Equipo.NivelDatos.COMPLETO:
             continue
-        
-        name = team.nombre.replace("AFC", "").replace("FC", "").strip()
-        data = apiProvider.get_team_data(name, team.pais.nombre)
+
+        simplified_name = nombre_simplificado(team.nombre.strip())
+        data = apiProvider.get_team_data(simplified_name, team.pais.nombre)
 
         if data == []:
-            simple_name = name.split(" ")[0].strip()
-            data = apiProvider.get_team_data(simple_name, team.pais.nombre)
+            more_simplified_name = simplified_name.split(" ")[0].strip()
+            data = apiProvider.get_team_data(more_simplified_name, team.pais.nombre)
 
             if data == []:
-                if len(name.split(" ")) >= 3:
-                    less_simple_name = " ".join(name.split()[:2])
-                    data = apiProvider.get_team_data(less_simple_name, team.pais.nombre)
-
-                    if data == []:
-                        continue
-                else:
-                    continue
+                continue
 
         # Esto no es ideal ya que podria guardar datos de otro equipo, pero la probabilidad
         # de que dos equipos de un mismo pais tengan el mismo nombre y esten registrados en
@@ -333,9 +332,8 @@ def sync_matches(comp_ids: list[str] = None, season_ids: list[str] = None):
 
                 total_pages = meta["pagination"]["total_pages"]
 
-                with transaction.atomic():
-                    for match_data in mapped_matches:
-                        _save_match_data(match_data)
+                for match_data in mapped_matches:
+                    _save_match_data(match_data)
 
                 page += 1
 

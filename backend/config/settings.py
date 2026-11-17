@@ -55,6 +55,7 @@ CELERY_RESULT_BACKEND = get_env_variable("CELERY_RESULT_BACKEND", "redis://local
 INTERVALO_SYNC_MINUTOS = int(get_env_variable("INTERVALO_SYNC_MINUTOS"))
 
 USE_MOCK_DATA = get_env_variable('USE_MOCK_DATA').lower() == 'true'
+USE_LIVE_MOCK_DATA = get_env_variable('USE_LIVE_MOCK_DATA').lower() == 'true'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
