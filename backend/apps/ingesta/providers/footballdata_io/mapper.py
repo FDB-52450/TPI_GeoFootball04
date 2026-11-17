@@ -117,6 +117,9 @@ def map_players(data: dict) -> list[dict]:
             players = (data.get(section) or {}).get(side) or []
 
             for player in players:
+                if player['player_id'] == None:
+                    continue # TODO: Agregar warning
+
                 players_by_id.setdefault(
                     player['player_id'],
                     {
