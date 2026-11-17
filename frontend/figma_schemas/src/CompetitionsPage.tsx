@@ -786,9 +786,9 @@ export default function CompetitionsPage({ initialId }: { initialId: number | nu
                         className={`fixture-result${match.estado === "PROGRAMADO" ? " fixture-upcoming" : ""}`}
                         >
                         <strong>
-                            {scoreAvailable
+                            {scoreAvailable && match.estado != 'PROGRAMADO'
                             ? `${match.goles.local} — ${match.goles.visitante}`
-                            : matchDate.time || "vs"}
+                            : "vs"}
                         </strong>
                         <span>
                             {isLive

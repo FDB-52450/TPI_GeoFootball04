@@ -314,7 +314,7 @@ function TeamMatchRow({ match, teamId }: { match: TeamMatch; teamId: number | nu
         <strong>{match.equipos.local.nombre}</strong>
       </EntityLink>
       <strong className={`team-match-score ${result}`}>
-        {hasScore ? `${match.goles.local} — ${match.goles.visitante}` : "vs"}
+        {hasScore && match.estado != 'PROGRAMADO' ? `${match.goles.local} — ${match.goles.visitante}` : "vs"}
       </strong>
       <EntityLink kind="equipo" id={match.equipos.visitante.id} className="team-match-side team-match-away">
         <strong>{match.equipos.visitante.nombre}</strong>

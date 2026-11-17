@@ -4741,7 +4741,7 @@ footer {
 .player-search-results {
   position: absolute;
   z-index: 5;
-  top: calc(100% - 29px);
+  top: calc(100% + 8px);
   right: 0;
   left: 0;
   max-height: 300px;
