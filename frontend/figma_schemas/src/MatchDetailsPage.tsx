@@ -6,6 +6,7 @@ import {
 } from "./api/matches"
 import { EntityLink } from "./EntityNavigation"
 import { ImageWithFallback } from "./utils/ImageWithFallback"
+import { getSeasonLabel } from "./utils/seasonLabel"
 
 const statisticDefinitions: {
   key: keyof MatchStatistics
@@ -126,7 +127,7 @@ function MatchContext({
               {match.competition.name}
             </EntityLink>
             <p>
-              Temporada {match.seasonId}
+              Temporada {getSeasonLabel(match.season.periodo)}
               {match.week !== null ? ` · Fecha ${match.week}` : ""}
             </p>
           </div>

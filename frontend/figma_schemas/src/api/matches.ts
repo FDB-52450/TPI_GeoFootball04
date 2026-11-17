@@ -43,7 +43,10 @@ export type MatchDetails = {
   home: Match["home"]
   away: Match["away"]
   competition: Omit<Match["competition"], "country">
-  seasonId: number
+  season: {
+    id: number
+    periodo: string
+  }
   score: Match["score"]
   statistics: {
     home: MatchStatistics | null
@@ -213,7 +216,10 @@ function mapMatchDetails(value: unknown): MatchDetails {
       name: stringField(competition.nombre, "partido.competicion.nombre"),
       image: stringField(competition.imagen, "partido.competicion.imagen"),
     },
-    seasonId: numberField(season.id, "partido.temporada.id"),
+      season: {
+        id: numberField(season.id, "partido.temporada.id"),
+        periodo: stringField(season.periodo, "partido.temporada.periodo")
+    },
     score: {
       home: nullableNumberField(score.local, "partido.goles.local"),
       away: nullableNumberField(score.visitante, "partido.goles.visitante"),
