@@ -250,7 +250,7 @@ export default function LiveMatchesGlobe() {
           )
           .pointLabel(() => "")
           .onPointHover((point) => {
-            setSelectedMatchId(point?.id ?? null)
+            if (point) setSelectedMatchId(point.id)
           })
           .onPointClick((point) => {
             if (point) setSelectedMatchId(point.id)
@@ -294,13 +294,15 @@ export default function LiveMatchesGlobe() {
       lat: match.stadium.latitude,
       lng: match.stadium.longitude,
     }))
+    globeRef.current?.pointsData(mapPointsRef.current)
+  }, [mapMatches])
+  useEffect(() => {
     selectedPointIdRef.current = selectedMatch?.id ?? null
     globeRef.current
       ?.pointColor((point) =>
         point.id === selectedPointIdRef.current ? "#ffd071" : "#ff5b35",
       )
-      .pointsData(mapPointsRef.current)
-  }, [mapMatches, selectedMatch?.id])
+  }, [selectedMatch?.id])
   function handleConfederationChange(value: string) {
     setSelectedConfederation(value)
     setSelectedCompetition("all")
