@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+from decimal import Decimal
 from django.db.models import Prefetch, Q
 from django.utils import timezone
 from django.conf import settings
@@ -124,6 +125,241 @@ def get_partidos(
     ]
 
 
+def _percentile_ranks_by_team(values: dict[int, Decimal]) -> dict[int, float]:
+    ranked_values = sorted(values.items(), key=lambda item: item[1])
+    team_count = len(ranked_values)
+    if team_count == 0:
+        return {}
+    if team_count == 1:
+        return {ranked_values[0][0]: 50.0}
+
+    percentiles = {}
+    start = 0
+    while start < team_count:
+        end = start
+        while end + 1 < team_count and ranked_values[end + 1][1] == ranked_values[start][1]:
+            end += 1
+
+        # Midranks keep ties equal and scale unique extrema to 0 and 100.
+        average_rank = (start + end) / 2
+        percentile = average_rank / (team_count - 1) * 100
+        for team_id, _ in ranked_values[start : end + 1]:
+            percentiles[team_id] = percentile
+        start = end + 1
+
+    return percentiles
+
+
+def _get_season_team_performance(temporada_id: int, extra_team_ids: tuple[int, ...]) -> tuple[dict[int, float], dict[int, float]]:
+    team_ids = {
+        team_id
+        for team_id in Temporada.objects.filter(pk=temporada_id).values_list(
+            "equipos__id",
+            flat=True,
+        )
+        if team_id is not None
+    }
+    team_ids.update(extra_team_ids)
+
+    team_totals = {
+        team_id: {
+            "goals": 0,
+            "xg": Decimal("0"),
+            "opponent_xg": Decimal("0"),
+            "dangerous_attacks": 0,
+            "opponent_dangerous_attacks": 0,
+            "attacks": 0,
+            "shots": 0,
+            "opponent_shots": 0,
+            "shots_on_target": 0,
+            "fouls": 0,
+            "cards": 0,
+        }
+        for team_id in team_ids
+    }
+
+    completed_matches = list(
+        Partido.objects.filter(
+            temporada_id=temporada_id,
+            estado__in=(Partido.Estado.FINALIZADO, "complete"),
+            goles_local__isnull=False,
+            goles_vis__isnull=False,
+        ).values(
+            "id",
+            "equipo_local_id",
+            "equipo_visitante_id",
+            "goles_local",
+            "goles_vis",
+        )
+    )
+    match_teams = {}
+    for match in completed_matches:
+        home = team_totals.get(match["equipo_local_id"])
+        away = team_totals.get(match["equipo_visitante_id"])
+        match_teams[match["id"]] = (
+            match["equipo_local_id"],
+            match["equipo_visitante_id"],
+        )
+        if home is not None:
+            home["goals"] += match["goles_local"]
+        if away is not None:
+            away["goals"] += match["goles_vis"]
+
+    match_ids = [match["id"] for match in completed_matches]
+    stats = EstadisticaPartido.objects.filter(
+        partido_id__in=match_ids,
+        equipo_id__in=team_ids,
+    ).values(
+        "partido_id",
+        "equipo_id",
+        "xg",
+        "ataques_peligrosos",
+        "ataques",
+        "tiros_total",
+        "tiros_a_puerta",
+        "faltas",
+        "tarjetas_amarillas",
+        "tarjetas_rojas",
+    )
+    for stat in stats:
+        totals = team_totals[stat["equipo_id"]]
+        if stat["xg"] is not None:
+            totals["xg"] += stat["xg"]
+        totals["fouls"] += stat["faltas"] or 0
+        totals["cards"] += (stat["tarjetas_amarillas"] or 0) + (
+            stat["tarjetas_rojas"] or 0
+        )
+        for field, total_field in (
+            ("ataques_peligrosos", "dangerous_attacks"),
+            ("ataques", "attacks"),
+            ("tiros_total", "shots"),
+            ("tiros_a_puerta", "shots_on_target"),
+        ):
+            if stat[field] is not None:
+                totals[total_field] += stat[field]
+
+        home_id, away_id = match_teams[stat["partido_id"]]
+        if stat["equipo_id"] == home_id:
+            opponent_totals = team_totals.get(away_id)
+        elif stat["equipo_id"] == away_id:
+            opponent_totals = team_totals.get(home_id)
+        else:
+            opponent_totals = None
+
+        if opponent_totals is not None:
+            if stat["xg"] is not None:
+                opponent_totals["opponent_xg"] += stat["xg"]
+            if stat["ataques_peligrosos"] is not None:
+                opponent_totals["opponent_dangerous_attacks"] += stat[
+                    "ataques_peligrosos"
+                ]
+            if stat["tiros_total"] is not None:
+                opponent_totals["opponent_shots"] += stat["tiros_total"]
+
+    metric_values = {
+        "xg": {},
+        "dangerous_attacks": {},
+        "dangerous_attacks_ratio": {},
+        "goal_xg_efficiency": {},
+        "shots_on_target_ratio": {},
+    }
+    defensive_metric_values = {
+        "opponent_xg": {},
+        "opponent_dangerous_attacks": {},
+        "opponent_shots": {},
+        "fouls": {},
+        "fouls_per_card": {},
+    }
+    for team_id, totals in team_totals.items():
+        metric_values["xg"][team_id] = totals["xg"]
+        metric_values["dangerous_attacks"][team_id] = Decimal(
+            totals["dangerous_attacks"]
+        )
+        metric_values["dangerous_attacks_ratio"][team_id] = (
+            Decimal(totals["dangerous_attacks"]) / totals["attacks"]
+            if totals["attacks"]
+            else Decimal("0")
+        )
+        metric_values["goal_xg_efficiency"][team_id] = (
+            Decimal(totals["goals"]) / totals["xg"]
+            if totals["xg"]
+            else Decimal("0")
+        )
+        metric_values["shots_on_target_ratio"][team_id] = (
+            Decimal(totals["shots_on_target"]) / totals["shots"]
+            if totals["shots"]
+            else Decimal("0")
+        )
+        defensive_metric_values["opponent_xg"][team_id] = totals["opponent_xg"]
+        defensive_metric_values["opponent_dangerous_attacks"][team_id] = Decimal(
+            totals["opponent_dangerous_attacks"]
+        )
+        defensive_metric_values["opponent_shots"][team_id] = Decimal(
+            totals["opponent_shots"]
+        )
+        defensive_metric_values["fouls"][team_id] = Decimal(totals["fouls"])
+        defensive_metric_values["fouls_per_card"][team_id] = (
+            Decimal(totals["fouls"]) / totals["cards"]
+            if totals["cards"]
+            else Decimal("0")
+        )
+
+    offensive_weights = {
+        "xg": 0.40,
+        "dangerous_attacks": 0.15,
+        "dangerous_attacks_ratio": 0.05,
+        "goal_xg_efficiency": 0.25,
+        "shots_on_target_ratio": 0.15,
+    }
+    offensive_percentiles = {
+        metric: _percentile_ranks_by_team(values)
+        for metric, values in metric_values.items()
+    }
+    offensive_performance = {
+        team_id: round(
+            sum(
+                offensive_percentiles[metric][team_id] * weight
+                for metric, weight in offensive_weights.items()
+            ),
+            2,
+        )
+        for team_id in team_ids
+    }
+    defensive_weights = {
+        "opponent_xg": 0.35,
+        "opponent_dangerous_attacks": 0.25,
+        "opponent_shots": 0.15,
+        "fouls": 0.10,
+        "fouls_per_card": 0.15,
+    }
+    defensive_percentiles = {
+        metric: _percentile_ranks_by_team(values)
+        for metric, values in defensive_metric_values.items()
+    }
+    inverse_defensive_metrics = {
+        "opponent_xg",
+        "opponent_dangerous_attacks",
+        "opponent_shots",
+        "fouls",
+    }
+    defensive_performance = {
+        team_id: round(
+            sum(
+                (
+                    100 - defensive_percentiles[metric][team_id]
+                    if metric in inverse_defensive_metrics
+                    else defensive_percentiles[metric][team_id]
+                )
+                * weight
+                for metric, weight in defensive_weights.items()
+            ),
+            2,
+        )
+        for team_id in team_ids
+    }
+    return offensive_performance, defensive_performance
+
+
 def get_partido(partido_id: int) -> dict | None:
     instance = Partido.objects.filter(pk=partido_id).first()
 
@@ -180,6 +416,11 @@ def get_partido(partido_id: int) -> dict | None:
     if partido is None:
         raise ResourceNotFound("partido", partido_id)
 
+    offensive_performance, defensive_performance = _get_season_team_performance(
+        partido.temporada_id,
+        (partido.equipo_local_id, partido.equipo_visitante_id),
+    )
+
     def jugador_data(jugador):
         if jugador is None:
             return None
@@ -216,8 +457,13 @@ def get_partido(partido_id: int) -> dict | None:
 
     def estadisticas_data(equipo_id):
         estadisticas = estadisticas_por_equipo.get(equipo_id)
+
         if estadisticas is None:
-            return None
+            return {
+                "rendimiento_ofensivo": offensive_performance[equipo_id],
+                "rendimiento_defensivo": defensive_performance[equipo_id],
+                "rendimiento_general": offensive_performance[equipo_id] * 0.55 + defensive_performance[equipo_id] * 0.45
+            }
 
         return {
             "xg": estadisticas.xg,
@@ -233,6 +479,9 @@ def get_partido(partido_id: int) -> dict | None:
             "faltas": estadisticas.faltas,
             "ataques": estadisticas.ataques,
             "ataques_peligrosos": estadisticas.ataques_peligrosos,
+            "rendimiento_ofensivo": offensive_performance[equipo_id],
+            "rendimiento_defensivo": defensive_performance[equipo_id],
+            "rendimiento_general": offensive_performance[equipo_id] * 0.55 + defensive_performance[equipo_id] * 0.45
         }
 
     partido_data = {
