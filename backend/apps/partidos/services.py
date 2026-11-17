@@ -3,7 +3,7 @@ from django.db.models import Prefetch, Q
 from django.utils import timezone
 from django.conf import settings
 
-from .models import Convocatoria, Evento, Partido, Jugador, Plantilla
+from .models import Convocatoria, Evento, Partido, Jugador, Plantilla, EstadisticaPartido
 from ..catalogo.models import Temporada
 from ..ingesta import sync
 
@@ -52,13 +52,20 @@ def get_partidos(
     if settings.USE_LIVE_MOCK_DATA:
         import random
 
-        partidos = list(partidos[:5])  
+        partidos = list(partidos[:10])
+        start = random.randint(0, 3)
+        end = random.randint(5, 8)
 
-        for partido in partidos:
-            partido.estado = Partido.Estado.EN_JUEGO
-            partido.minuto_actual = random.randint(1, 100)
-            partido.goles_local = random.randint(0, 5)
-            partido.goles_vis = random.randint(0, 5)
+        for idx, partido in enumerate(partidos):
+            if idx >= start and idx <= end:
+                partido.estado = Partido.Estado.EN_JUEGO
+                partido.minuto_actual = random.randint(1, 100)
+                partido.goles_local = random.randint(0, 5)
+                partido.goles_vis = random.randint(0, 5)
+            elif idx > end:
+                partido.estado = Partido.Estado.FINALIZADO
+                partido.goles_local = random.randint(0, 5)
+                partido.goles_vis = random.randint(0, 5)
 
     return [
         {
@@ -79,6 +86,10 @@ def get_partidos(
                 "id": partido.temporada.competicion_id,
                 "nombre": partido.temporada.competicion.nombre,
                 "imagen": partido.temporada.competicion.logo_url,
+                "pais": {
+                    "id": partido.temporada.competicion.pais_id if partido.temporada.competicion.pais else None,
+                    "nombre": partido.temporada.competicion.pais.nombre if partido.temporada.competicion.pais else None
+                }
             },
             "temporada": {
                 "id": partido.temporada_id,
@@ -157,6 +168,10 @@ def get_partido(partido_id: int) -> dict | None:
                 )
                 .order_by("-titular", "dorsal", "jugador__nombre"),
             ),
+            Prefetch(
+                "estadisticas_equipo",
+                queryset=EstadisticaPartido.objects.all(),
+            ),
         )
         .filter(pk=partido_id)
         .first()
@@ -194,6 +209,32 @@ def get_partido(partido_id: int) -> dict | None:
             }
         )
 
+    estadisticas_por_equipo = {
+        estadistica.equipo_id: estadistica
+        for estadistica in partido.estadisticas_equipo.all()
+    }
+
+    def estadisticas_data(equipo_id):
+        estadisticas = estadisticas_por_equipo.get(equipo_id)
+        if estadisticas is None:
+            return None
+
+        return {
+            "xg": estadisticas.xg,
+            "xg_prematch": estadisticas.xg_prematch,
+            "tiros_total": estadisticas.tiros_total,
+            "tiros_a_puerta": estadisticas.tiros_a_puerta,
+            "tiros_fuera": estadisticas.tiros_fuera,
+            "posesion": estadisticas.posesion,
+            "corners": estadisticas.corners,
+            "offsides": estadisticas.offsides,
+            "tarjetas_amarillas": estadisticas.tarjetas_amarillas,
+            "tarjetas_rojas": estadisticas.tarjetas_rojas,
+            "faltas": estadisticas.faltas,
+            "ataques": estadisticas.ataques,
+            "ataques_peligrosos": estadisticas.ataques_peligrosos,
+        }
+
     partido_data = {
         "id": partido.id,
         "equipos": {
@@ -223,6 +264,10 @@ def get_partido(partido_id: int) -> dict | None:
         "goles": {
             "local": partido.goles_local,
             "visitante": partido.goles_vis,
+        },
+        "estadisticas": {
+            "local": estadisticas_data(partido.equipo_local_id),
+            "visitante": estadisticas_data(partido.equipo_visitante_id),
         },
         "estadio": {
             "nombre": (
