@@ -457,14 +457,7 @@ def get_partido(partido_id: int) -> dict | None:
 
     def estadisticas_data(equipo_id):
         estadisticas = estadisticas_por_equipo.get(equipo_id)
-
-        if estadisticas is None:
-            return {
-                "rendimiento_ofensivo": offensive_performance[equipo_id],
-                "rendimiento_defensivo": defensive_performance[equipo_id],
-                "rendimiento_general": offensive_performance[equipo_id] * 0.55 + defensive_performance[equipo_id] * 0.45
-            }
-
+        
         return {
             "xg": estadisticas.xg,
             "xg_prematch": estadisticas.xg_prematch,
@@ -479,9 +472,9 @@ def get_partido(partido_id: int) -> dict | None:
             "faltas": estadisticas.faltas,
             "ataques": estadisticas.ataques,
             "ataques_peligrosos": estadisticas.ataques_peligrosos,
-            "rendimiento_ofensivo": offensive_performance[equipo_id],
-            "rendimiento_defensivo": defensive_performance[equipo_id],
-            "rendimiento_general": offensive_performance[equipo_id] * 0.55 + defensive_performance[equipo_id] * 0.45
+            "rendimiento_ofensivo": offensive_performance[equipo_id] if estadisticas.xg else None,
+            "rendimiento_defensivo": defensive_performance[equipo_id] if estadisticas.xg else None,
+            "rendimiento_general": (offensive_performance[equipo_id] * 0.55 + defensive_performance[equipo_id] * 0.45) if estadisticas.xg else None
         }
 
     partido_data = {
