@@ -567,7 +567,7 @@ export default function CompetitionsPage({ initialId }: { initialId: number | nu
               </p>
             )}
 
-          {seasonData &&
+          {seasonData && selectedDetails?.temporadas[0].id != seasonId &&
           seasonData.equipos.length * 19 !== seasonData.partidos_totales && (
             <aside className="competition-data-warning" role="alert">
               <span className="competition-data-warning-mark" aria-hidden="true">
