@@ -392,6 +392,10 @@
   display: none;
 }
 
+.match-card-upcoming .gray-team-score {
+  display: none;
+}
+
 .match-card-upcoming .score-divider {
   color: #8c9390;
   font-size: 9px;
@@ -568,6 +572,14 @@
 
 .team-score {
   font-family: 'Manrope', sans-serif;
+  font-size: 25px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.gray-team-score {
+  font-family: 'Manrope', sans-serif;
+  color: #8c9390;
   font-size: 25px;
   font-weight: 800;
   text-align: center;

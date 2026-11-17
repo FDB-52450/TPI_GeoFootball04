@@ -1,5 +1,6 @@
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
+from django.utils.dateparse import parse_date
 
 from . import services
 
@@ -26,6 +27,16 @@ def _parametro_id(request, nombre):
     except ValueError:
         raise ValueError(f"{nombre} debe ser un entero.")
 
+def _parametro_fecha(request, nombre: str):
+    valor = request.GET.get(nombre)
+    if not valor:
+        return None
+
+    fecha = parse_date(valor)
+    
+    if fecha is None:
+        raise ValueError(f"{nombre} debe tener formato AAAA-MM-DD.")
+    return fecha
 
 #region Partidos
 @require_GET
@@ -33,12 +44,18 @@ def partidos_list(request):
     #pagina = int(request.GET.get("pagina"))
     try:
         temporada_id = _parametro_id(request, "temporada_id")
+        fecha_desde = _parametro_fecha(request, "fecha_desde")
+        fecha_hasta = _parametro_fecha(request, "fecha_hasta")
+        count = _parametro_id(request, 'count')
     except ValueError as exc:
         return JsonResponse({"detail": str(exc)}, status=400)
     
     today = request.GET.get("today", "").lower() == "true"
 
-    partidos = services.get_partidos(temporada_id, today = today)
+    partidos = services.get_partidos(
+        temporada_id, today = today, fecha_desde = fecha_desde, fecha_hasta = fecha_hasta,
+        count = count
+    )
 
     return JsonResponse(
         {

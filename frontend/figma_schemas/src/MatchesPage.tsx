@@ -96,9 +96,9 @@ function MatchCard({ match }: { match: Match }) {
           <TeamBadge name={match.home.name} image={match.home.image} />
           <EntityLink kind="equipo" id={match.home.id}>{match.home.name}</EntityLink>
         </div>
-        <span className="team-score">{scoreAvailable ? match.score.home : "—"}</span>
+        <span className={match.status == 'EN_JUEGO' ? 'team-score' : 'gray-team-score'}>{scoreAvailable ? match.score.home : "—"}</span>
         <span className="score-divider">{status.className === "upcoming" ? "VS" : "—"}</span>
-        <span className="team-score">{scoreAvailable ? match.score.away : "—"}</span>
+        <span className={match.status == 'EN_JUEGO' ? 'team-score' : 'gray-team-score'}>{scoreAvailable ? match.score.away : "—"}</span>
         <div className="team team-away">
           <EntityLink kind="equipo" id={match.away.id}>{match.away.name}</EntityLink>
           <TeamBadge name={match.away.name} image={match.away.image} />
