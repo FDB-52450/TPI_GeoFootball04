@@ -804,6 +804,8 @@ def get_competicion_temporada_stats(competicion_id: int, temporada_id: int) -> d
     )[:5]
 
     return {
+        "total_partidos": len(matches),
+        "partidos_con_datos": len([match for match in matches if match.nivel_datos == Partido.NivelDatos.COMPLETO]),
         "partidos": {
             "partidos_jugados": len(match_stats),
             "partido_con_mas_goles": match_entries(
