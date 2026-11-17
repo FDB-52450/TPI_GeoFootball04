@@ -34,6 +34,31 @@ export type MatchStatistics = {
   ataques_peligrosos: number | null
 }
 
+export type MatchPlayer = {
+  id: number
+  name: string
+  nickname: string | null
+  image: string | null
+}
+
+export type MatchLineupEntry = {
+  player: MatchPlayer | null
+  starter: boolean
+  number: number | null
+  position: string
+  minuteIn: number | null
+  minuteOut: number | null
+}
+
+export type MatchEvent = {
+  id: number
+  type: string
+  typeCode: string
+  minute: number
+  player: MatchPlayer | null
+  playerOut: MatchPlayer | null
+}
+
 export type MatchDetails = {
   id: number
   date: string
@@ -52,6 +77,11 @@ export type MatchDetails = {
     home: MatchStatistics | null
     away: MatchStatistics | null
   }
+  lineups: {
+    home: MatchLineupEntry[]
+    away: MatchLineupEntry[]
+  }
+  events: MatchEvent[]
   stadium: {
     name: string | null
     latitude: number | null
@@ -110,6 +140,70 @@ function nullableStringField(value: unknown, field: string): string | null {
     throw new Error(`El campo "${field}" no es válido.`)
   }
   return value
+}
+
+function mapMatchPlayer(value: unknown, field: string): MatchPlayer | null {
+  if (value === null) return null
+  const player = recordField(value, field)
+  return {
+    id: numberField(player.id, `${field}.id`),
+    name: stringField(player.nombre, `${field}.nombre`),
+    nickname: nullableStringField(player.apodo, `${field}.apodo`),
+    image: nullableStringField(player.imagen, `${field}.imagen`),
+  }
+}
+
+function mapLineup(value: unknown, side: string): MatchLineupEntry[] {
+  if (!Array.isArray(value)) {
+    throw new Error(`La alineación ${side} del partido no es válida.`)
+  }
+  return value.map((item, index) => {
+    const entry = recordField(item, `partido.convocatorias.${side}[${index}]`)
+    if (typeof entry.titular !== "boolean") {
+      throw new Error(`El campo titular de la alineación ${side} no es válido.`)
+    }
+    return {
+      player: mapMatchPlayer(
+        entry.jugador,
+        `partido.convocatorias.${side}[${index}].jugador`,
+      ),
+      starter: entry.titular,
+      number: nullableNumberField(
+        entry.dorsal,
+        `partido.convocatorias.${side}[${index}].dorsal`,
+      ),
+      position: stringField(
+        entry.posicion,
+        `partido.convocatorias.${side}[${index}].posicion`,
+      ),
+      minuteIn: nullableNumberField(
+        entry.min_entrada,
+        `partido.convocatorias.${side}[${index}].min_entrada`,
+      ),
+      minuteOut: nullableNumberField(
+        entry.min_salida,
+        `partido.convocatorias.${side}[${index}].min_salida`,
+      ),
+    }
+  })
+}
+
+function mapMatchEvent(value: unknown, index: number): MatchEvent {
+  const event = recordField(value, `partido.eventos[${index}]`)
+  return {
+    id: numberField(event.id, `partido.eventos[${index}].id`),
+    type: stringField(event.tipo, `partido.eventos[${index}].tipo`),
+    typeCode: stringField(event.tipo_codigo, `partido.eventos[${index}].tipo_codigo`),
+    minute: numberField(event.minuto, `partido.eventos[${index}].minuto`),
+    player: mapMatchPlayer(
+      event.jugador,
+      `partido.eventos[${index}].jugador`,
+    ),
+    playerOut: mapMatchPlayer(
+      event.jugador_sale,
+      `partido.eventos[${index}].jugador_sale`,
+    ),
+  }
 }
 
 async function getMatches(url: string): Promise<Match[]> {
@@ -201,7 +295,12 @@ function mapMatchDetails(value: unknown): MatchDetails {
   const season = recordField(match.temporada, "partido.temporada")
   const score = recordField(match.goles, "partido.goles")
   const statistics = recordField(match.estadisticas, "partido.estadisticas")
+  const lineups = recordField(match.convocatorias, "partido.convocatorias")
   const stadium = recordField(match.estadio, "partido.estadio")
+
+  if (!Array.isArray(match.eventos)) {
+    throw new Error("La respuesta no contiene una lista válida de eventos.")
+  }
 
   return {
     id: numberField(match.id, "partido.id"),
@@ -231,6 +330,11 @@ function mapMatchDetails(value: unknown): MatchDetails {
         "partido.estadisticas.visitante",
       ),
     },
+    lineups: {
+      home: mapLineup(lineups.home, "home"),
+      away: mapLineup(lineups.away, "away"),
+    },
+    events: match.eventos.map(mapMatchEvent),
     stadium: {
       name: nullableStringField(stadium.nombre, "partido.estadio.nombre"),
       latitude: nullableNumericField(stadium.latitud, "partido.estadio.latitud"),
