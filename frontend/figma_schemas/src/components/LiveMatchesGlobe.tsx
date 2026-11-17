@@ -6,6 +6,8 @@ import {
 } from "../api/liveMatches"
 import { EntityLink } from "../EntityNavigation"
 
+import * as THREE from "three";
+
 type LocatedLiveMatch = LiveMatch & {
   stadium: { name: string; latitude: number; longitude: number }
 }
@@ -15,6 +17,7 @@ type GlobePoint = LocatedLiveMatch & { lat: number; lng: number }
 type CountryFeature = Record<string, unknown>
 
 type GlobeInstance = {
+  globeMaterial: (material: THREE.Material) => GlobeInstance
   backgroundColor: (color: string) => GlobeInstance
   showAtmosphere: (enabled: boolean) => GlobeInstance
   atmosphereColor: (color: string) => GlobeInstance
@@ -231,15 +234,21 @@ export default function LiveMatchesGlobe() {
         const features = getCountryFeatures(await response.json())
         if (cancelled) return
         globe = globeFactory()(globeElement)
+          .globeMaterial(
+            new THREE.MeshPhongMaterial({
+              color: "#102B3A",
+              shininess: 15,
+            }),
+          )
           .backgroundColor("#07131d")
           .showAtmosphere(true)
           .atmosphereColor("#ff7652")
-          .atmosphereAltitude(0.13)
+          .atmosphereAltitude(0.125)
           .polygonsData(features)
-          .polygonCapColor(() => "rgba(34, 96, 123, 0.82)")
-          .polygonSideColor(() => "rgba(0, 0, 0, 0.14)")
-          .polygonStrokeColor(() => "rgba(190, 218, 227, 0.25)")
-          .polygonAltitude(0.012)
+          .polygonCapColor(() => "rgba(42, 105, 132, 0.90)")
+          .polygonSideColor(() => "rgba(3, 15, 23, 0.35)")
+          .polygonStrokeColor(() => "rgba(151, 190, 205, 0.30)")
+          .polygonAltitude(0.010)
           .polygonLabel(countryName)
           .pointsData(mapPointsRef.current)
           .pointAltitude(0.045)
