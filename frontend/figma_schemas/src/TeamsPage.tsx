@@ -821,9 +821,6 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
               </p>
             )}
           </section>
-          <DataNotice title="Palmarés histórico">
-            No hay un endpoint ni un recurso de títulos históricos en la API disponible.
-          </DataNotice>
         </div>
 
         <section className="team-info-panel team-matches-panel">

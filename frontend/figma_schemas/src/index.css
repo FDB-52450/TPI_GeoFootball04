@@ -3734,12 +3734,6 @@ footer {
   letter-spacing: .9px;
 }
 
-.team-overview-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
-}
-
 .team-info-panel {
   min-width: 0;
   padding: 21px;
@@ -3926,7 +3920,7 @@ footer {
 
 .team-player-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
 }
 

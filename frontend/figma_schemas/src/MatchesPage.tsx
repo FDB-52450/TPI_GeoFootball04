@@ -6,6 +6,7 @@ import {
   type Match,
 } from "./api/matches"
 import { ImageWithFallback } from "./utils/ImageWithFallback"
+import { formatMatchMinute } from "./utils/matchMinute"
 
 function Icon({children, size = 18, className = ""}: {children: ReactNode, size?: number, className?: string}) {
   return (
@@ -38,7 +39,7 @@ function statusPresentation(match: Match) {
   if (match.status === "EN_JUEGO") {
     return {
       className: "live",
-      label: match.minute === null ? "EN VIVO" : `${match.minute}'`,
+      label: match.minute === null ? "EN VIVO" : `${formatMatchMinute(match.minute)}'`,
     }
   }
   if (match.status === "PROGRAMADO") {
@@ -219,9 +220,9 @@ export default function MatchesPage() {
           </div>
           <div className="competitions-title-row">
             <div>
-              <span className="section-label">TEMPORADAS Y CALENDARIOS</span>
+              <span className="section-label">LA PASION DE CADA DIA</span>
               <h1>Partidos</h1>
-              <p>Los partidos del dia, y las que se jugaran en las proximas fechas.</p>
+              <p>El mundo juega. Vivelo en tiempo real</p>
             </div>
             <div className="hero-stat">
             <strong>{todayLoading ? "…" : todayError ? "—" : liveMatches.length}</strong>
