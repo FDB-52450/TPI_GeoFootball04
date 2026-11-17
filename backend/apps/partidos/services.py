@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 from django.db.models import Prefetch, Q
 from django.utils import timezone
+from django.conf import settings
 
 from .models import Convocatoria, Evento, Partido, Jugador, Plantilla
 from ..catalogo.models import Temporada
@@ -22,7 +23,10 @@ def get_partidos(
     partidos = Partido.objects.all()
 
     if today:
-        fecha_desde = fecha_hasta = timezone.localdate()
+        if settings.USE_LIVE_MOCK_DATA:
+            partidos = partidos.filter(estado = "PROGRAMADO")
+        else:
+            fecha_desde = fecha_hasta = timezone.localdate()
 
     if temporada_id is not None:
         partidos = partidos.filter(temporada_id=temporada_id)
@@ -44,6 +48,17 @@ def get_partidos(
     partidos = partidos.select_related(
         "equipo_local", "equipo_visitante", "temporada__competicion", "estadio",
     ).order_by("fecha", "id")
+
+    if settings.USE_LIVE_MOCK_DATA:
+        import random
+
+        partidos = list(partidos[:5])  
+
+        for partido in partidos:
+            partido.estado = Partido.Estado.EN_JUEGO
+            partido.minuto_actual = random.randint(1, 100)
+            partido.goles_local = random.randint(0, 5)
+            partido.goles_vis = random.randint(0, 5)
 
     return [
         {
