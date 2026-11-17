@@ -6563,7 +6563,7 @@ footer {
   align-items: center;
   justify-content: space-between;
   color: #75807f;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 800;
   letter-spacing: .8px;
   text-transform: uppercase;
@@ -6623,13 +6623,15 @@ footer {
   display: grid;
   min-width: 0;
   gap: 3px;
+  margin-bottom: 10px;
+  margin-top: 10px;
 }
 
 .match-lineup-player-info > a,
 .match-lineup-player-info > strong {
   overflow: hidden;
   color: #33434a;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -6638,7 +6640,7 @@ footer {
 .match-lineup-player-info > small {
   overflow: hidden;
   color: #89918e;
-  font-size: 8px;
+  font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -6651,20 +6653,12 @@ footer {
 .match-event-list {
   position: relative;
   display: grid;
-  margin: 20px auto 0;
+  margin: auto 0 0 20px;
   padding: 0;
+  margin-top: 20px;
+  margin-bottom: 20px;
   list-style: none;
   max-width: 760px;
-}
-
-.match-event-list::before {
-  position: absolute;
-  top: 4px;
-  bottom: 4px;
-  left: 47px;
-  width: 1px;
-  background: #e5e3dd;
-  content: '';
 }
 
 .match-event-row {
@@ -6679,7 +6673,7 @@ footer {
 .match-event-minute {
   color: #697574;
   font-family: 'Manrope', sans-serif;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 800;
   text-align: right;
   font-variant-numeric: tabular-nums;
@@ -6736,14 +6730,14 @@ footer {
 
 .match-event-description > strong {
   color: #37474d;
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 800;
 }
 
 .match-event-description > p {
   margin-top: 4px;
   color: #7d8783;
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.5;
 }
 

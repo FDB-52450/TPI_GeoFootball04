@@ -182,9 +182,6 @@ function LineupPlayer({ entry }: { entry: MatchLineupEntry }) {
         ) : (
           <strong>{displayName}</strong>
         )}
-        {player?.nickname && player.nickname !== player.name && (
-          <small>{player.name}</small>
-        )}
         <small>
           {[entry.position || null, appearance].filter(Boolean).join(" · ") || "Datos adicionales no informados"}
         </small>
@@ -340,7 +337,7 @@ function MatchEventRow({ event }: { event: MatchEvent }) {
                     : "·"}
       </span>
       <div className="match-event-description">
-        <strong>{eventTitle(event)}</strong>
+        <strong>{eventTitle(event).toUpperCase()}</strong>
         {isSubstitution ? (
           <p>
             {event.player ? (
@@ -391,7 +388,7 @@ function MatchEvents({ match, endpoint }: {
       </header>
       {events.length ? (
         <ol className="match-event-list">
-          {events.map((event) => (
+          {events.reverse().map((event) => (
             <MatchEventRow event={event} key={event.id} />
           ))}
         </ol>
