@@ -29,17 +29,17 @@ def sincronizar_partidos():
     season_ids = None
     match_ids = None
     player_ids = None
-    semana = None
+    semanas = None
 
     if settings.USE_MOCK_DATA:
         comp_ids = ['15']  # Premier League
         season_ids = ['103535']  # Season 2026/2027 (Premier League)
         match_ids = ['']
         player_ids = None
-        semana = 1
+        semanas = 1
 
     sync.sync_matches(comp_ids, season_ids)
-    sync.sync_match_detail(match_ids, comp_ids, season_ids, semana)
+    sync.sync_match_detail(match_ids, comp_ids, season_ids, semanas)
     sync.sync_player_detail(player_ids)
 
 

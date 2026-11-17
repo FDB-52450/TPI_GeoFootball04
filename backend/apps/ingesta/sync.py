@@ -448,9 +448,9 @@ def _save_team_data(team_api_id, season):
 
 def sync_match_detail(
         match_ids: list[str] = None, comp_ids: list[str] = None, 
-        season_ids: list[str] = None, semana: int = None
+        season_ids: list[str] = None, semanas: list[int] = None
     ):
-    if not any([match_ids, comp_ids, season_ids, semana]):
+    if not any([match_ids, comp_ids, season_ids, semanas]):
         raise ValueError("Indica al menos match_ids, comp_ids, season_ids o semana")
     
     provider = get_provider('footballdataio')
@@ -462,8 +462,8 @@ def sync_match_detail(
         matches = matches.filter(temporada__competicion__api_id__in=comp_ids)
     if season_ids:
         matches = matches.filter(temporada__api_id__in=season_ids)
-    if semana:
-        matches = matches.filter(semana=semana)
+    if semanas:
+        matches = matches.filter(semana__in=semanas)
 
     for match in matches:
         match_data, meta = provider.get_match_detail(match.api_id)
