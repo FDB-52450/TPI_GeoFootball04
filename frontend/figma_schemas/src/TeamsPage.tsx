@@ -786,7 +786,7 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
           )}
         </section>
 
-        <div className="team-overview-grid">
+        <div>
           <section className="team-info-panel">
             <header className="team-panel-heading">
               <div><span className="section-label">PLANTILLA</span><h3>Jugadores</h3></div>
