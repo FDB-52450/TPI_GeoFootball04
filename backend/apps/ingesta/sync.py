@@ -570,6 +570,10 @@ def sync_match_stats(raw_data, match: Partido):
     local_team = match.equipo_local
     mapped_stats = ioMapper.map_match_stats(raw_data, 'home')
 
+    if match.estado != Partido.Estado.FINALIZADO:
+        for key, value in mapped_stats:
+            if value == 0: mapped_stats[key] = None
+
     EstadisticaPartido.objects.update_or_create(
         equipo = local_team,
         partido = match,
@@ -578,6 +582,10 @@ def sync_match_stats(raw_data, match: Partido):
 
     away_team = match.equipo_visitante
     mapped_stats = ioMapper.map_match_stats(raw_data, 'away')
+
+    if match.estado != Partido.Estado.FINALIZADO:
+        for key, value in mapped_stats:
+            if value == 0: mapped_stats[key] = None
 
     EstadisticaPartido.objects.update_or_create(
         equipo = away_team,
