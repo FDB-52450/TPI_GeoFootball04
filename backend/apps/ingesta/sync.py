@@ -466,19 +466,13 @@ def sync_match_detail(
         matches = matches.filter(semana=semana)
 
     for match in matches:
-        if match.nivel_datos == Partido.NivelDatos.COMPLETO: continue
-
         match_data, meta = provider.get_match_detail(match.api_id)
-
-        if match.estado == Partido.Estado.FINALIZADO:
-            minuto_actual = None
-        else:
-            minuto_actual = ioMapper.map_match_detail(match_data)["minuto"]
+        mapped_match_data = ioMapper.map_match_detail(match_data)
 
         with transaction.atomic():
             partido, _ = Partido.objects.update_or_create(
                 api_id = match_data['match_id'],
-                defaults = {'minuto_actual': minuto_actual, 'nivel_datos': 'COMPLETO'}
+                defaults = {**_defaults(mapped_match_data), 'nivel_datos': 'COMPLETO'}
             )
             
             sync_players_and_callups(match_data, partido)

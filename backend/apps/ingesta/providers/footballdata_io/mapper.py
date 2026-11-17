@@ -102,6 +102,9 @@ def map_matches(data: dict) -> list[dict]:
 
 def map_match_detail(data: dict) -> list[dict]:
     return {
+        "estado": _map_match_status(data["status"]),
+        "goles_vis": data['score']['away'],
+        "goles_local": data['score']['home'],
         "minuto": _map_minute(data["minute"]),
     }
 
