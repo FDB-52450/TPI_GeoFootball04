@@ -4,6 +4,7 @@ import CompetitionsPage from "./CompetitionsPage"
 import CountriesPage from "./CountriesPage"
 import TeamsPage from "./TeamsPage"
 import PlayersPage from "./PlayersPage"
+import MatchesPage from "./MatchesPage"
 import { EntityLink, parseEntityRoute } from "./EntityNavigation"
 import LiveMatchesGlobe from "./components/LiveMatchesGlobe"
 
@@ -371,6 +372,8 @@ export default function App() {
           <TeamsPage teamId={route?.page === "Equipos" ? route.id : null} />
         ) : activeNav === "Jugadores" ? (
           <PlayersPage playerId={route?.page === "Jugadores" ? route.id : null} />
+        ) : activeNav === "Partidos" ? (
+          <MatchesPage/>
         ) : (
           <>
             {activeNav !== "Home" && (
