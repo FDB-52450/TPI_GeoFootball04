@@ -256,6 +256,7 @@ def get_partido(partido_id: int) -> dict | None:
         },
         "temporada": {
             "id": partido.temporada_id,
+            "periodo": partido.temporada.periodo
         },
         "fecha": partido.fecha,
         "estado": partido.estado,
