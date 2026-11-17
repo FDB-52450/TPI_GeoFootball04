@@ -401,15 +401,6 @@ export default function CountriesPage({ initialId }: { initialId: number | null 
             <EndpointTag>/api/catalogo/paises/&lt;id&gt;/</EndpointTag>
           </section>
         </div>
-
-        <aside className="country-implementation-note">
-          <span className="country-note-mark">i</span>
-          <p>
-            Países, confederación, competencias y equipos se cargan desde el
-            backend. La federación nacional no está representada en el modelo
-            ni en los endpoints actuales.
-          </p>
-        </aside>
       </div>
     </div>
   )

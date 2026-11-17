@@ -359,14 +359,6 @@ export default function ConfederationsPage({ initialId }: { initialId: number | 
           </section>
         </section>
       </div>
-
-      <div className="content confed-implementation-note">
-        <span className="country-note-mark">i</span>
-        <p>
-          El catálogo y el detalle se cargan desde la API. Al seleccionar una
-          confederación, se actualizan sus países miembros y competencias.
-        </p>
-      </div>
     </div>
   )
 }

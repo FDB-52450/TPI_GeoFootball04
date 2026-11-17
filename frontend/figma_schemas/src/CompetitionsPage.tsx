@@ -831,13 +831,6 @@ export default function CompetitionsPage({ initialId }: { initialId: number | nu
                 </p>
             )}
         </div>
-        <aside className="country-implementation-note">
-          <span className="country-note-mark">i</span>
-          <p>
-            Selecciona una competición y una temporada para cargar sus equipos,
-            partidos, estadísticas y clasificación desde la API.
-          </p>
-        </aside>
       </div>
     </div>
   )
