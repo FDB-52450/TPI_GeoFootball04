@@ -53,7 +53,7 @@ def get_partidos(
         import random
 
         partidos = list(partidos[:10])
-        start = random.randint(0, 4)
+        start = random.randint(1, 4)
         end = random.randint(4, 8)
 
         for idx, partido in enumerate(partidos):
@@ -134,7 +134,7 @@ def get_partido(partido_id: int) -> dict | None:
     # (todos los datos del detalle son solo relevantes cuando esta en juego)
 
     update_match = instance.nivel_datos == Partido.NivelDatos.PARCIAL or (
-        instance.ultima_actualizacion >= timedelta(minutes=5) and 
+        timezone.now() - instance.ultima_actualizacion >= timedelta(minutes=5) and 
         (instance.estado == Partido.Estado.EN_JUEGO or instance.eventos == [] or instance.convocatorias == [])
     )
 
