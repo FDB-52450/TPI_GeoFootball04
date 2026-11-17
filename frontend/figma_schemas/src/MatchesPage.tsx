@@ -112,10 +112,10 @@ function MatchCard({ match }: { match: Match }) {
           </EntityLink>
           <time dateTime={match.date}>{formatMatchDate(match.date)}</time>
         </div>
-        <button
+        <EntityLink
           className="text-button"
-          type="button"
-          aria-label={`Ver ${match.home.name} contra ${match.away.name}`}
+          kind="partido"
+          id={match.id}
         >
           Ver partido
           <Icon size={15}>
@@ -126,7 +126,7 @@ function MatchCard({ match }: { match: Match }) {
               strokeWidth="1.8"
             />
           </Icon>
-        </button>
+        </EntityLink>
       </div>
     </article>
   )
@@ -332,6 +332,13 @@ export default function MatchesPage() {
                             id={match.competition.id}
                           >
                             {match.competition.name}
+                          </EntityLink>
+                          <EntityLink
+                            className="upcoming-match-detail-link"
+                            kind="partido"
+                            id={match.id}
+                          >
+                            Ver detalle <span aria-hidden="true">→</span>
                           </EntityLink>
                         </article>
                       ))}

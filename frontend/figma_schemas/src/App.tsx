@@ -7,6 +7,7 @@ import PlayersPage from "./PlayersPage"
 import MatchesPage from "./MatchesPage"
 import { EntityLink, parseEntityRoute } from "./EntityNavigation"
 import LiveMatchesGlobe from "./components/LiveMatchesGlobe"
+import MatchDetailsPage from "./MatchDetailsPage"
 
 type Match = {
   competition: string
@@ -339,7 +340,11 @@ export default function App() {
         ) : activeNav === "Jugadores" ? (
           <PlayersPage playerId={route?.page === "Jugadores" ? route.id : null} />
         ) : activeNav === "Partidos" ? (
-          <MatchesPage/>
+          route?.page === "Partidos" && route.id !== null ? (
+            <MatchDetailsPage matchId={route.id} />
+          ) : (
+            <MatchesPage />
+          )
         ) : (
           <>
             {activeNav !== "Home" && (

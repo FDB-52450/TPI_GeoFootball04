@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import {
   fetchLiveCatalog,
   fetchLiveMatches,
-  getMatchDetailsUrl,
   type LiveMatch,
 } from "../api/liveMatches"
 import { EntityLink } from "../EntityNavigation"
@@ -376,14 +375,13 @@ export default function LiveMatchesGlobe() {
                 </EntityLink>
               </p>
             )}
-            <a
+            <EntityLink
               className="live-match-detail-link"
-              href={getMatchDetailsUrl(selectedMatch.id)}
-              target="_blank"
-              rel="noreferrer"
+              kind="partido"
+              id={selectedMatch.id}
             >
               Abrir detalle del partido <span>↗</span>
-            </a>
+            </EntityLink>
           </aside>
         )}
       </div>

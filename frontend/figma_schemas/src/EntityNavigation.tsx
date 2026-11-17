@@ -6,9 +6,16 @@ export type EntityKind =
   | "confederacion"
   | "competicion"
   | "jugador"
+  | "partido"
 
 export type EntityRoute = {
-  page: "Equipos" | "Países" | "Confederaciones" | "Competiciones" | "Jugadores"
+  page:
+    | "Equipos"
+    | "Países"
+    | "Confederaciones"
+    | "Competiciones"
+    | "Jugadores"
+    | "Partidos"
   id: number | null
 }
 
@@ -18,6 +25,7 @@ const entityPages: Record<EntityKind, EntityRoute["page"]> = {
   confederacion: "Confederaciones",
   competicion: "Competiciones",
   jugador: "Jugadores",
+  partido: "Partidos",
 }
 
 export function entityHref(kind: EntityKind, id?: number | null): string {
@@ -26,7 +34,7 @@ export function entityHref(kind: EntityKind, id?: number | null): string {
 
 export function parseEntityRoute(hash: string): EntityRoute | null {
   const match = hash.match(
-    /^#(equipo|pais|confederacion|competicion|jugador)(?:\/(\d+))?$/,
+    /^#(equipo|pais|confederacion|competicion|jugador|partido)(?:\/(\d+))?$/,
   )
   if (!match) return null
 

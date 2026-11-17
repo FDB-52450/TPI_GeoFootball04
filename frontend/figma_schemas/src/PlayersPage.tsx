@@ -521,14 +521,20 @@ export default function PlayersPage({ playerId }: { playerId: number | null }) {
             <EndpointTag>/api/partidos/jugadores/&lt;jugador_id&gt;</EndpointTag>
           </header>
           {player?.ultimos_partidos.length ? (
-            <div className="player-recent-list">
-              {player.ultimos_partidos.map((match, index) => (
-                <RecentMatchRow
-                  key={`${match.temporada.id}-${match.equipo_jugador.id}-${index}`}
-                  match={match}
-                />
-              ))}
-            </div>
+            <>
+              <p className="player-match-detail-unavailable">
+                El endpoint de jugadores no devuelve el identificador de cada partido;
+                no se puede enlazar su detalle desde esta lista.
+              </p>
+              <div className="player-recent-list">
+                {player.ultimos_partidos.map((match, index) => (
+                  <RecentMatchRow
+                    key={`${match.temporada.id}-${match.equipo_jugador.id}-${index}`}
+                    match={match}
+                  />
+                ))}
+              </div>
+            </>
           ) : (
             <p className="player-empty-state">
               {player ? "No hay últimas apariciones disponibles." : "Selecciona un jugador para consultar sus últimos partidos."}

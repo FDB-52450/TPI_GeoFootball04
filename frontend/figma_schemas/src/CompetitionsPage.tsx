@@ -101,6 +101,13 @@ function StatisticLeaderboard({
                           : "vs"}
                       </strong>
                       <small className="competition-stat-xg">{xgLabel}</small>
+                      <EntityLink
+                        className="competition-stat-match-detail"
+                        kind="partido"
+                        id={entry.partido_id}
+                      >
+                        Ver detalle
+                      </EntityLink>
                     </div>
                     <EntityLink
                       className="competition-stat-match-team competition-stat-match-away"
@@ -780,7 +787,13 @@ export default function CompetitionsPage({ initialId }: { initialId: number | nu
                             </EntityLink>
                         </strong>
                         </div>
-                        <span className="fixture-endpoint">TEMPORADA</span>
+                        <EntityLink
+                          className="fixture-details-link"
+                          kind="partido"
+                          id={match.id}
+                        >
+                          Ver detalle <span aria-hidden="true">→</span>
+                        </EntityLink>
                     </article>
                     )
                 })}

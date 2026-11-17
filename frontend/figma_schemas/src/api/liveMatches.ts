@@ -167,7 +167,3 @@ export async function fetchLiveCatalog(): Promise<{
     ),
   }
 }
-
-export function getMatchDetailsUrl(matchId: number): string {
-  return `${API_BASE_URL}/api/partidos/partidos/${matchId}`
-}

@@ -297,6 +297,13 @@ function TeamMatchRow({ match, teamId }: { match: TeamMatch; teamId: number | nu
       <div className="team-match-date">
         <strong>{dateLabel(match.fecha)}</strong>
         <span>{match.estado.replace(/_/g, " ")}</span>
+        <EntityLink
+          kind="partido"
+          id={match.id}
+          className="team-match-detail-link"
+        >
+          Ver detalle →
+        </EntityLink>
       </div>
       <EntityLink kind="equipo" id={match.equipos.local.id} className="team-match-side">
         <ImageWithFallback
