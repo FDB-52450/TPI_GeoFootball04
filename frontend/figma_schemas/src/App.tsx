@@ -5,6 +5,7 @@ import CountriesPage from "./CountriesPage"
 import TeamsPage from "./TeamsPage"
 import PlayersPage from "./PlayersPage"
 import { EntityLink, parseEntityRoute } from "./EntityNavigation"
+import LiveMatchesGlobe from "./components/LiveMatchesGlobe"
 
 type Match = {
   competition: string
@@ -372,6 +373,7 @@ export default function App() {
           <PlayersPage playerId={route?.page === "Jugadores" ? route.id : null} />
         ) : (
           <>
+            {activeNav !== "Home" && (
             <section className="hero">
               <div className="hero-glow" />
               <div className="content hero-content">
@@ -392,15 +394,21 @@ export default function App() {
                       <span>Vívelo en tiempo real.</span>
                     </h1>
                   </div>
-                  <div className="hero-stat">
-                    <strong>18</strong>
-                    <span>partidos en vivo</span>
-                    <small>en 12 países</small>
-                  </div>
+                  {activeNav !== "Home" && (
+                    <div className="hero-stat">
+                      <strong>18</strong>
+                      <span>partidos en vivo</span>
+                      <small>en 12 países</small>
+                    </div>
+                  )}
                 </div>
               </div>
             </section>
+            )}
 
+            {activeNav === "Home" ? (
+              <LiveMatchesGlobe />
+            ) : (
             <div className="content dashboard">
               <section className="matches-section">
                 <div className="section-heading">
@@ -517,17 +525,18 @@ export default function App() {
 
               </aside>
             </div>
+            )}
           </>
         )}
       </main>
 
-      <footer>
+      {activeNav !== "Home" && <footer>
         <div className="content footer-inner">
           <span>GeoFootball</span>
           <p>Resultados globales. Una sola pasión.</p>
           <small>Actualizado hace 20 segundos</small>
         </div>
-      </footer>
+      </footer>}
     </div>
   )
 }
