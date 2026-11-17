@@ -324,40 +324,6 @@ export default function App() {
               </button>
             ))}
           </nav>
-
-          <div className="nav-actions">
-            <button className="icon-button" type="button" aria-label="Buscar">
-              <Icon size={20}>
-                <circle
-                  cx="10.8"
-                  cy="10.8"
-                  r="6.8"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                />
-                <path
-                  d="m16 16 4.2 4.2"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeWidth="1.8"
-                />
-              </Icon>
-            </button>
-            <button
-              className="menu-button"
-              type="button"
-              aria-label="Abrir menú"
-            >
-              <Icon size={22}>
-                <path
-                  d="M4 7h16M4 12h16M4 17h16"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeWidth="1.8"
-                />
-              </Icon>
-            </button>
-          </div>
         </div>
       </header>
 
