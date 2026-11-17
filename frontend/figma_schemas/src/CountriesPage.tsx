@@ -9,33 +9,6 @@ import {
 } from "./api/countries"
 import { EntityLink } from "./EntityNavigation"
 
-function EndpointTag({ children }: { children: string }) {
-  return <code className="country-endpoint">{children}</code>
-}
-
-function UnavailableNotice({
-  title,
-  detail,
-}: {
-  title: string
-  detail: string
-}) {
-  return (
-    <div className="country-unavailable">
-      <span className="country-unavailable-icon" aria-hidden="true">
-        !
-      </span>
-      <div>
-        <strong>{title}</strong>
-        <p>{detail}</p>
-        <span className="country-endpoint country-endpoint-missing">
-          Sin endpoint disponible
-        </span>
-      </div>
-    </div>
-  )
-}
-
 export default function CountriesPage({ initialId }: { initialId: number | null }) {
   const [countries, setCountries] = useState<Country[]>([])
   const [selectedId, setSelectedId] = useState<number | null>(null)
@@ -177,7 +150,6 @@ export default function CountriesPage({ initialId }: { initialId: number | null 
             </div>
             <div className="countries-source">
               <span>CATÁLOGO DE PAÍSES</span>
-              <EndpointTag>/api/catalogo/paises/</EndpointTag>
             </div>
           </div>
         </div>
@@ -216,7 +188,6 @@ export default function CountriesPage({ initialId }: { initialId: number | null 
                 </option>
               ))}
             </select>
-            <EndpointTag>/api/catalogo/paises/</EndpointTag>
           </label>
         </section>
 
@@ -246,7 +217,6 @@ export default function CountriesPage({ initialId }: { initialId: number | null 
                   ? `Código ISO3: ${country.iso3}`
                   : "Nombre, código ISO3 y bandera del país."}
               </p>
-              <EndpointTag>/api/catalogo/paises/&lt;id&gt;/</EndpointTag>
             </div>
           </div>
           <div className="country-affiliations">
@@ -268,7 +238,6 @@ export default function CountriesPage({ initialId }: { initialId: number | null 
                       )
                       : "Sin país seleccionado"}
               </strong>
-              <EndpointTag>/api/catalogo/paises/&lt;id&gt;/</EndpointTag>
             </article>
             <article className="country-federation-unavailable">
               <span>FEDERACIÓN NACIONAL</span>
@@ -334,10 +303,6 @@ export default function CountriesPage({ initialId }: { initialId: number | null 
                   : "No hay equipos asociados a este país."}
               </p>
             )}
-            <div className="country-endpoint-pair">
-              <EndpointTag>{`/api/catalogo/equipos/?pais_id=${selectedId ?? ""}`}</EndpointTag>
-              <span>filtrado por país</span>
-            </div>
           </section>
 
           <section className="country-panel">
@@ -398,7 +363,6 @@ export default function CountriesPage({ initialId }: { initialId: number | null 
             <p className="country-competition-caption">
               Las competencias se obtienen del detalle del país.
             </p>
-            <EndpointTag>/api/catalogo/paises/&lt;id&gt;/</EndpointTag>
           </section>
         </div>
       </div>

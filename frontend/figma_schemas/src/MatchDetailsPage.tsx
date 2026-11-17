@@ -40,10 +40,6 @@ const matchSections: { id: MatchSection; label: string }[] = [
   { id: "eventos", label: "Eventos" },
 ]
 
-function EndpointTag({ children }: { children: string }) {
-  return <code className="country-endpoint">{children}</code>
-}
-
 function formatStatistic(
   value: number | null,
   digits: number,
@@ -114,7 +110,6 @@ function MatchContext({
         ) : (
           <p>El endpoint no informa coordenadas para este estadio.</p>
         )}
-        <EndpointTag>{`${endpoint} → partido.estadio`}</EndpointTag>
       </article>
 
       <article className="match-detail-context-card">
@@ -143,7 +138,6 @@ function MatchContext({
             </p>
           </div>
         </div>
-        <EndpointTag>{`${endpoint} → partido.competicion`}</EndpointTag>
       </article>
     </section>
   )
@@ -249,7 +243,6 @@ function MatchLineups({ match, endpoint }: {
           <span className="section-label">PLANTELES DEL ENCUENTRO</span>
           <h2>Alineación y suplentes</h2>
         </div>
-        <EndpointTag>{`${endpoint} → partido.convocatorias`}</EndpointTag>
       </header>
       {!hasLineups && (
         <p className="match-detail-data-note">
@@ -384,7 +377,6 @@ function MatchEvents({ match, endpoint }: {
           <span className="section-label">CRONOLOGÍA</span>
           <h2>Eventos del partido</h2>
         </div>
-        <EndpointTag>{`${endpoint} → partido.eventos`}</EndpointTag>
       </header>
       {events.length ? (
         <ol className="match-event-list">
@@ -414,7 +406,6 @@ function StatisticsComparison({ match, endpoint }: {
           <span className="section-label">COMPARATIVA</span>
           <h2>Estadísticas del partido</h2>
         </div>
-        <EndpointTag>{`${endpoint} → partido.estadisticas`}</EndpointTag>
       </header>
 
       {!hasAnyStatistics && (
@@ -532,7 +523,6 @@ export default function MatchDetailsPage({ matchId }: { matchId: number }) {
                   <span className="section-label">DETALLE DEL ENCUENTRO</span>
                   <h1>{match.competition.name}</h1>
                 </div>
-                <EndpointTag>{endpoint}</EndpointTag>
               </div>
 
               <div className="match-detail-scoreboard">

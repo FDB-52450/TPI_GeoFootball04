@@ -21,10 +21,6 @@ function isConfederation(value: unknown): value is Confederation {
   )
 }
 
-function EndpointTag({ children }: { children: string }) {
-  return <code className="country-endpoint">{children}</code>
-}
-
 function ConfederationMark({ logoUrl }: { logoUrl?: string | null }) {
   return (
     <span className="confed-mark confed-mark-large" aria-hidden="true">
@@ -171,7 +167,6 @@ export default function ConfederationsPage({ initialId }: { initialId: number | 
           </div>
           <div className="confed-hero-source">
             <span>LISTADO Y DATOS BÁSICOS</span>
-            <EndpointTag>/api/catalogo/confederaciones/</EndpointTag>
           </div>
         </div>
       </section>
@@ -182,7 +177,6 @@ export default function ConfederationsPage({ initialId }: { initialId: number | 
             <span className="section-label">CATÁLOGO</span>
             <h2>Selecciona una confederación</h2>
           </div>
-          <EndpointTag>/api/catalogo/confederaciones/</EndpointTag>
         </div>
         <div className="confed-picker">
           {loading ? (
@@ -235,9 +229,6 @@ export default function ConfederationsPage({ initialId }: { initialId: number | 
               {selectedConfederation && (
                 <p>Identificador: {selectedConfederation.id}</p>
               )}
-              <EndpointTag>
-                {`/api/catalogo/confederaciones/${selectedConfederation?.id ?? ""}/`}
-              </EndpointTag>
             </div>
             <div className="member-total">
               <strong>
@@ -259,7 +250,6 @@ export default function ConfederationsPage({ initialId }: { initialId: number | 
                 <span className="section-label">PAÍSES MIEMBROS</span>
                 <h3>Países asociados</h3>
               </div>
-              <EndpointTag>/api/catalogo/confederaciones/&lt;id&gt;/</EndpointTag>
             </div>
             <p className="confed-data-description">
               Países asociados a la confederación seleccionada.
@@ -312,7 +302,6 @@ export default function ConfederationsPage({ initialId }: { initialId: number | 
                 <span className="section-label">TORNEOS</span>
                 <h3>Competencias asociadas</h3>
               </div>
-              <EndpointTag>/api/catalogo/confederaciones/&lt;id&gt;/</EndpointTag>
             </div>
             <p className="competitions-description">
               Competencias asociadas a la confederación seleccionada.

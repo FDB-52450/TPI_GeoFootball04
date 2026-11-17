@@ -15,10 +15,6 @@ import { EntityLink } from "./EntityNavigation"
 import { ImageWithFallback } from "./utils/ImageWithFallback"
 import { getSeasonLabel } from "./utils/seasonLabel.ts"
 
-function EndpointTag({ children }: { children: string }) {
-  return <code className="country-endpoint">{children}</code>
-}
-
 function CompetitionEmblem({ logoUrl }: { logoUrl?: string }) {
   return (
     <ImageWithFallback
@@ -412,7 +408,6 @@ export default function CompetitionsPage({ initialId }: { initialId: number | nu
             </div>
             <div className="competitions-hero-source">
               <span>CATÁLOGO DE COMPETICIONES</span>
-              <EndpointTag>/api/catalogo/competiciones/</EndpointTag>
             </div>
           </div>
         </div>
@@ -425,7 +420,6 @@ export default function CompetitionsPage({ initialId }: { initialId: number | nu
               <span className="section-label">EXPLORAR</span>
               <h2>Selecciona una competición</h2>
             </div>
-            <EndpointTag>/api/catalogo/competiciones/</EndpointTag>
           </div>
           <label className="competition-select-field">
             <span>COMPETICIÓN</span>
@@ -499,16 +493,6 @@ export default function CompetitionsPage({ initialId }: { initialId: number | nu
               </div>
             </div>
           </div>
-          <div className="competition-feature-endpoints">
-            <div>
-              <span>DETALLE Y TEMPORADAS</span>
-              <EndpointTag>{`/api/catalogo/competiciones/${competitionId ?? "<id>"}`}</EndpointTag>
-            </div>
-            <div>
-              <span>PAÍS Y CONFEDERACIÓN</span>
-              <EndpointTag>{`/api/catalogo/competiciones/${competitionId ?? "<id>"}`}</EndpointTag>
-            </div>
-          </div>
         </section>
 
         <section className="competition-season-block">
@@ -545,7 +529,6 @@ export default function CompetitionsPage({ initialId }: { initialId: number | nu
                   </option>
                 ))}
               </select>
-              <EndpointTag>{`/api/catalogo/competiciones/${competitionId ?? "<id>"}`}</EndpointTag>
             </label>
           </div>
           {selectedSeason && (
@@ -583,7 +566,6 @@ export default function CompetitionsPage({ initialId }: { initialId: number | nu
                 <span className="section-label">PARTICIPANTES</span>
                 <h3>Equipos de la temporada</h3>
               </div>
-              <EndpointTag>{`/api/catalogo/competiciones/${competitionId ?? "<id>"}/temporadas/${seasonId ?? "<temporada_id>"}`}</EndpointTag>
             </div>
             {seasonLoading ? (
               <p className="competition-season-status">
@@ -636,7 +618,6 @@ export default function CompetitionsPage({ initialId }: { initialId: number | nu
                 <span className="section-label">CLASIFICACIÓN</span>
                 <h3>Tabla de posiciones</h3>
               </div>
-              <EndpointTag>{`/api/catalogo/competiciones/${competitionId ?? "<id>"}/temporadas/${seasonId ?? "<temporada_id>"}/tabla`}</EndpointTag>
             </div>
             <p className="competition-standings-description">
               La clasificación corresponde únicamente a la temporada
@@ -716,7 +697,6 @@ export default function CompetitionsPage({ initialId }: { initialId: number | nu
                 <span className="section-label">CALENDARIO DE TEMPORADA</span>
                 <h3>Partidos</h3>
                 </div>
-                <EndpointTag>{`/api/catalogo/competiciones/${competitionId ?? "<id>"}/temporadas/${seasonId ?? "<temporada_id>"}/partidos`}</EndpointTag>
             </div>
             <div className="competition-date-toolbar">
                 <span className="competition-season-scope">
@@ -813,7 +793,6 @@ export default function CompetitionsPage({ initialId }: { initialId: number | nu
                 <span className="section-label">RESUMEN DE TEMPORADA</span>
                 <h3>Estadísticas</h3>
                 </div>
-                <EndpointTag>{`/api/catalogo/competiciones/${competitionId ?? "<id>"}/temporadas/${seasonId ?? "<temporada_id>"}/estadisticas`}</EndpointTag>
             </div>
             {statisticsLoading ? (
                 <p className="competition-season-status">Cargando estadísticas…</p>

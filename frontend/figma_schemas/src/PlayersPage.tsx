@@ -10,10 +10,6 @@ import {
 import { EntityLink } from "./EntityNavigation"
 import { getSeasonLabel } from "./utils/seasonLabel.ts"
 
-function EndpointTag({ children }: { children: string }) {
-  return <code className="country-endpoint">{children}</code>
-}
-
 function PlayerPhoto({
   url,
   name,
@@ -354,7 +350,6 @@ export default function PlayersPage({ playerId }: { playerId: number | null }) {
                   )}
                 </div>
               )}
-              <EndpointTag>/api/partidos/jugadores/</EndpointTag>
               {catalogError && (
                 <span className="player-api-error" role="alert">{catalogError}</span>
               )}
@@ -426,7 +421,6 @@ export default function PlayersPage({ playerId }: { playerId: number | null }) {
                 )}
               </div>
             </div>
-            <EndpointTag>/api/partidos/jugadores/&lt;jugador_id&gt;</EndpointTag>
           </div>
           <div className="player-bio-stats">
             <article><strong>{age ?? "—"}</strong><span>EDAD</span></article>
@@ -456,7 +450,6 @@ export default function PlayersPage({ playerId }: { playerId: number | null }) {
             </label>
           </header>
           <div className="player-section-source">
-            <EndpointTag>/api/partidos/jugadores/&lt;jugador_id&gt;</EndpointTag>
             <span>La API solo devuelve rendimiento de temporadas que incluyen el año actual.</span>
           </div>
           {detailsLoading ? (
@@ -480,7 +473,6 @@ export default function PlayersPage({ playerId }: { playerId: number | null }) {
         <section className="player-content-panel">
           <header className="player-panel-heading">
             <div><span className="section-label">TRAYECTORIA</span><h3>Historial de clubes</h3></div>
-            <EndpointTag>/api/partidos/jugadores/&lt;jugador_id&gt;</EndpointTag>
           </header>
           {player?.historial_clubes.length ? (
             <div className="player-club-table-wrap">
@@ -518,7 +510,6 @@ export default function PlayersPage({ playerId }: { playerId: number | null }) {
         <section className="player-content-panel player-recent-section">
           <header className="player-panel-heading">
             <div><span className="section-label">ACTUACIONES RECIENTES</span><h3>Últimos partidos</h3></div>
-            <EndpointTag>/api/partidos/jugadores/&lt;jugador_id&gt;</EndpointTag>
           </header>
           {player?.ultimos_partidos.length ? (
             <>

@@ -14,10 +14,6 @@ import {
 import { EntityLink } from "./EntityNavigation"
 import { ImageWithFallback } from "./utils/ImageWithFallback"
 
-function EndpointTag({ children }: { children: string }) {
-  return <code className="country-endpoint">{children}</code>
-}
-
 function DataNotice({
   title,
   children,
@@ -587,7 +583,6 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
                   <option value={team.id} key={team.id}>{team.nombre}</option>
                 ))}
               </select>
-              <EndpointTag>/api/catalogo/equipos/</EndpointTag>
               {catalogError && <span className="team-api-error" role="alert">{catalogError}</span>}
             </label>
           </div>
@@ -613,7 +608,6 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
                 ) : detailsLoading ? "Cargando equipo…" : "Selecciona un equipo"}
               </h2>
               <p>{selectedTeam?.siglas || "Nombre, siglas y escudo"}</p>
-              <EndpointTag>/api/catalogo/equipos/&lt;equipo_id&gt;</EndpointTag>
             </div>
           </div>
           <div className="team-profile-stat">
@@ -678,7 +672,6 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
                   {selectedStatsSeason ? ` · ${selectedStatsSeason.etiqueta}` : ""}
                 </h3>
               </div>
-              <EndpointTag>{`/api/catalogo/competiciones/${statsCompetitionId ?? "<comp_id>"}/temporadas/${statsSeasonId ?? "<tempor_id>"}/tabla`}</EndpointTag>
             </header>
             {seasonStatsLoading ? (
               <p className="team-empty-state">Cargando estadísticas de la temporada…</p>
@@ -702,7 +695,6 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
           <section className="team-info-panel">
             <header className="team-panel-heading">
               <div><span className="section-label">AFILIACIÓN</span><h3>País y confederación</h3></div>
-              <EndpointTag>/api/catalogo/equipos/&lt;equipo_id&gt;</EndpointTag>
             </header>
             <DataNotice title="No se exponen en el detalle del equipo" status="No expuesto por la API">
               La respuesta de equipos no incluye país ni confederación; esos vínculos no se pueden resolver desde los endpoints actuales.
@@ -712,7 +704,6 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
           <section className="team-info-panel">
             <header className="team-panel-heading">
               <div><span className="section-label">SEDE</span><h3>Estadio</h3></div>
-              <EndpointTag>/api/catalogo/equipos/&lt;equipo_id&gt;</EndpointTag>
             </header>
             {details?.estadio ? (
               <div className="team-stadium">
@@ -741,7 +732,6 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
         <section className="team-info-panel team-competitions-panel">
           <header className="team-panel-heading">
             <div><span className="section-label">PARTICIPACIÓN</span><h3>Competencias y temporadas</h3></div>
-            <EndpointTag>/api/catalogo/equipos/&lt;equipo_id&gt;</EndpointTag>
           </header>
           {details?.competiciones.length ? (
             <div className="team-competition-grid">
@@ -790,7 +780,6 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
           <section className="team-info-panel">
             <header className="team-panel-heading">
               <div><span className="section-label">PLANTILLA</span><h3>Jugadores</h3></div>
-              <EndpointTag>{`/api/partidos/jugadores/?equipo_id=${selectedId ?? ""}`}</EndpointTag>
             </header>
             {playersLoading ? (
               <p className="team-empty-state">Consultando la plantilla…</p>
@@ -826,7 +815,6 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
         <section className="team-info-panel team-matches-panel">
           <header className="team-panel-heading team-matches-heading">
             <div><span className="section-label">HISTORIAL DE PARTIDOS</span><h3>Partidos del equipo</h3></div>
-            <EndpointTag>/api/catalogo/equipos/&lt;equipo_id&gt;/partidos</EndpointTag>
           </header>
           <div className="team-match-summary">
             <article><strong>{matchesLoading ? "…" : matches.length}</strong><span>EN TOTAL</span></article>
@@ -862,8 +850,6 @@ export default function TeamsPage({ teamId }: { teamId: number | null }) {
             </label>
           </div>
           <div className="team-matches-endpoints">
-            <EndpointTag>/api/catalogo/equipos/&lt;equipo_id&gt;/partidos</EndpointTag>
-            <span>Con temporada: <EndpointTag>?temporada_id=&lt;temporada_id&gt;</EndpointTag></span>
           </div>
           {matchesError && <p className="team-api-error" role="alert">No se pudieron cargar los partidos: {matchesError}</p>}
           {matchesLoading ? (
