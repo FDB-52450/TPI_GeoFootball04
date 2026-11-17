@@ -17,6 +17,9 @@ const statisticDefinitions: {
   digits: number
   suffix?: string
 }[] = [
+  { key: "rendimiento_general", label: "Rendimiento general", digits: 2},
+  { key: "rendimiento_ofensivo", label: "Rendimiento ofensivo", digits: 2},
+  { key: "rendimiento_defensivo", label: "Rendimiento defensivo", digits: 2},
   { key: "xg", label: "Goles esperados (xG)", digits: 2 },
   { key: "xg_prematch", label: "xG previo al partido", digits: 2 },
   { key: "tiros_total", label: "Tiros totales", digits: 0 },
@@ -48,6 +51,7 @@ function formatStatistic(
   if (value === null) return "—"
   return `${new Intl.NumberFormat("es-AR", {
     maximumFractionDigits: digits,
+    minimumFractionDigits: digits
   }).format(value)}${suffix}`
 }
 
@@ -421,10 +425,12 @@ function StatisticsComparison({ match, endpoint }: {
       </div>
 
       <div className="match-stat-list">
-        {statisticDefinitions.map(({ key, label, digits, suffix }) => {
+        {statisticDefinitions.map(({ key, label, digits, suffix }) => {    
+          const bigStat = key.includes('rendimiento_') ? (key.includes("general") ? '-bigger' : '-big') : ''
+
           const homeValue = match.statistics.home?.[key] ?? null
           const awayValue = match.statistics.away?.[key] ?? null
-          const comparable = homeValue !== null && awayValue !== null
+          const comparable = homeValue !== null && awayValue !== null && bigStat == ''
           let homeShare = 50
           if (homeValue !== null && awayValue !== null) {
             const total = homeValue + awayValue
@@ -433,7 +439,7 @@ function StatisticsComparison({ match, endpoint }: {
 
           return (
             <div className="match-stat-row" key={key}>
-              <strong className="match-stat-home-value">
+              <strong className={`match-stat-home-value${bigStat}`}>
                 {formatStatistic(homeValue, digits, suffix)}
               </strong>
               <div className="match-stat-middle">
@@ -450,7 +456,7 @@ function StatisticsComparison({ match, endpoint }: {
                   )}
                 </div>
               </div>
-              <strong className="match-stat-away-value">
+              <strong className={`match-stat-away-value${bigStat}`}>
                 {formatStatistic(awayValue, digits, suffix)}
               </strong>
             </div>

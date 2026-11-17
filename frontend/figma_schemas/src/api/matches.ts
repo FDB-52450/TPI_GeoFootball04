@@ -32,6 +32,9 @@ export type MatchStatistics = {
   faltas: number | null
   ataques: number | null
   ataques_peligrosos: number | null
+  rendimiento_ofensivo: number | null
+  rendimiento_defensivo: number | null
+  rendimiento_general: number | null
 }
 
 export type MatchPlayer = {
@@ -270,6 +273,9 @@ function mapMatchStatistics(
     nullableNumericField(statistics[key], `${field}.${key}`)
 
   return {
+    rendimiento_ofensivo: nullableStat("rendimiento_ofensivo"),
+    rendimiento_defensivo: nullableStat("rendimiento_defensivo"),
+    rendimiento_general: nullableStat("rendimiento_general"),
     xg: nullableStat("xg"),
     xg_prematch: nullableStat("xg_prematch"),
     tiros_total: nullableStat("tiros_total"),

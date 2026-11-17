@@ -6251,7 +6251,7 @@ footer {
   padding-bottom: 11px;
   border-bottom: 1px solid #e9e7e1;
   color: #76807e;
-  font-size: 9px;
+  font-size: 14px;
   letter-spacing: .5px;
 }
 
@@ -6288,6 +6288,43 @@ footer {
 .match-stat-away-value {
   color: #d65b3b;
 }
+
+.match-stat-home-value-big,
+.match-stat-away-value-big {
+  color: #26363d;
+  font-family: 'Manrope', sans-serif;
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.match-stat-home-value-big {
+  text-align: right;
+}
+
+.match-stat-away-value-big {
+  color: #d65b3b;
+}
+
+.match-stat-home-value-bigger,
+.match-stat-away-value-bigger {
+  color: #26363d;
+  font-family: 'Manrope', sans-serif;
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.match-stat-home-value-bigger {
+  text-align: right;
+}
+
+.match-stat-away-value-bigger {
+  color: #d65b3b;
+}
+
 
 .match-stat-middle {
   display: grid;
