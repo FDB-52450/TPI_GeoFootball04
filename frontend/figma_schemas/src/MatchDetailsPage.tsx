@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react"
 import {
   fetchMatchDetails,
+  type MatchEvent,
   type MatchDetails,
+  type MatchLineupEntry,
+  type MatchPlayer,
   type MatchStatistics,
 } from "./api/matches"
 import { EntityLink } from "./EntityNavigation"
@@ -27,6 +30,14 @@ const statisticDefinitions: {
   { key: "faltas", label: "Faltas", digits: 0 },
   { key: "ataques", label: "Ataques", digits: 0 },
   { key: "ataques_peligrosos", label: "Ataques peligrosos", digits: 0 },
+]
+
+type MatchSection = "alineacion" | "estadisticas" | "eventos"
+
+const matchSections: { id: MatchSection; label: string }[] = [
+  { id: "alineacion", label: "Alineación" },
+  { id: "estadisticas", label: "Estadísticas" },
+  { id: "eventos", label: "Eventos" },
 ]
 
 function EndpointTag({ children }: { children: string }) {
@@ -138,6 +149,261 @@ function MatchContext({
   )
 }
 
+function LineupPlayer({ entry }: { entry: MatchLineupEntry }) {
+  const player = entry.player
+  const displayName = player?.nickname || player?.name || "Jugador no disponible"
+  const appearance = (() => {
+    if (entry.minuteIn !== null && entry.minuteOut !== null) {
+      return `${entry.minuteIn}′–${entry.minuteOut}′`
+    }
+    if (entry.minuteIn !== null) return `Desde ${entry.minuteIn}′`
+    if (entry.minuteOut !== null) return `Hasta ${entry.minuteOut}′`
+    return null
+  })()
+
+  return (
+    <li className="match-lineup-player">
+      <span className="match-lineup-number">{entry.number ?? "—"}</span>
+      {player?.image ? (
+        <ImageWithFallback
+          url={player.image}
+          alt=""
+          className="match-lineup-avatar"
+          fallback={<span className="match-lineup-avatar-fallback">{displayName.slice(0, 1)}</span>}
+        />
+      ) : (
+        <span className="match-lineup-avatar-fallback">{displayName.slice(0, 1)}</span>
+      )}
+      <div className="match-lineup-player-info">
+        {player ? (
+          <EntityLink kind="jugador" id={player.id}>
+            {displayName}
+          </EntityLink>
+        ) : (
+          <strong>{displayName}</strong>
+        )}
+        {player?.nickname && player.nickname !== player.name && (
+          <small>{player.name}</small>
+        )}
+        <small>
+          {[entry.position || null, appearance].filter(Boolean).join(" · ") || "Datos adicionales no informados"}
+        </small>
+      </div>
+    </li>
+  )
+}
+
+function TeamLineup({
+  teamName,
+  entries,
+}: {
+  teamName: string
+  entries: MatchLineupEntry[]
+}) {
+  const starters = entries.filter((entry) => entry.starter)
+  const substitutes = entries.filter((entry) => !entry.starter)
+
+  function roster(title: string, players: MatchLineupEntry[]) {
+    return (
+      <section className="match-lineup-roster">
+        <h4>
+          {title}
+          <span>{players.length}</span>
+        </h4>
+        {players.length ? (
+          <ol>
+            {players.map((entry, index) => (
+              <LineupPlayer
+                entry={entry}
+                key={`${entry.player?.id ?? "unknown"}-${index}`}
+              />
+            ))}
+          </ol>
+        ) : (
+          <p className="match-detail-data-note">
+            {title === "Alineación inicial"
+              ? "La API no informa titulares para este equipo."
+              : "La API no informa suplentes para este equipo."}
+          </p>
+        )}
+      </section>
+    )
+  }
+
+  return (
+    <article className="match-lineup-team">
+      <h3>{teamName}</h3>
+      {roster("Alineación inicial", starters)}
+      {roster("Suplentes", substitutes)}
+    </article>
+  )
+}
+
+function MatchLineups({ match, endpoint }: {
+  match: MatchDetails
+  endpoint: string
+}) {
+  const hasLineups = match.lineups.home.length > 0 || match.lineups.away.length > 0
+
+  return (
+    <section className="match-detail-panel match-detail-lineups">
+      <header className="match-detail-panel-heading">
+        <div>
+          <span className="section-label">PLANTELES DEL ENCUENTRO</span>
+          <h2>Alineación y suplentes</h2>
+        </div>
+        <EndpointTag>{`${endpoint} → partido.convocatorias`}</EndpointTag>
+      </header>
+      {!hasLineups && (
+        <p className="match-detail-data-note">
+          La API no tiene convocatorias registradas para este partido.
+        </p>
+      )}
+      <div className="match-lineup-teams">
+        <TeamLineup teamName={match.home.name} entries={match.lineups.home} />
+        <TeamLineup teamName={match.away.name} entries={match.lineups.away} />
+      </div>
+    </section>
+  )
+}
+
+function eventKind(event: MatchEvent): string {
+  switch (event.typeCode.toLowerCase()) {
+    case "goal":
+      return "goal"
+    case "own goal":
+      return "own-goal"
+    case "yellow":
+      return "yellow-card"
+    case "second yellow":
+      return "second-yellow"
+    case "red":
+      return "red-card"
+    case "substitution":
+      return "substitution"
+    case "penalty":
+      return "penalty"
+    default:
+      return "other"
+  }
+}
+
+function eventTitle(event: MatchEvent): string {
+  switch (eventKind(event)) {
+    case "goal":
+      return "Gol"
+    case "own-goal":
+      return "Gol en contra"
+    case "yellow-card":
+      return "Tarjeta amarilla"
+    case "second-yellow":
+      return "Segunda tarjeta amarilla"
+    case "red-card":
+      return "Tarjeta roja"
+    case "substitution":
+      return "Sustitución"
+    case "penalty":
+      return "Penal"
+    default:
+      return event.type
+  }
+}
+
+function EventPlayer({ player }: { player: MatchPlayer }) {
+  return (
+    <EntityLink kind="jugador" id={player.id} className="match-event-player">
+      {player.nickname || player.name}
+    </EntityLink>
+  )
+}
+
+function MatchEventRow({ event }: { event: MatchEvent }) {
+  const kind = eventKind(event)
+  const isSubstitution = kind === "substitution"
+
+  return (
+    <li className={`match-event-row match-event-${kind}`}>
+      <time className="match-event-minute">{event.minute}′</time>
+      <span className="match-event-marker" aria-hidden="true">
+        {kind === "goal" || kind === "own-goal"
+          ? "GOL"
+          : kind === "yellow-card"
+            ? "A"
+            : kind === "second-yellow"
+              ? "2A"
+              : kind === "red-card"
+                ? "R"
+                : kind === "substitution"
+                  ? "↔"
+                  : kind === "penalty"
+                    ? "P"
+                    : "·"}
+      </span>
+      <div className="match-event-description">
+        <strong>{eventTitle(event)}</strong>
+        {isSubstitution ? (
+          <p>
+            {event.player ? (
+              <>
+                Entró <EventPlayer player={event.player} />
+              </>
+            ) : (
+              "Jugador entrante no informado"
+            )}
+            {event.playerOut && (
+              <>
+                {" · salió "}
+                <EventPlayer player={event.playerOut} />
+              </>
+            )}
+          </p>
+        ) : event.player ? (
+          <p>
+            <EventPlayer player={event.player} />
+            {event.player.nickname && event.player.nickname !== event.player.name && (
+              <span> · {event.player.name}</span>
+            )}
+          </p>
+        ) : (
+          <p>La API no informa el jugador asociado al evento.</p>
+        )}
+      </div>
+    </li>
+  )
+}
+
+function MatchEvents({ match, endpoint }: {
+  match: MatchDetails
+  endpoint: string
+}) {
+  const events = [...match.events].sort(
+    (first, second) => first.minute - second.minute || first.id - second.id,
+  )
+
+  return (
+    <section className="match-detail-panel match-detail-events">
+      <header className="match-detail-panel-heading">
+        <div>
+          <span className="section-label">CRONOLOGÍA</span>
+          <h2>Eventos del partido</h2>
+        </div>
+        <EndpointTag>{`${endpoint} → partido.eventos`}</EndpointTag>
+      </header>
+      {events.length ? (
+        <ol className="match-event-list">
+          {events.map((event) => (
+            <MatchEventRow event={event} key={event.id} />
+          ))}
+        </ol>
+      ) : (
+        <p className="match-detail-data-note">
+          La API no tiene eventos registrados para este partido.
+        </p>
+      )}
+    </section>
+  )
+}
+
 function StatisticsComparison({ match, endpoint }: {
   match: MatchDetails
   endpoint: string
@@ -211,6 +477,8 @@ export default function MatchDetailsPage({ matchId }: { matchId: number }) {
   const [match, setMatch] = useState<MatchDetails | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [selectedSection, setSelectedSection] =
+    useState<MatchSection>("estadisticas")
   const endpoint = `/api/partidos/partidos/${matchId}`
 
   useEffect(() => {
@@ -306,7 +574,37 @@ export default function MatchDetailsPage({ matchId }: { matchId: number }) {
 
       {match && (
         <div className="content match-detail-content">
-          <StatisticsComparison match={match} endpoint={endpoint} />
+          <div
+            className="match-detail-tabs"
+            role="group"
+            aria-label="Secciones del partido"
+          >
+            {matchSections.map(({ id, label }) => (
+              <button
+                aria-controls={`match-detail-panel-${match.id}`}
+                aria-pressed={selectedSection === id}
+                className={selectedSection === id ? "selected" : ""}
+                key={id}
+                onClick={() => setSelectedSection(id)}
+                type="button"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <div
+            aria-label={matchSections.find(({ id }) => id === selectedSection)?.label}
+            className="match-detail-selected-panel"
+            id={`match-detail-panel-${match.id}`}
+          >
+            {selectedSection === "alineacion" ? (
+              <MatchLineups match={match} endpoint={endpoint} />
+            ) : selectedSection === "eventos" ? (
+              <MatchEvents match={match} endpoint={endpoint} />
+            ) : (
+              <StatisticsComparison match={match} endpoint={endpoint} />
+            )}
+          </div>
           <MatchContext match={match} endpoint={endpoint} />
         </div>
       )}
