@@ -17,7 +17,7 @@ class ResourceNotFound(Exception):
 def get_partidos(
         temporada_id: int | None = None, equipo_id: int | None = None,
         estado: str | None = None, fecha_desde: date | None = None, fecha_hasta: date | None = None,
-        today: bool = False,
+        today: bool = False, count: int | None = 30
     ) -> list[dict]:
 
     partidos = Partido.objects.all()
@@ -47,14 +47,14 @@ def get_partidos(
 
     partidos = partidos.select_related(
         "equipo_local", "equipo_visitante", "temporada__competicion", "estadio",
-    ).order_by("fecha", "id")
+    ).order_by("fecha", "id")[:count]
 
-    if settings.USE_LIVE_MOCK_DATA:
+    if settings.USE_LIVE_MOCK_DATA and today:
         import random
 
         partidos = list(partidos[:10])
-        start = random.randint(0, 3)
-        end = random.randint(5, 8)
+        start = random.randint(0, 4)
+        end = random.randint(4, 8)
 
         for idx, partido in enumerate(partidos):
             if idx >= start and idx <= end:
