@@ -105,6 +105,8 @@ export type EntityStatistic = {
 }
 
 export type CompetitionSeasonStatistics = {
+  total_partidos: number
+  partidos_con_datos: number
   partidos: {
     partidos_jugados: number
     partido_con_mas_goles: MatchStatistic[]
@@ -386,6 +388,8 @@ function mapCompetitionSeasonStatistics(value: unknown): CompetitionSeasonStatis
     )
 
   return {
+    total_partidos: requireNumber(stats.total_partidos, 'total_partidos'),
+    partidos_con_datos: requireNumber(stats.partidos_con_datos, 'estadisticas.partidos_con_datos'),
     partidos: {
       partidos_jugados: requireNumber(
         matches.partidos_jugados,

@@ -156,7 +156,7 @@ function CompetitionStatistics({
   return (
     <div className="competition-statistics-content">
       <div className="competition-stat-total">
-        <strong>{statistics.partidos.partidos_jugados}</strong>
+        <strong>{statistics.partidos_con_datos}/{statistics.total_partidos}</strong>
         <span>PARTIDOS ANALIZADOS</span>
       </div>
       <div className="competition-stat-category">
@@ -556,7 +556,7 @@ export default function CompetitionsPage({ initialId }: { initialId: number | nu
               <span className="competition-data-warning-mark" aria-hidden="true">
                 !
               </span>
-              <p>El numero de equipos y partidos no coinciden, por lo que es posible que los datos esten incompletos</p>
+              <p>El numero de partidos es menor al esperado, por lo que es posible que los datos esten incompletos</p>
             </aside>
           )}
 
@@ -675,7 +675,48 @@ export default function CompetitionsPage({ initialId }: { initialId: number | nu
                         <td>{row.goles_contra}</td>
                         <td>{row.diferencia_goles}</td>
                         <td className="standings-points">{row.puntos}</td>
-                        <td className="standings-form">{row.forma || "—"}</td>
+                        <td className="standings-form">
+                          {row.forma ? (
+                            <div
+                              className="standings-form-list"
+                              aria-label={`Forma: ${Array.from(row.forma)
+                                .map((result) =>
+                                  result === "W"
+                                    ? "Victoria"
+                                    : result === "D"
+                                      ? "Empate"
+                                      : result === "L"
+                                        ? "Derrota"
+                                        : result,
+                                )
+                                .join(", ")}`}
+                            >
+                              {Array.from(row.forma).map((result, resultIndex) => {
+                                const resultLabel =
+                                  result === "W"
+                                    ? "Victoria"
+                                    : result === "D"
+                                      ? "Empate"
+                                      : result === "L"
+                                        ? "Derrota"
+                                        : "Resultado desconocido"
+
+                                return (
+                                  <span
+                                    className={`standings-form-result standings-form-${result.toLowerCase()}`}
+                                    key={`${result}-${resultIndex}`}
+                                    title={resultLabel}
+                                    aria-label={resultLabel}
+                                  >
+                                    {result}
+                                  </span>
+                                )
+                              })}
+                            </div>
+                          ) : (
+                            "—"
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>

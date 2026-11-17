@@ -246,9 +246,6 @@ export default function CountriesPage({ initialId }: { initialId: number | null 
                 El modelo y los endpoints actuales no exponen una federación
                 nacional asociada al país.
               </p>
-              <span className="country-endpoint country-endpoint-missing">
-                Sin endpoint disponible
-              </span>
             </article>
           </div>
         </section>

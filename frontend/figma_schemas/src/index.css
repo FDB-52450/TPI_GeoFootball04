@@ -2886,9 +2886,40 @@ footer {
 }
 
 .competition-standings-table .standings-form {
-  color: #87918d;
-  font-size: 8px;
-  letter-spacing: .3px;
+  min-width: 115px;
+}
+
+.standings-form-list {
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+}
+
+.standings-form-result {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  background: #858d89;
+  border-radius: 3px;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.standings-form-w {
+  background: #328653;
+}
+
+.standings-form-d {
+  background: #858d89;
+}
+
+.standings-form-l {
+  background: #c7443e;
 }
 
 .competition-standings-panel > .country-unavailable {
